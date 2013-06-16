@@ -246,11 +246,13 @@ Moneychanger::~Moneychanger()
 
                                 //Account ID (label) Note: Value is set when the dropdown box is selected and/or highlighted
                                 mc_systrayMenu_withdraw_ascash_accountid_label = new QLabel("", 0);
+                                mc_systrayMenu_withdraw_ascash_accountid_label->setStyleSheet("QLabel{padding:0.5em;}");
                                 mc_systrayMenu_withdraw_ascash_accountid_label->setAlignment(Qt::AlignHCenter);
                                 mc_systrayMenu_withdraw_ascash_gridlayout->addWidget(mc_systrayMenu_withdraw_ascash_accountid_label, 1, 0, 1, 1);
 
                                 //Account Dropdown (combobox)
                                 mc_systrayMenu_withdraw_ascash_account_dropdown = new QComboBox(0);
+                                mc_systrayMenu_withdraw_ascash_account_dropdown->setStyleSheet("QComboBox{padding:0.5em;}");
                                 mc_systrayMenu_withdraw_ascash_gridlayout->addWidget(mc_systrayMenu_withdraw_ascash_account_dropdown, 2, 0, 1, 1);
 
                                     //Add items to account dropdown box
@@ -268,10 +270,12 @@ Moneychanger::~Moneychanger()
 
                                 //Amount Input
                                 mc_systrayMenu_withdraw_ascash_amount_input = new QLineEdit("Amount as Integer", 0);
+                                mc_systrayMenu_withdraw_ascash_amount_input->setStyleSheet("QLineEdit{padding:0.5em;}");
                                 mc_systrayMenu_withdraw_ascash_gridlayout->addWidget(mc_systrayMenu_withdraw_ascash_amount_input, 3, 0, 1, 1);
 
                                 //Withdraw Button
                                 mc_systrayMenu_withdraw_ascash_button = new QPushButton("Withdraw as Cash");
+                                mc_systrayMenu_withdraw_ascash_button->setStyleSheet("QPushButton{padding:0.5em;}");
                                 mc_systrayMenu_withdraw_ascash_gridlayout->addWidget(mc_systrayMenu_withdraw_ascash_button, 4, 0, 1, 1);
                                     //Connect button with re-action
                                     connect(mc_systrayMenu_withdraw_ascash_button, SIGNAL(pressed()), this, SLOT(mc_withdraw_ascash_confirm_amount_dialog_slot()));
@@ -394,6 +398,7 @@ Moneychanger::~Moneychanger()
 
                                     //Withdraw Button
                                         mc_systrayMenu_withdraw_asvoucher_button = new QPushButton("Withdraw as Voucher");
+                                        mc_systrayMenu_withdraw_asvoucher_button->setStyleSheet("QPushButton{padding:0.5em;}");
                                         mc_systrayMenu_withdraw_asvoucher_gridlayout->addWidget(mc_systrayMenu_withdraw_asvoucher_button, 5,0, 1,1);
                                             //Connect button with re-action
                                             connect(mc_systrayMenu_withdraw_asvoucher_button, SIGNAL(pressed()), this, SLOT(mc_withdraw_asvoucher_confirm_amount_dialog_slot()));
