@@ -221,8 +221,13 @@ Moneychanger::~Moneychanger()
                             mc_addressbook_label->setAlignment(Qt::AlignRight);
                             mc_addressbook_gridlayout->addWidget(mc_addressbook_label, 0,0, 1,1);
 
-                            //Table View
+                            //Table View (backend and visual init)
+                            mc_addressbook_tableview_itemmodel = new QStandardItemModel(0,2,0);
+                            mc_addressbook_tableview_itemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Display Nym")));
+                            mc_addressbook_tableview_itemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Nym ID")));
+
                             mc_addressbook_tableview = new QTableView(0);
+                            mc_addressbook_tableview->setModel(mc_addressbook_tableview_itemmodel);
                             mc_addressbook_gridlayout->addWidget(mc_addressbook_tableview, 1,0, 1,1);
 
                     //Show dialog
@@ -240,8 +245,36 @@ Moneychanger::~Moneychanger()
 
 
                 //Refresh Addressbook with listing
-                QSqlQuery mc_addressbook_query = QSqlQuery("SELECT `id`, `nym_display_name`, `nym_id` FROM `address_book`");
+                QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "addressBook");
+                db.setDatabaseName("./db/mc_db.sqlite");
+                qDebug() << db.lastError();
+                bool db_opened = db.open();
+                qDebug() << "DB OPENED " << db_opened;
+                QSqlQuery mc_addressbook_query(db);
+                mc_addressbook_query.exec(QString("SELECT `id`, `nym_display_name`, `nym_id` FROM `address_book`"));
+                qDebug() << "DB QUERY LAST ERROR: " << mc_addressbook_query.lastError();
+                //Add Rows of data to the backend of the table view (QStandardItemModel)
+                int row_index = 0;
+                while(mc_addressbook_query.next()){
+                    //Extract data
+                    int addressbook_row_id = mc_addressbook_query.value(0).toInt();
+                    QString addressbook_row_nym_display_name = mc_addressbook_query.value(1).toString();
+                    QString addressbook_row_nym_id = mc_addressbook_query.value(2).toString();
 
+                    //Place extracted data into the table view
+                    QStandardItem * col_one = new QStandardItem(addressbook_row_nym_display_name);
+
+                    QStandardItem * col_two = new QStandardItem(addressbook_row_nym_id);
+
+                    mc_addressbook_tableview_itemmodel->setItem(row_index, 0, col_one);
+                    mc_addressbook_tableview_itemmodel->setItem(row_index,1,col_two);
+
+
+                    //Clear address book variables
+                    addressbook_row_id = 0;
+                    addressbook_row_nym_display_name = "";
+                    addressbook_row_nym_id = "";
+                }
 
                 //Resize
                 mc_addressbook_dialog->resize(400, 300);

@@ -10,9 +10,12 @@
 #include <QDialog>
 #include <QAction>
 #include <QVariant>
-#include <QtSql/QSqlDatabase>
+#include <QList>
+#include <QtSql>
+#include <QtSql/QtSql>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QStandardItemModel>
 #include <QTableView>
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -57,6 +60,7 @@ private:
                 QLabel * mc_addressbook_label;
 
                 //Table view
+                QStandardItemModel * mc_addressbook_tableview_itemmodel;
                 QTableView * mc_addressbook_tableview;
 
         //MC Systray icon
