@@ -240,6 +240,7 @@ Moneychanger::~Moneychanger()
 
 
                 //Refresh Addressbook with listing
+
                 QSqlQuery mc_addressbook_query = QSqlQuery("SELECT `id`, `nym_display_name`, `nym_id` FROM `address_book`");
 
 

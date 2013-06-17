@@ -9,4 +9,7 @@
         <file alias="deposit">icons/lock_fill_24x32.png</file>
         <file alias="addressbook">icons/book_alt_32x32.png</file>
     </qresource>
+    <qresource prefix="/db">
+        <file>db/mc_db.sqlite</file>
+    </qresource>
 </RCC>

@@ -10,8 +10,10 @@
 #include <QDialog>
 #include <QAction>
 #include <QVariant>
+#include <QtSql/QSqlDatabase>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QTableView>
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QPushButton>
@@ -19,9 +21,9 @@
 #include <QCoreApplication>
 
 
-#include "opentxs/OTAPI.h"
-#include "opentxs/OT_ME.h"
-#include "opentxs/OTLog.h"
+#include <opentxs/OTAPI.h>
+#include <opentxs/OT_ME.h>
+#include <opentxs/OTLog.h>
 
 
 class Moneychanger : public QWidget
@@ -41,7 +43,21 @@ private:
     /**           **
      ** Variables **
      **           **/
+        //Open Transaction
         OT_ME * ot_me;
+
+        //MC Address book
+        int mc_addressbook_already_init;
+
+            //Dialog
+            QDialog * mc_addressbook_dialog;
+            QGridLayout * mc_addressbook_gridlayout;
+
+                //Label
+                QLabel * mc_addressbook_label;
+
+                //Table view
+                QTableView * mc_addressbook_tableview;
 
         //MC Systray icon
         QSystemTrayIcon * mc_systrayIcon;
@@ -214,6 +230,11 @@ private:
      ** Functions **
      **           **/
 
+        //Address Book Dialog
+            //Show address book
+            void mc_addressbook_show();
+            void mc_addressbook_show(QString);
+
         //Menu Dialog
             //Withdraw
                 //As Cash
@@ -241,6 +262,7 @@ private slots:
 
                  //As Voucher
                  void mc_withdraw_asvoucher_slot();
+                 void mc_withdraw_asvoucher_show_addressbook_slot();
                  void mc_withdraw_asvoucher_confirm_amount_dialog_slot();
 
                  void mc_withdraw_asvoucher_account_dropdown_highlighted_slot(int);
