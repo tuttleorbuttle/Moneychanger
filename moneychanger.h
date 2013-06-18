@@ -56,12 +56,29 @@ private:
             QDialog * mc_addressbook_dialog;
             QGridLayout * mc_addressbook_gridlayout;
 
+                /** Top (Spans 2 columns) **/
                 //Label
                 QLabel * mc_addressbook_label;
 
-                //Table view
-                QStandardItemModel * mc_addressbook_tableview_itemmodel;
-                QTableView * mc_addressbook_tableview;
+                /** Left side (column 1) **/
+                    //Table view
+                    QStandardItemModel * mc_addressbook_tableview_itemmodel;
+                    QTableView * mc_addressbook_tableview;
+
+                /** Right side (column 2) **/
+                    //Button Group
+                    QWidget * mc_addressbook_addremove_btngroup_widget;
+                    QVBoxLayout * mc_addressbook_addremove_btngroup_holder;
+
+                        //Add contact
+                        QPushButton * mc_addressbook_addremove_add_btn;
+
+                        //Remove contact
+                        QPushButton * mc_addressbook_addremove_remove_btn;
+
+                /** Bottom (Spans 2 columns) **/
+                //Button
+                QPushButton * mc_addressbook_select_nym_for_paste_btn;
 
         //MC Systray icon
         QSystemTrayIcon * mc_systrayIcon;
@@ -239,6 +256,10 @@ private:
             void mc_addressbook_show();
             void mc_addressbook_show(QString);
 
+            //Add contact to address book
+            void mc_addressbook_addblankrow(); //Adds a blank editable row for the user to add a contact with
+
+
         //Menu Dialog
             //Withdraw
                 //As Cash
@@ -247,10 +268,11 @@ private:
                 //As Voucher
                 void mc_withdraw_asvoucher_dialog();
 
-        //QT to OT functions
-
-
 private slots:
+        //Address Book slots
+            //Create a new blank editable address book row
+            void mc_addressbook_addblankrow_slot();
+
         //Systray Menu Slots
             //Shutdown
             void mc_shutdown_slot();

@@ -87,6 +87,8 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu_overview->setIcon(mc_systrayIcon_overview);
             mc_systrayMenu->addAction(mc_systrayMenu_overview);
 
+
+
             //Seperator
             mc_systrayMenu->addSeparator();
 
@@ -199,12 +201,12 @@ Moneychanger::~Moneychanger()
         /** Show Address Book **/
             //Dummy Call
             void Moneychanger::mc_addressbook_show(){
-                //The caller dosen't wish to have the address book paste to anything, just call null
+                //The caller dosen't wish to have the address book paste to anything (they just want to see/manage the address book), just call blank.
                 mc_addressbook_show("");
             }
 
 
-            //This will show the addressbook
+            //This will show the addressbook (and paste the selection accordingly if set)
             void Moneychanger::mc_addressbook_show(QString paste_selection_to){
                 //Check if address book has been init before.
                 if(mc_addressbook_already_init == 0){
@@ -216,19 +218,51 @@ Moneychanger::~Moneychanger()
                         mc_addressbook_gridlayout = new QGridLayout(0);
                         mc_addressbook_dialog->setLayout(mc_addressbook_gridlayout);
 
-                            //Label (Address Book)
-                            mc_addressbook_label = new QLabel("<h3>Address Book</h3>");
-                            mc_addressbook_label->setAlignment(Qt::AlignRight);
-                            mc_addressbook_gridlayout->addWidget(mc_addressbook_label, 0,0, 1,1);
+                            /* First Row in Address Book Grid */
+                                //Label (Address Book)
+                                mc_addressbook_label = new QLabel("<h3>Address Book</h3>");
+                                mc_addressbook_label->setAlignment(Qt::AlignRight);
+                                mc_addressbook_gridlayout->addWidget(mc_addressbook_label, 0,0, 1,2);
 
-                            //Table View (backend and visual init)
-                            mc_addressbook_tableview_itemmodel = new QStandardItemModel(0,2,0);
-                            mc_addressbook_tableview_itemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Display Nym")));
-                            mc_addressbook_tableview_itemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Nym ID")));
+                            /* Second Row in Address Book Grid */
+                                /** First column in address book grid (left side) **/
+                                    //Table View (backend and visual init)
+                                    mc_addressbook_tableview_itemmodel = new QStandardItemModel(0,2,0);
+                                    mc_addressbook_tableview_itemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Display Nym")));
+                                    mc_addressbook_tableview_itemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Nym ID")));
 
-                            mc_addressbook_tableview = new QTableView(0);
-                            mc_addressbook_tableview->setModel(mc_addressbook_tableview_itemmodel);
-                            mc_addressbook_gridlayout->addWidget(mc_addressbook_tableview, 1,0, 1,1);
+                                    mc_addressbook_tableview = new QTableView(0);
+                                    mc_addressbook_tableview->setSelectionMode(QAbstractItemView::SingleSelection);
+                                    mc_addressbook_tableview->setModel(mc_addressbook_tableview_itemmodel);
+                                    mc_addressbook_gridlayout->addWidget(mc_addressbook_tableview, 1,0, 1,1);
+
+                                 /** Second column in address book grid (right side) **/
+                                    //2 Buttons (Add/Remove)
+                                    mc_addressbook_addremove_btngroup_widget = new QWidget(0);
+                                    mc_addressbook_addremove_btngroup_holder = new QVBoxLayout(0);
+
+                                    mc_addressbook_addremove_btngroup_widget->setLayout(mc_addressbook_addremove_btngroup_holder);
+                                    mc_addressbook_gridlayout->addWidget(mc_addressbook_addremove_btngroup_widget, 1,1, 1,1, Qt::AlignTop);
+
+                                        //Add button
+                                        mc_addressbook_addremove_add_btn = new QPushButton("Add Contact", 0);
+                                        mc_addressbook_addremove_add_btn->setStyleSheet("QPushButton{padding:0.5em;margin:0}");
+                                        mc_addressbook_addremove_btngroup_holder->addWidget(mc_addressbook_addremove_add_btn, 0, Qt::AlignTop);
+                                            //Connect the add contact button with a re-action
+                                            connect(mc_addressbook_addremove_add_btn, SIGNAL(clicked()), this, SLOT(mc_addressbook_addblankrow_slot()));
+
+                                        //Remove button
+                                        mc_addressbook_addremove_remove_btn = new QPushButton("Remove Contact", 0);
+                                        mc_addressbook_addremove_remove_btn->setStyleSheet("QPushButton{padding:0.5em;margin:0}");
+                                        mc_addressbook_addremove_remove_btn->setDisabled(1);
+                                        mc_addressbook_addremove_btngroup_holder->addWidget(mc_addressbook_addremove_remove_btn, 0, Qt::AlignTop);
+
+                            /* Third row in Address Book Grid */
+                                /** Spans 2 columns **/
+                                //This "select" button will be shown if the address book was initiated with the intention of pasting the selection into a dialog/window
+                                        mc_addressbook_select_nym_for_paste_btn = new QPushButton("Paste selected contact as Nym Id",0);
+                                        mc_addressbook_select_nym_for_paste_btn->hide();
+                                        mc_addressbook_gridlayout->addWidget(mc_addressbook_select_nym_for_paste_btn, 2,0, 1,2, Qt::AlignHCenter);
 
                     //Show dialog
                     mc_addressbook_dialog->show();
@@ -245,6 +279,9 @@ Moneychanger::~Moneychanger()
 
 
                 //Refresh Addressbook with listing
+                mc_addressbook_tableview_itemmodel->removeRows(0, mc_addressbook_tableview_itemmodel->rowCount());
+
+
                 QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "addressBook");
                 db.setDatabaseName("./db/mc_db.sqlite");
                 qDebug() << db.lastError();
@@ -267,8 +304,10 @@ Moneychanger::~Moneychanger()
                     QStandardItem * col_two = new QStandardItem(addressbook_row_nym_id);
 
                     mc_addressbook_tableview_itemmodel->setItem(row_index, 0, col_one);
-                    mc_addressbook_tableview_itemmodel->setItem(row_index,1,col_two);
+                    mc_addressbook_tableview_itemmodel->setItem(row_index ,1, col_two);
 
+                    //Increment index
+                    row_index += 1;
 
                     //Clear address book variables
                     addressbook_row_id = 0;
@@ -276,9 +315,15 @@ Moneychanger::~Moneychanger()
                     addressbook_row_nym_id = "";
                 }
 
+                //Decide if the "Select and paste" button should be shown
+                if(paste_selection_to != ""){
+                    mc_addressbook_select_nym_for_paste_btn->show();
+                }
+
                 //Resize
                 mc_addressbook_dialog->resize(400, 300);
             }
+
 
     /* **
      * Menu Dialog Related Calls
@@ -513,12 +558,27 @@ Moneychanger::~Moneychanger()
 
 /** ****** ****** ****** **
  ** Private Slots        **/
+    /* Address Book Slots */
+        void Moneychanger::mc_addressbook_addblankrow_slot(){
+            //Get total rows from the table view
+            int total_rows_in_table = 0;
+            total_rows_in_table = mc_addressbook_tableview_itemmodel->rowCount();
+
+            //Insert blank row
+            int blank_row_target_index = blank_row_target_index = total_rows_in_table;
+            QStandardItem * blank_row_item = new QStandardItem("");
+            mc_addressbook_tableview_itemmodel->setItem(blank_row_target_index,0,blank_row_item);
+
+
+        }
+
 
     /* Systray menu slots */
 
         //Shutdown
         void Moneychanger::mc_shutdown_slot(){
             //Close qt app (no need to deinit anything as of the time of this comment)
+            //TO DO: Check if the OT queue caller is still proccessing calls.... Then quit the app. (Also tell user that the OT is still calling other wise they might think it froze during OT calls)
             qApp->quit();
         }
 
@@ -776,5 +836,5 @@ Moneychanger::~Moneychanger()
             //This will show the address book, the opened address book will be set to paste in recipient nym ids if/when selecting a nymid in the addressbook.
             void Moneychanger::mc_withdraw_asvoucher_show_addressbook_slot(){
                 //Show address book
-                mc_addressbook_show();
+                mc_addressbook_show("withdraw_as_voucher");
             }
