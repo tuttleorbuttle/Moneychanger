@@ -596,6 +596,16 @@ Moneychanger::~Moneychanger()
 
             //This slot will ignore everything while the address book is refreshing; If not refreshing, go about regular logic.
             if(mc_addressbook_refreshing == 0){
+                //Extract DB ID associated with the edited tableview row.
+                int target_index_row = topLeft.row();
+                int target_index_col = topLeft.column();
+                qDebug() << "row: " << target_index_row;
+                qDebug() << "col: " << target_index_col;
+
+                QModelIndex index = mc_addressbook_tableview_itemmodel->index(target_index_row, target_index_col, QModelIndex());
+                qDebug() << mc_addressbook_tableview_itemmodel->data(index);
+
+/*
                 //Extract new data
                 QString new_data = QVariant(mc_addressbook_tableview_itemmodel->data(topLeft)).toString();
 
@@ -603,11 +613,11 @@ Moneychanger::~Moneychanger()
                 QSqlQuery mc_addressbook_query(addressbook_db);
                 mc_addressbook_query.exec(QString("UPDATE"));
                 qDebug() << "DB QUERY LAST ERROR: " << mc_addressbook_query.lastError();
-
+*/
             }
         }
 
-        //When the user clicks "paste selected" button then we will detect here where to paste and what to paste.
+        //"paste selected" button then we will detect here where to paste and what to paste.
         void Moneychanger::mc_addressbook_paste_selected_slot(){
 
         }
