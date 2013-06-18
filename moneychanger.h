@@ -49,8 +49,12 @@ private:
         //Open Transaction
         OT_ME * ot_me;
 
+        //Sqlite database
+        QSqlDatabase addressbook_db;
+
         //MC Address book
         int mc_addressbook_already_init;
+        int mc_addressbook_refreshing;
 
             //Dialog
             QDialog * mc_addressbook_dialog;
@@ -272,6 +276,12 @@ private slots:
         //Address Book slots
             //Create a new blank editable address book row
             void mc_addressbook_addblankrow_slot();
+
+            //When the operator is done editing a data row, sync it with the database
+            void mc_addressbook_dataChanged_slot(QModelIndex,QModelIndex);
+
+            //When the operator has clicked the "Select and paste" button, we will detect what to paste and where to paste it into.
+            void mc_addressbook_paste_selected_slot();
 
         //Systray Menu Slots
             //Shutdown

@@ -15,14 +15,22 @@ Moneychanger::Moneychanger(QWidget *parent)
 
     ot_me = new OT_ME();
 
+    //SQLite databases
+    addressbook_db = QSqlDatabase::addDatabase("QSQLITE", "addressBook");
+    addressbook_db.setDatabaseName("./db/mc_db.sql");
+    qDebug() << addressbook_db.lastError();
+    bool db_opened = addressbook_db.open();
+    qDebug() << "DB OPENED " << db_opened;
+
     /* *** *** ***
-     * Init Memory Trackers
+     * Init Memory Trackers (there may be other int below then just memory trackers but generally there will be mostly memory trackers below)
      * Allows the program to boot with a low footprint -- keeps start times low no matter the program complexity;
      * Memory will expand as the operator opens dialogs;
      * Also prevents HTTP requests from overloading or spamming the operators device by only allowing one window of that request;
      * *** *** ***/
         //Address Book
             mc_addressbook_already_init = 0;
+            mc_addressbook_refreshing = 0;
 
         //Menu
             //Withdraw
@@ -212,6 +220,7 @@ Moneychanger::~Moneychanger()
                 if(mc_addressbook_already_init == 0){
                     //Init address book, then show
                     mc_addressbook_dialog = new QDialog(0);
+                    mc_addressbook_dialog->setModal(1); //(Nice effect; Dims all windows except the address book and makes the address book on top upon showing
                     mc_addressbook_dialog->setWindowTitle("Address Book | Moneychanger");
 
                         //Set layout
@@ -227,14 +236,19 @@ Moneychanger::~Moneychanger()
                             /* Second Row in Address Book Grid */
                                 /** First column in address book grid (left side) **/
                                     //Table View (backend and visual init)
-                                    mc_addressbook_tableview_itemmodel = new QStandardItemModel(0,2,0);
+                                    mc_addressbook_tableview_itemmodel = new QStandardItemModel(0,3,0);
                                     mc_addressbook_tableview_itemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Display Nym")));
                                     mc_addressbook_tableview_itemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Nym ID")));
+                                    mc_addressbook_tableview_itemmodel->setHorizontalHeaderItem(2, new QStandardItem(QString("Backend DB ID")));
+                                    //Connect tableviews' backend "dataChanged" signal to a re-action.
+                                        connect(mc_addressbook_tableview_itemmodel, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(mc_addressbook_dataChanged_slot(QModelIndex,QModelIndex)));
 
                                     mc_addressbook_tableview = new QTableView(0);
                                     mc_addressbook_tableview->setSelectionMode(QAbstractItemView::SingleSelection);
                                     mc_addressbook_tableview->setModel(mc_addressbook_tableview_itemmodel);
+                                    mc_addressbook_tableview->hideColumn(3);
                                     mc_addressbook_gridlayout->addWidget(mc_addressbook_tableview, 1,0, 1,1);
+
 
                                  /** Second column in address book grid (right side) **/
                                     //2 Buttons (Add/Remove)
@@ -254,7 +268,6 @@ Moneychanger::~Moneychanger()
                                         //Remove button
                                         mc_addressbook_addremove_remove_btn = new QPushButton("Remove Contact", 0);
                                         mc_addressbook_addremove_remove_btn->setStyleSheet("QPushButton{padding:0.5em;margin:0}");
-                                        mc_addressbook_addremove_remove_btn->setDisabled(1);
                                         mc_addressbook_addremove_btngroup_holder->addWidget(mc_addressbook_addremove_remove_btn, 0, Qt::AlignTop);
 
                             /* Third row in Address Book Grid */
@@ -263,7 +276,8 @@ Moneychanger::~Moneychanger()
                                         mc_addressbook_select_nym_for_paste_btn = new QPushButton("Paste selected contact as Nym Id",0);
                                         mc_addressbook_select_nym_for_paste_btn->hide();
                                         mc_addressbook_gridlayout->addWidget(mc_addressbook_select_nym_for_paste_btn, 2,0, 1,2, Qt::AlignHCenter);
-
+                                            //Connect the "select" button with a re-action
+                                        connect(mc_addressbook_select_nym_for_paste_btn, SLOT(click()), SIGNAL(mc_addressbook_paste_selected_slot()));
                     //Show dialog
                     mc_addressbook_dialog->show();
                     mc_addressbook_dialog->activateWindow();
@@ -279,49 +293,53 @@ Moneychanger::~Moneychanger()
 
 
                 //Refresh Addressbook with listing
-                mc_addressbook_tableview_itemmodel->removeRows(0, mc_addressbook_tableview_itemmodel->rowCount());
+                    /** Flag Refreshing Address Book **/
+                    mc_addressbook_refreshing = 1;
 
+                    //remove all rows from the address book (so we can refresh any newly changed data)
+                    mc_addressbook_tableview_itemmodel->removeRows(0, mc_addressbook_tableview_itemmodel->rowCount());
 
-                QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "addressBook");
-                db.setDatabaseName("./db/mc_db.sqlite");
-                qDebug() << db.lastError();
-                bool db_opened = db.open();
-                qDebug() << "DB OPENED " << db_opened;
-                QSqlQuery mc_addressbook_query(db);
-                mc_addressbook_query.exec(QString("SELECT `id`, `nym_display_name`, `nym_id` FROM `address_book`"));
-                qDebug() << "DB QUERY LAST ERROR: " << mc_addressbook_query.lastError();
-                //Add Rows of data to the backend of the table view (QStandardItemModel)
-                int row_index = 0;
-                while(mc_addressbook_query.next()){
-                    //Extract data
-                    int addressbook_row_id = mc_addressbook_query.value(0).toInt();
-                    QString addressbook_row_nym_display_name = mc_addressbook_query.value(1).toString();
-                    QString addressbook_row_nym_id = mc_addressbook_query.value(2).toString();
+                    QSqlQuery mc_addressbook_query(addressbook_db);
+                    mc_addressbook_query.exec(QString("SELECT `id`, `nym_display_name`, `nym_id` FROM `address_book`"));
+                    qDebug() << "DB QUERY LAST ERROR: " << mc_addressbook_query.lastError();
+                    //Add Rows of data to the backend of the table view (QStandardItemModel)
+                    int row_index = 0;
+                    while(mc_addressbook_query.next()){
+                        //Extract data
+                        QString addressbook_row_id = mc_addressbook_query.value(0).toString();
+                        QString addressbook_row_nym_display_name = mc_addressbook_query.value(1).toString();
+                        QString addressbook_row_nym_id = mc_addressbook_query.value(2).toString();
 
-                    //Place extracted data into the table view
-                    QStandardItem * col_one = new QStandardItem(addressbook_row_nym_display_name);
+                        //Place extracted data into the table view
+                        QStandardItem * col_one = new QStandardItem(addressbook_row_nym_display_name);
 
-                    QStandardItem * col_two = new QStandardItem(addressbook_row_nym_id);
+                        QStandardItem * col_two = new QStandardItem(addressbook_row_nym_id);
 
-                    mc_addressbook_tableview_itemmodel->setItem(row_index, 0, col_one);
-                    mc_addressbook_tableview_itemmodel->setItem(row_index ,1, col_two);
+                        QStandardItem * col_three = new QStandardItem(addressbook_row_id);
 
-                    //Increment index
-                    row_index += 1;
+                        mc_addressbook_tableview_itemmodel->setItem(row_index, 0, col_one);
+                        mc_addressbook_tableview_itemmodel->setItem(row_index, 1, col_two);
+                        mc_addressbook_tableview_itemmodel->setItem(row_index, 2, col_three);
 
-                    //Clear address book variables
-                    addressbook_row_id = 0;
-                    addressbook_row_nym_display_name = "";
-                    addressbook_row_nym_id = "";
-                }
+                        //Increment index
+                        row_index += 1;
+
+                        //Clear address book variables
+                        addressbook_row_id = "";
+                        addressbook_row_nym_display_name = "";
+                        addressbook_row_nym_id = "";
+                    }
+
+                    /** Un-Flag Refreshing Address Book **/
+                    mc_addressbook_refreshing = 0;
 
                 //Decide if the "Select and paste" button should be shown
-                if(paste_selection_to != ""){
-                    mc_addressbook_select_nym_for_paste_btn->show();
-                }
+                    if(paste_selection_to != ""){
+                        mc_addressbook_select_nym_for_paste_btn->show();
+                    }
 
                 //Resize
-                mc_addressbook_dialog->resize(400, 300);
+                    mc_addressbook_dialog->resize(400, 300);
             }
 
 
@@ -559,6 +577,7 @@ Moneychanger::~Moneychanger()
 /** ****** ****** ****** **
  ** Private Slots        **/
     /* Address Book Slots */
+        //When "add contact" is clicked, Add a blank row to the address book so the user can edit it and save their changes.
         void Moneychanger::mc_addressbook_addblankrow_slot(){
             //Get total rows from the table view
             int total_rows_in_table = 0;
@@ -569,6 +588,27 @@ Moneychanger::~Moneychanger()
             QStandardItem * blank_row_item = new QStandardItem("");
             mc_addressbook_tableview_itemmodel->setItem(blank_row_target_index,0,blank_row_item);
 
+
+        }
+
+        //When a row is edited/updated this will be triggered to sync the changes to the database.
+        void Moneychanger::mc_addressbook_dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight){
+
+            //This slot will ignore everything while the address book is refreshing; If not refreshing, go about regular logic.
+            if(mc_addressbook_refreshing == 0){
+                //Extract new data
+                QString new_data = QVariant(mc_addressbook_tableview_itemmodel->data(topLeft)).toString();
+
+                //Save/Update newly updated data to the address book.
+                QSqlQuery mc_addressbook_query(addressbook_db);
+                mc_addressbook_query.exec(QString("UPDATE"));
+                qDebug() << "DB QUERY LAST ERROR: " << mc_addressbook_query.lastError();
+
+            }
+        }
+
+        //When the user clicks "paste selected" button then we will detect here where to paste and what to paste.
+        void Moneychanger::mc_addressbook_paste_selected_slot(){
 
         }
 
