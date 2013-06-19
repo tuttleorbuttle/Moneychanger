@@ -49,12 +49,13 @@ private:
         //Open Transaction
         OT_ME * ot_me;
 
-        //Sqlite database
+        //Sqlite database(s)
         QSqlDatabase addressbook_db;
 
         //MC Address book
         int mc_addressbook_already_init;
         int mc_addressbook_refreshing;
+        QString mc_addressbook_paste_into;
 
             //Dialog
             QDialog * mc_addressbook_dialog;
