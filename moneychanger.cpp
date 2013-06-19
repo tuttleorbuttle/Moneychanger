@@ -287,6 +287,7 @@ Moneychanger::~Moneychanger()
                                 /** Spans 2 columns **/
                                 //This "select" button will be shown if the address book was initiated with the intention of pasting the selection into a dialog/window
                                         mc_addressbook_select_nym_for_paste_btn = new QPushButton("Paste selected contact as Nym Id",0);
+                                        mc_addressbook_select_nym_for_paste_btn->setStyleSheet("QPushButton{padding:0.5em;}");
                                         mc_addressbook_select_nym_for_paste_btn->hide();
                                         mc_addressbook_gridlayout->addWidget(mc_addressbook_select_nym_for_paste_btn, 2,0, 1,2, Qt::AlignHCenter);
                                             //Connect the "select" button with a re-action
@@ -681,6 +682,9 @@ Moneychanger::~Moneychanger()
                     if(nym_display_name_string != "" || nym_id_string != ""){
                         QSqlQuery mc_addressbook_insert_query(addressbook_db);
                         mc_addressbook_insert_query.exec(QString("INSERT INTO `address_book` (`id`, `nym_id`, `nym_display_name`) VALUES(NULL, '%1', '%2')").arg(nym_id_string).arg(nym_display_name_string));
+                        //Get last insert id (This is so we can attribute the visual with a DB id.
+                        //Set the associated visual data with the row id from the database/storage index.
+                        mc_addressbook_tableview_itemmodel->setData(index, mc_addressbook_insert_query.lastInsertId());
                     }
                 }else{
                    //Update
@@ -806,9 +810,9 @@ Moneychanger::~Moneychanger()
 
                         //Set Withdraw as cash amount int
                         QString confirm_amount_string_int = mc_systrayMenu_withdraw_ascash_amount_input->text();
-
                         withdraw_ascash_confirm_amount_int = confirm_amount_string_int.toInt();
 
+                        //Show dialog.
                         mc_systrayMenu_withdraw_ascash_confirm_dialog->show();
                     }
 
@@ -879,6 +883,7 @@ Moneychanger::~Moneychanger()
             }
 
 
+
             /**
              ** Button from dialog window has been activated;
              ** Confirm amount;
@@ -932,13 +937,13 @@ Moneychanger::~Moneychanger()
                                     mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_cancel = new QPushButton("Cancel Amount", 0);
                                     mc_systrayMenu_withdraw_asvoucher_confirm_amount_confirm_cancel_layout->addWidget(mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_cancel);
                                         //Connect the cancel button with a re-action
-                                        //connect(mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_cancel, SIGNAL(clicked()), this, SLOT(mc_withdraw_asvoucher_cancel_amount_slot()));
+                                        connect(mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_cancel, SIGNAL(clicked()), this, SLOT(mc_withdraw_asvoucher_cancel_amount_slot()));
 
                                     //Button (Confirm amount)
                                     mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_confirm = new QPushButton("Confirm Amount", 0);
                                     mc_systrayMenu_withdraw_asvoucher_confirm_amount_confirm_cancel_layout->addWidget(mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_confirm);
                                         //Connect the Confirm button with a re-action
-                                        //connect(mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_confirm, SIGNAL(clicked()), this, SLOT(mc_withdraw_asvoucher_confirm_amount_slot()));
+                                        connect(mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_confirm, SIGNAL(clicked()), this, SLOT(mc_withdraw_asvoucher_confirm_amount_slot()));
 
 
                             /** Flag already init **/
@@ -952,6 +957,12 @@ Moneychanger::~Moneychanger()
                             mc_systrayMenu_withdraw_asvoucher_confirm_dialog->show();
                             mc_systrayMenu_withdraw_asvoucher_confirm_dialog->setFocus();
                     }
+            }
+
+            //This is activated when the user clicks "cancel confirmation amount"
+            void Moneychanger::mc_withdraw_asvoucher_cancel_amount_slot(){
+                //Close the dialog/window
+                mc_systrayMenu_withdraw_asvoucher_confirm_dialog->hide();
             }
 
             //This is activated when the user clicks "Confirm amount"
@@ -972,9 +983,15 @@ Moneychanger::~Moneychanger()
                 //Get Server ID
                 std::string selected_server_id_string = OTAPI_Wrap::GetAccountWallet_ServerID(selected_account_id_string);
 
+                //Get receipent nym id
+                std::string recip_nym_string = QString(mc_systrayMenu_withdraw_asvoucher_nym_input->text()).toStdString();
+
+                //Get memo string
+                std::string memo_string = QString("").toStdString(); //This will be replaced with a aninput box.
+
                 //Call OTAPI Withdraw voucher
-                //std::string withdraw_voucher_response = ot_me->withdraw_voucher(selected_server_id_string, nym_id, selected_account_id_string, amount_to_withdraw_int);
-                //qDebug() << QString::fromStdString(withdraw_cash_response);
+                std::string withdraw_voucher_response = ot_me->withdraw_voucher(selected_server_id_string, nym_id, selected_account_id_string, recip_nym_string, memo_string, amount_to_withdraw_int);
+                qDebug() << QString::fromStdString(withdraw_voucher_response);
 
             }
 

@@ -307,8 +307,7 @@ private slots:
 
                  void mc_withdraw_asvoucher_account_dropdown_highlighted_slot(int);
                  void mc_withdraw_asvoucher_confirm_amount_slot();
-
-
+                 void mc_withdraw_asvoucher_cancel_amount_slot();
 };
 
 #endif // MONEYCHANGER_H
