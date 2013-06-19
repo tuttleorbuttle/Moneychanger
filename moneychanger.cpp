@@ -280,6 +280,8 @@ Moneychanger::~Moneychanger()
                                         mc_addressbook_addremove_remove_btn = new QPushButton("Remove Contact", 0);
                                         mc_addressbook_addremove_remove_btn->setStyleSheet("QPushButton{padding:0.5em;margin:0}");
                                         mc_addressbook_addremove_btngroup_holder->addWidget(mc_addressbook_addremove_remove_btn, 0, Qt::AlignTop);
+                                            //Connect the remove contact button with a re-action
+                                            connect(mc_addressbook_addremove_remove_btn, SIGNAL(clicked()), this, SLOT(mc_addressbook_confirm_remove_contact_slot()));
 
                             /* Third row in Address Book Grid */
                                 /** Spans 2 columns **/
@@ -615,6 +617,40 @@ Moneychanger::~Moneychanger()
 
         }
 
+        //Confirm "remove contact" from address book
+        void Moneychanger::mc_addressbook_confirm_remove_contact_slot(){
+            //First validate if anything is selected, before continuing (this is a must).
+            QModelIndexList indexList = mc_addressbook_tableview->selectionModel()->selectedIndexes();
+            int total_selected = indexList.count();
+            if(total_selected >= 1){
+                //Loop through every selected menu and delete it visually as well as through the database/storage.
+                int total_deleted = 0;
+                while(total_deleted < total_selected){
+                    //Increment right away
+                    total_deleted += 1;
+
+                    //Extract the database index id.
+                    QModelIndex data_row_model = indexList.at(0);
+                    QModelIndex db_id_model = mc_addressbook_tableview_itemmodel->index(data_row_model.row(), 2, QModelIndex());
+                    QVariant db_id_variant = mc_addressbook_tableview_itemmodel->data(db_id_model);
+                    int db_id = db_id_variant.toInt();
+
+                    qDebug() << "removing id: " << db_id;
+
+                    //Delete data from the database/storage.
+                    QSqlQuery mc_addressbook_delete_row(addressbook_db);
+                    mc_addressbook_delete_row.exec(QString("DELETE FROM `address_book` WHERE `id` = %1").arg(db_id));
+                    qDebug() << "LAST ERROR: " << mc_addressbook_delete_row.lastError();
+                    //Delete data from the visuals.
+                    mc_addressbook_tableview_itemmodel->removeRow(data_row_model.row());
+
+                }
+
+            }else{
+                qDebug() <<"nothing was selected to be removed -- display dialog/alert instead of this debug";
+            }
+        }
+
         //When a row is edited/updated this will be triggered to sync the changes to the database.
         void Moneychanger::mc_addressbook_dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight){
 
@@ -677,6 +713,8 @@ Moneychanger::~Moneychanger()
                     //Hide address book now that the operator has selected a nym
                     mc_addressbook_dialog->hide();
                 }
+            }else{
+                qDebug() << "nothing was selected to paste into the target area, display a message/alert instead of this debug msg.";
             }
         }
 

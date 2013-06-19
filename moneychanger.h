@@ -278,6 +278,9 @@ private slots:
             //Create a new blank editable address book row
             void mc_addressbook_addblankrow_slot();
 
+            //Remove contact from address book
+            void mc_addressbook_confirm_remove_contact_slot();
+
             //When the operator is done editing a data row, sync it with the database
             void mc_addressbook_dataChanged_slot(QModelIndex,QModelIndex);
 
