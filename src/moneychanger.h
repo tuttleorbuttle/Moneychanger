@@ -32,10 +32,10 @@
 #include <opentxs/OT_ME.h>
 #include <opentxs/OTLog.h>
 
-#include "src/ot_worker.h"
+#include "ot_worker.h"
 
-#include "src/MTRecordList.h"
-#include "src/MTRecord.h"
+#include "MTRecordList.h"
+#include "MTRecord.h"
 
 class Moneychanger : public QWidget
 {

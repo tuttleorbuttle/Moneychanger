@@ -1,5 +1,5 @@
 #include "moneychanger.h"
-#include "src/ot_worker.h"
+#include "ot_worker.h"
 
 #include "opentxs/OTAPI.h"
 #include "opentxs/OT_ME.h"
@@ -530,7 +530,7 @@ Moneychanger::~Moneychanger()
                             mc_overview_gridlayout->addWidget(mc_overview_inoutgoing_pane_holder, 1,0, 1,1);
 
                                 //Label (inOutgoing header)
-                                mc_overview_inoutgoing_header_label = new QLabel("<b>Outgoing</b>");
+                                mc_overview_inoutgoing_header_label = new QLabel("<b>Incomming & Outgoing</b>");
                                 mc_overview_inoutgoing_pane->addWidget(mc_overview_inoutgoing_header_label);
 
                                 //Table vivew (inoutgoing list)
@@ -597,18 +597,7 @@ Moneychanger::~Moneychanger()
                         QStandardItem * date_item = new QStandardItem(QString(temp_record_map["date"].toString()));
                         new_row.append(date_item);
 
-
-                    // Does this record go to the outgoing or incomming tableview?
-                        QVariant isOutgoing = temp_record_map["isoutgoing"];
-                        bool isOutgoing_bool = isOutgoing.toBool();
-
-                        if(isOutgoing_bool == false){
-                            //Incomming
-                            mc_overview_inoutgoing_standarditemmodel->appendRow(new_row);
-                        }else{
-                            //Outgoing
-                            mc_overview_inoutgoing_standarditemmodel->appendRow(new_row);
-                        }
+                    mc_overview_inoutgoing_standarditemmodel->appendRow(new_row);
                 }
 
             }

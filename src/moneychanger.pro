@@ -15,18 +15,22 @@ INCLUDEPATH+="/usr/local/include/"
 DEPENDPATH += .
 SOURCES += main.cpp\
         moneychanger.cpp \
-    src/ot_worker.cpp \
-    src/MTRecordList.cpp \
-    src/MTRecord.cpp
+    ot_worker.cpp \
+    MTRecordList.cpp \
+    MTRecord.cpp
 
 HEADERS  += moneychanger.h \
     ot_worker.h \
-    src/ot_worker.h \
-    src/MTRecordList.h \
-    src/MTRecord.h
+    ot_worker.h \
+    MTRecordList.h \
+    MTRecord.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
+mac:{
+QT_CONFIG -= no-pkg-config
+LIBS += -lboost_system-mt -ldl
+}
 #LIBS += /usr/lib/libboost_thread.so.1.46.1 -ldl
 ##QMAKE_CXXFLAGS += -fPIC -DPIC --param ssp-buffer-size=4
 
