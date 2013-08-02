@@ -1,8 +1,9 @@
 #include "moneychanger.h"
-#include "src/ot_worker.h"
+#include "ot_worker.h"
+#include "unityindicator.h"
 
-#include "opentxs/OTAPI.h"
-#include "opentxs/OT_ME.h"
+#include "OTAPI.h"
+#include "OT_ME.h"
 
 /**
  ** Constructor & Destructor
@@ -329,6 +330,8 @@ Moneychanger::~Moneychanger()
     void Moneychanger::bootTray(){
         //Show systray
         mc_systrayIcon->show();
+
+        GUI::ShowUnityIndicator();
 
         qDebug() << "BOOTING";
     }

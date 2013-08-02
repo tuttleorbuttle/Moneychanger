@@ -28,9 +28,9 @@
 #include <QStandardItemModel>
 #include <QtSql/QtSql>
 
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTLog.h>
+#include <OTAPI.h>
+#include <OT_ME.h>
+#include <OTLog.h>
 
 #include "ot_worker.h"
 

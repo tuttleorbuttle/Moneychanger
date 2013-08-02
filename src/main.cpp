@@ -8,9 +8,9 @@
 
 #include "moneychanger.h"
 
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTLog.h>
+#include <OTAPI.h>
+#include <OT_ME.h>
+#include <OTLog.h>
 
 void shutdown_app(){
 
