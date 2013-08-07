@@ -7,6 +7,8 @@
 #include <QLabel>
 
 #include "moneychanger.h"
+#include "json.h"
+#include "bitcoinrpc.h"
 
 #include <OTAPI.h>
 #include <OT_ME.h>
@@ -80,6 +82,10 @@ int main(int argc, char *argv[])
     // ----------------------------------------
     /** Init Moneychanger code (Start when nessecary below) **/
     Moneychanger systray;
+
+    /** Init JSON wrapper **/
+    Json json;
+    BitcoinRPC jsonrpc;
 
     /** Check Systray capabilities **/
     // This app relies on system tray capabilites;
