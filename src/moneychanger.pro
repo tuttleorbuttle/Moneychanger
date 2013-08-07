@@ -19,7 +19,6 @@ SOURCES += main.cpp\
     MTRecordList.cpp \
     MTRecord.cpp \
     unityindicator.cpp \
-    cJSON/cJSON.c \
     json.cpp \
     bitcoinrpc.cpp
 
@@ -29,7 +28,6 @@ HEADERS  += moneychanger.h \
     MTRecordList.h \
     MTRecord.h \
     unityindicator.h \
-    cJSON/cJSON.h \
     json.h \
     bitcoinrpc.h
 
