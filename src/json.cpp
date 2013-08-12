@@ -5,6 +5,7 @@
 #include "json.h"
 #include "OTLog.h"
 #include <QVariant>
+#include "modules.h"
 
 
 Json::Json()
@@ -85,6 +86,27 @@ Json::Json()
             break;
         }
     }
+}
 
-    int asdf = 0;
+void Json::Initialize()
+{
+    ProcessString reply = (ProcessString)&Json::ProcessRPCString;
+    Modules::bitcoinRpc->RegisterStringProcessor("application/json", reply);
+}
+
+Json::~Json()
+{
+    int a = 0;
+}
+
+void Json::ProcessRPCString(QSharedPointer<QByteArray> jsonString)
+{
+    QJsonDocument doc = QJsonDocument::fromJson(*jsonString);
+    QByteArray arr1 = doc.toBinaryData();
+    QByteArray arr2 = doc.toJson();
+    if(arr1.size() == 0)
+        return;
+    OTLog::Output(0, QString(doc.toBinaryData()).toStdString().c_str());
+    OTLog::vOutput(0, "Received JSON:\n%s\n", QString(doc.toJson()).toStdString().c_str());     // I think casting the json doc back to json adds linebreaks and stuff.
+    int a = 0;
 }

@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     MTRecord.cpp \
     unityindicator.cpp \
     json.cpp \
-    bitcoinrpc.cpp
+    bitcoinrpc.cpp \
+    modules.cpp
 
 HEADERS  += moneychanger.h \
     ot_worker.h \
@@ -29,7 +30,9 @@ HEADERS  += moneychanger.h \
     MTRecord.h \
     unityindicator.h \
     json.h \
-    bitcoinrpc.h
+    bitcoinrpc.h \
+    modules.h \
+    IStringProcessor.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 

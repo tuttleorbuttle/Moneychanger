@@ -11,10 +11,29 @@
 #include <OTLog.h>
 #include "bitcoinrpc.h"
 
-BitcoinRPC::BitcoinRPC()
+BitcoinRpc::BitcoinRpc()
 {
-    QPointer<QNetworkSession> session;
+    // opens network interface (step is not necessary on my computer but it was in the tutorial or something so I guess it has uses...
+    InitSession();
+    // set up the http header and stuff
+    InitBitcoinRpc();
+    // send a getinfo query over the network to see if bitcoin-qt responds
+    ConnectBitcoinRpc();
+}
 
+BitcoinRpc::~BitcoinRpc()
+{
+    int a = 0;
+    if(this->session.isNull())
+    {
+        return;
+    }
+
+    this->session = NULL;   // I don't know why but it seems the object gets destroyed without my knowledge. Maybe connect the closed() signal or something...
+}
+
+void BitcoinRpc::InitSession()
+{
     // Set Internet Access Point
     QNetworkConfigurationManager manager;
 
@@ -30,42 +49,89 @@ BitcoinRPC::BitcoinRPC()
     }
 
     // Open session
-    session = new QNetworkSession(cfg);
-    session->open();
+    this->session = new QNetworkSession(cfg);
+    this->session->open();
     // Waits for session to be open and continues after that
-    session->waitForOpened();
+    this->session->waitForOpened();
 
     // Show interface name to the user
-    QNetworkInterface iff = session->interface();
-    OTLog::vOutput(0, "Network opened %s\n", iff.humanReadableName().toStdString().c_str());
+    QNetworkInterface iff = this->session->interface();
+    OTLog::vOutput(0, "Network opened on %s\n", iff.humanReadableName().toStdString().c_str());
+}
 
-    QNetworkAccessManager* nam = new QNetworkAccessManager();
-    QObject::connect(nam, SIGNAL(finished(QNetworkReply*)), this, SLOT(finishedSlot(QNetworkReply*)));
-    QObject::connect(nam, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
-
-    QByteArray jsonString = "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }";
-    QByteArray postDataSize = QByteArray::number(jsonString.size());
+void BitcoinRpc::InitBitcoinRpc()
+{
+    this->rpcNAM.reset(new QNetworkAccessManager());
+    QObject::connect(&(*rpcNAM), SIGNAL(finished(QNetworkReply*)), this, SLOT(finishedSlot(QNetworkReply*)));
+    QObject::connect(&(*rpcNAM), SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
     QUrl url("http://127.0.0.1:8332");      // default is 8332
-
-    QNetworkRequest request(url);
-    request.setRawHeader("User-Agent", "Moneychanger");
-    request.setRawHeader("X-Custom-User-Agent", "Moneychanger");
-    request.setRawHeader("Content-Type", "application/json");
-    request.setRawHeader("Content-Length", postDataSize);
-    QString authString = "Basic " + QString("moneychanger:money1234").toLocal8Bit().toBase64();
-    //request.setRawHeader("Authorization", authString.toLocal8Bit());
-    QNetworkReply* reply = nam->post(request, jsonString);
+    this->rpcRequest.reset(new QNetworkRequest(url));
+    this->rpcRequest->setRawHeader("User-Agent", "Moneychanger");
+    this->rpcRequest->setRawHeader("X-Custom-User-Agent", "Moneychanger");
+    this->rpcRequest->setRawHeader("Content-Type", "application/json");
+    //this->rpcRequest->setRawHeader("Content-Length", 0);
+    //request.setRawHeader("Authorization", QString("Basic " + QString("moneychanger:money1234").toLocal8Bit().toBase64()).toLocal8Bit());  // authenticate instantly through first header:
 }
 
-void BitcoinRPC::authenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator)
+void BitcoinRpc::ConnectBitcoinRpc()
 {
-    OTLog::vOutput(0, "%s\n", reply->readAll().data_ptr()->data());
-    authenticator->setUser("moneychanger");
-    authenticator->setPassword("money1234");
+    QByteArray jsonString = "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }";
+    OTLog::Output(0, "Connecting to bitcoin on port 8332, sending \"getinfo\"...");
+    SendRpc(jsonString);
 }
 
-void BitcoinRPC::finishedSlot(QNetworkReply *reply)
+QString BitcoinRpc::SendRpc(QString jsonString)
+{
+    QByteArray postDataSize = QByteArray::number(jsonString.size());
+    this->rpcRequest->setRawHeader("Content-Length", postDataSize);
+    QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString.toLocal8Bit());
+    OTLog::vOutput(0, "Reply: %s", QString(reply->readAll()).toStdString().c_str());
+    return QString(reply->readAll());
+}
+QString BitcoinRpc::SendRpc(QByteArray jsonString)
+{
+    QByteArray postDataSize = QByteArray::number(jsonString.size());
+    this->rpcRequest->setRawHeader("Content-Length", postDataSize);
+    QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString);
+    OTLog::vOutput(0, "Reply: %s", QString(reply->readAll()).toStdString().c_str());
+    return QString(reply->readAll());
+}
+
+QString BitcoinRpc::SendRpc(QString jsonString, QString& response)
+{
+    // not yet implemented, maybe never...
+}
+
+void BitcoinRpc::ProcessReply(QSharedPointer<QByteArray> replyContType, QSharedPointer<QByteArray> replyContent)
+{
+    if(this->StringProcessors[*replyContType] != NULL)
+    {
+        (*this->StringProcessors[*replyContType])(replyContent);
+        int a = 0;
+    }
+}
+
+void BitcoinRpc::RegisterStringProcessor(QByteArray contentType, ProcessString delegate)
+{
+    if(contentType.size() == 0)
+        return;
+
+    this->StringProcessors[contentType] = delegate;
+}
+
+void BitcoinRpc::authenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator)
+{
+    OTLog::vOutput(0, "%s\n", QString(reply->readAll()).toStdString().c_str());
+
+    QString user("moneychanger");
+    QString pass("money1234");
+    OTLog::vOutput(0, "Authenticating as %s:%s\n", user.toStdString().c_str(), pass.toStdString().c_str());
+    authenticator->setUser(user);
+    authenticator->setPassword(pass);
+}
+
+void BitcoinRpc::finishedSlot(QNetworkReply *reply)
 {
     if(reply == NULL)
         return;
@@ -87,20 +153,23 @@ void BitcoinRPC::finishedSlot(QNetworkReply *reply)
         //QImage pic = imageReader.read();
 
         // Example 2: Reading bytes from the reply
-        QByteArray bytes = reply->readAll();
-        QString string(bytes);
-        OTLog::vOutput(0, "%s\n", string.toStdString().c_str());
+        QSharedPointer<QByteArray> replyContType(new QByteArray(reply->rawHeader("Content-Type")));
+        QSharedPointer<QByteArray> replyContent(new QByteArray(reply->readAll()));
+        OTLog::vOutput(0, "%s\n", QString(*replyContent).toStdString().c_str());
+        OTLog::vOutput(0, "Content-Type: %s\n", QString(reply->rawHeader("Content-Type")).toStdString().c_str());
+        ProcessReply(replyContType, replyContent);
     }
     else
     {
-        OTLog::vOutput(0, "%s\n", reply->errorString().toStdString().c_str());
-        OTLog::vOutput(0, "%s\n", reply->readAll().data());
+        OTLog::vOutput(0, "Error connecting to bitcoin: %s\n", reply->errorString().toStdString().c_str());
+        OTLog::vOutput(0, "%s\n", QString(reply->readAll()).toStdString().c_str());
         switch(reply->error())
         {
         // network layer errors [relating to the destination server] (1-99):
         case QNetworkReply::ConnectionRefusedError:
             break;
         case QNetworkReply::RemoteHostClosedError:
+            OTLog::Output(0, "Connection was closed. This also occurs when bitcoin-qt is not running or not accpting a connection on this port.");
             break;
         case QNetworkReply::HostNotFoundError:
             break;
