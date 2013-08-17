@@ -117,6 +117,12 @@ void Json::ProcessRpcString(QSharedPointer<QByteArray> jsonString)
     if(doc.isObject())
     {
         QJsonObject o = doc.object();
+
+        QJsonValue id = o["id"];    // this is the same ID we sent to bitcoin-qt earlier.
+        if(!id.isString())
+            return;
+        QString idStr = id.toString();
+
         QJsonValue error = o["error"];
         if(!error.isNull())
         {
@@ -124,10 +130,6 @@ void Json::ProcessRpcString(QSharedPointer<QByteArray> jsonString)
             //return;
         }
 
-        QJsonValue id = o["id"];    // this is the same ID we sent to bitcoin-qt earlier.
-        if(!id.isString())
-            return;
-        QString idStr = id.toString();
         QJsonValue result = o["result"];
 
         // TODO: also send error so functions can check if they were successfull
@@ -226,7 +228,7 @@ void Json::OnListAccounts(QJsonValue result)
 
 void Json::OnSendToAddress(QJsonValue result)
 {
-    if(!result.isString() || )
+    if(!result.isString())
         return;
 
     OTLog::vOutput(0, "Transaction successfull (%s)\n", result.toString().toStdString().c_str());
