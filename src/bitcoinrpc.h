@@ -20,9 +20,8 @@ public:
     BitcoinRpc();
     ~BitcoinRpc();
 
-    QString SendRpc(QString jsonString);
-    QString SendRpc(QByteArray jsonString);
-    QString SendRpc(QString jsonString, QString& response);  // accept function pointer to void foo(qstring str) or maybe SIGNAL?
+    void SendRpc(const QString jsonString);
+    void SendRpc(const QByteArray jsonString);
 
     void RegisterStringProcessor(QByteArray contentType, ProcessString delegate);
 
@@ -31,7 +30,8 @@ private:
     void InitBitcoinRpc();
     void ConnectBitcoinRpc();
 
-    void ProcessReply(QSharedPointer<QByteArray> replyContType, QSharedPointer<QByteArray> replyContent);
+    void ProcessReply(QSharedPointer<QByteArray> replyContType, const QSharedPointer<QByteArray> replyContent);
+    void ProcessErrorMessage(const QNetworkReply *reply);
 
     QMap<QByteArray, ProcessString> StringProcessors;
     QPointer<QNetworkSession> session;

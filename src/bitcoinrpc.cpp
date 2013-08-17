@@ -3,7 +3,7 @@
 #include <QNetworkSession>
 #include <QNetworkConfigurationManager>
 #include <QNetworkAccessManager>
-#include <QNetworkReply>>
+#include <QNetworkReply>
 #include <QNetworkAccessManager>
 #include <QtNetwork>
 #include <QPointer>
@@ -15,10 +15,12 @@ BitcoinRpc::BitcoinRpc()
 {
     // opens network interface (step is not necessary on my computer but it was in the tutorial or something so I guess it has uses...
     InitSession();
+
     // set up the http header and stuff
     InitBitcoinRpc();
+
     // send a getinfo query over the network to see if bitcoin-qt responds
-    ConnectBitcoinRpc();
+    // ConnectBitcoinRpc();
 }
 
 BitcoinRpc::~BitcoinRpc()
@@ -65,7 +67,7 @@ void BitcoinRpc::InitBitcoinRpc()
     QObject::connect(&(*rpcNAM), SIGNAL(finished(QNetworkReply*)), this, SLOT(finishedSlot(QNetworkReply*)));
     QObject::connect(&(*rpcNAM), SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-    QUrl url("http://127.0.0.1:8332");      // default is 8332
+    QUrl url("http://127.0.0.1:19001");      // default is 8332
     this->rpcRequest.reset(new QNetworkRequest(url));
     this->rpcRequest->setRawHeader("User-Agent", "Moneychanger");
     this->rpcRequest->setRawHeader("X-Custom-User-Agent", "Moneychanger");
@@ -75,35 +77,27 @@ void BitcoinRpc::InitBitcoinRpc()
 }
 
 void BitcoinRpc::ConnectBitcoinRpc()
-{
+{    
     QByteArray jsonString = "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }";
-    OTLog::Output(0, "Connecting to bitcoin on port 8332, sending \"getinfo\"...");
+    OTLog::Output(0, "Connecting to bitcoin, sending \"getinfo\"...");
     SendRpc(jsonString);
 }
 
-QString BitcoinRpc::SendRpc(QString jsonString)
+void BitcoinRpc::SendRpc(const QString jsonString)
 {
     QByteArray postDataSize = QByteArray::number(jsonString.size());
     this->rpcRequest->setRawHeader("Content-Length", postDataSize);
     QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString.toLocal8Bit());
-    OTLog::vOutput(0, "Reply: %s", QString(reply->readAll()).toStdString().c_str());
-    return QString(reply->readAll());
 }
-QString BitcoinRpc::SendRpc(QByteArray jsonString)
+
+void BitcoinRpc::SendRpc(const QByteArray jsonString)
 {
     QByteArray postDataSize = QByteArray::number(jsonString.size());
     this->rpcRequest->setRawHeader("Content-Length", postDataSize);
     QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString);
-    OTLog::vOutput(0, "Reply: %s", QString(reply->readAll()).toStdString().c_str());
-    return QString(reply->readAll());
 }
 
-QString BitcoinRpc::SendRpc(QString jsonString, QString& response)
-{
-    // not yet implemented, maybe never...
-}
-
-void BitcoinRpc::ProcessReply(QSharedPointer<QByteArray> replyContType, QSharedPointer<QByteArray> replyContent)
+void BitcoinRpc::ProcessReply(QSharedPointer<QByteArray> replyContType, const QSharedPointer<QByteArray> replyContent)
 {
     if(this->StringProcessors[*replyContType] != NULL)
     {
@@ -126,6 +120,8 @@ void BitcoinRpc::authenticationRequired(QNetworkReply* reply, QAuthenticator* au
 
     QString user("moneychanger");
     QString pass("money1234");
+    user = "admin1";
+    pass = "123";
     OTLog::vOutput(0, "Authenticating as %s:%s\n", user.toStdString().c_str(), pass.toStdString().c_str());
     authenticator->setUser(user);
     authenticator->setPassword(pass);
@@ -143,83 +139,78 @@ void BitcoinRpc::finishedSlot(QNetworkReply *reply)
     QVariant redirectionTargetUrl = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
     // see CS001432 on how to handle this
 
+
     // no error received?
-    if(reply->error() == QNetworkReply::NoError)
-    {
-        // read data from QNetworkReply here
+    if(!reply->error() == QNetworkReply::NoError)
+        ProcessErrorMessage(reply);
 
-        // Example 1: Creating QImage from the replay
-        //QImageReader imageReader(reply);
-        //QImage pic = imageReader.read();
-
-        // Example 2: Reading bytes from the reply
-        QSharedPointer<QByteArray> replyContType(new QByteArray(reply->rawHeader("Content-Type")));
-        QSharedPointer<QByteArray> replyContent(new QByteArray(reply->readAll()));
-        OTLog::vOutput(0, "%s\n", QString(*replyContent).toStdString().c_str());
-        OTLog::vOutput(0, "Content-Type: %s\n", QString(reply->rawHeader("Content-Type")).toStdString().c_str());
-        ProcessReply(replyContType, replyContent);
-    }
-    else
-    {
-        OTLog::vOutput(0, "Error connecting to bitcoin: %s\n", reply->errorString().toStdString().c_str());
-        OTLog::vOutput(0, "%s\n", QString(reply->readAll()).toStdString().c_str());
-        switch(reply->error())
-        {
-        // network layer errors [relating to the destination server] (1-99):
-        case QNetworkReply::ConnectionRefusedError:
-            break;
-        case QNetworkReply::RemoteHostClosedError:
-            OTLog::Output(0, "Connection was closed. This also occurs when bitcoin-qt is not running or not accpting a connection on this port.");
-            break;
-        case QNetworkReply::HostNotFoundError:
-            break;
-        case QNetworkReply::TimeoutError:
-            break;
-        case QNetworkReply::OperationCanceledError:
-            break;
-        case QNetworkReply::SslHandshakeFailedError:
-            break;
-        case QNetworkReply::TemporaryNetworkFailureError:
-            break;
-        case QNetworkReply::NetworkSessionFailedError:
-            break;
-        case QNetworkReply::BackgroundRequestNotAllowedError:
-            break;
-        case QNetworkReply::UnknownNetworkError:
-            break;
-
-        // proxy errors (101-199):
-        case QNetworkReply::ProxyConnectionRefusedError:
-        case QNetworkReply::ProxyConnectionClosedError:
-        case QNetworkReply::ProxyNotFoundError:
-        case QNetworkReply::ProxyTimeoutError:
-        case QNetworkReply::ProxyAuthenticationRequiredError:
-        case QNetworkReply::UnknownProxyError:
-            break;
-
-        // content errors (201-299):
-        case QNetworkReply::ContentAccessDenied:
-        case QNetworkReply::ContentOperationNotPermittedError:
-        case QNetworkReply::ContentNotFoundError:
-        case QNetworkReply::AuthenticationRequiredError:
-        case QNetworkReply::ContentReSendError:
-        case QNetworkReply::UnknownContentError:
-            break;
-
-        // protocol errors
-        case QNetworkReply::ProtocolUnknownError:
-        case QNetworkReply::ProtocolInvalidOperationError:
-        case QNetworkReply::ProtocolFailure:
-        default:
-            break;
-        }
-
-        // some http error received
-    }
+    QSharedPointer<QByteArray> replyContType(new QByteArray(reply->rawHeader("Content-Type")));
+    QSharedPointer<QByteArray> replyContent(new QByteArray(reply->readAll()));          // I think readAll() only works once, so here's where it is used.
+    OTLog::vOutput(0, "%s\n", QString(*replyContent).toStdString().c_str());
+    OTLog::vOutput(0, "Content-Type: %s\n", QString(reply->rawHeader("Content-Type")).toStdString().c_str());
+    ProcessReply(replyContType, replyContent);
 
     // We receive ownership of the reply object
     // and therefore need to handle deletion
     delete reply;
+}
+
+void BitcoinRpc::ProcessErrorMessage(const QNetworkReply* reply)
+{
+    OTLog::vOutput(0, "Error connecting to bitcoin: %s\n", reply->errorString().toStdString().c_str());
+    //OTLog::vOutput(0, "%s\n", QString(reply->readAll()).toStdString().c_str());
+    switch(reply->error())
+    {
+    // network layer errors [relating to the destination server] (1-99):
+    case QNetworkReply::ConnectionRefusedError:
+        break;
+    case QNetworkReply::RemoteHostClosedError:
+        OTLog::Output(0, "Connection was closed. This also occurs when bitcoin-qt is not running or not accpting a connection on this port.");
+        break;
+    case QNetworkReply::HostNotFoundError:
+        break;
+    case QNetworkReply::TimeoutError:
+        break;
+    case QNetworkReply::OperationCanceledError:
+        break;
+    case QNetworkReply::SslHandshakeFailedError:
+        break;
+    case QNetworkReply::TemporaryNetworkFailureError:
+        break;
+    case QNetworkReply::NetworkSessionFailedError:
+            break;
+    case QNetworkReply::BackgroundRequestNotAllowedError:
+        break;
+    case QNetworkReply::UnknownNetworkError:
+        break;
+
+    // proxy errors (101-199):
+    case QNetworkReply::ProxyConnectionRefusedError:
+    case QNetworkReply::ProxyConnectionClosedError:
+    case QNetworkReply::ProxyNotFoundError:
+    case QNetworkReply::ProxyTimeoutError:
+    case QNetworkReply::ProxyAuthenticationRequiredError:
+    case QNetworkReply::UnknownProxyError:
+        break;
+
+    // content errors (201-299):
+    case QNetworkReply::ContentAccessDenied:
+    case QNetworkReply::ContentOperationNotPermittedError:
+    case QNetworkReply::ContentNotFoundError:
+    case QNetworkReply::AuthenticationRequiredError:
+    case QNetworkReply::ContentReSendError:
+    case QNetworkReply::UnknownContentError:
+        break;
+
+    // protocol errors
+    case QNetworkReply::ProtocolUnknownError:
+    case QNetworkReply::ProtocolInvalidOperationError:
+    case QNetworkReply::ProtocolFailure:
+    default:
+        break;
+    }
+
+    // some http error received
 }
 
 

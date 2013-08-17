@@ -85,6 +85,12 @@ int main(int argc, char *argv[])
     /** Init JSON wrapper **/
 
     Modules modules;
+    modules.json->GetInfo();
+    modules.json->GetBalance();
+    modules.json->ListAccounts();
+    //modules.json->SendToAddress("n3UmDg8a6W8j79GvjBVgdzRGHQcKuJ7ESk", 100); // testnet-box to bitcoin-qt
+    //modules.json->SendToAddress("n3dsfnpKhByZ3oVYzbLsCcJ2FDD8RRrJAC", 200); // bitcoin-qt to testnet-box
+
 
     /** Check Systray capabilities **/
     // This app relies on system tray capabilites;

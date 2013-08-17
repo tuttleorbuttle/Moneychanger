@@ -8,6 +8,13 @@
 #include "modules.h"
 
 
+// bitcoin rpc methods
+#define METHOD_GETINFO              "getinfo"
+#define METHOD_GETBALANCE           "getbalance"
+#define METHOD_GETACCOUNTADDRESS    "getaccountaddress"
+#define METHOD_LISTACCOUNTS         "listaccounts"
+#define METHOD_SENDTOADDRESS        "sendtoaddress"
+
 Json::Json()
 {
     QJsonArray a;
@@ -27,7 +34,7 @@ Json::Json()
     alice.insert("Phonenumber", 321);
     people.push_back(bob);
     people.push_back(alice);
-    doc = doc.fromVariant(bob);
+    doc = doc.fromVariant(people);
     foreach (const QVariant& v, people )
     {
         QMap<QString, QVariant> vmap = v.toMap();
@@ -90,7 +97,7 @@ Json::Json()
 
 void Json::Initialize()
 {
-    ProcessString reply = (ProcessString)&Json::ProcessRPCString;
+    ProcessString reply = (ProcessString)&Json::ProcessRpcString;
     Modules::bitcoinRpc->RegisterStringProcessor("application/json", reply);
 }
 
@@ -99,14 +106,129 @@ Json::~Json()
     int a = 0;
 }
 
-void Json::ProcessRPCString(QSharedPointer<QByteArray> jsonString)
+void Json::ProcessRpcString(QSharedPointer<QByteArray> jsonString)
 {
     QJsonDocument doc = QJsonDocument::fromJson(*jsonString);
-    QByteArray arr1 = doc.toBinaryData();
-    QByteArray arr2 = doc.toJson();
-    if(arr1.size() == 0)
+    if(doc.isNull() || doc.isEmpty())
         return;
-    OTLog::Output(0, QString(doc.toBinaryData()).toStdString().c_str());
+
     OTLog::vOutput(0, "Received JSON:\n%s\n", QString(doc.toJson()).toStdString().c_str());     // I think casting the json doc back to json adds linebreaks and stuff.
-    int a = 0;
+
+    if(doc.isObject())
+    {
+        QJsonObject o = doc.object();
+        QJsonValue error = o["error"];
+        if(!error.isNull())
+        {
+            OTLog::vOutput(0, "Error in reply to \"%s\": %s\n\n", idStr.toStdString().c_str(), error.isObject() ? (error.toObject()["message"]).toString().toStdString().c_str() : "");
+            //return;
+        }
+
+        QJsonValue id = o["id"];    // this is the same ID we sent to bitcoin-qt earlier.
+        if(!id.isString())
+            return;
+        QString idStr = id.toString();
+        QJsonValue result = o["result"];
+
+        // TODO: also send error so functions can check if they were successfull
+        if(idStr == METHOD_GETINFO)
+            OnGetInfo(result);
+        else if(idStr == METHOD_GETBALANCE)
+            OnGetBalance(result);
+        else if(idStr == METHOD_GETACCOUNTADDRESS)
+            OnGetAccountAddress(result);
+        else if(idStr == METHOD_LISTACCOUNTS)
+            OnListAccounts(result);
+        else if(idStr == METHOD_SENDTOADDRESS)
+            OnSendToAddress(result);
+    }
+}
+
+QByteArray Json::CreateJsonQuery(QString command, QJsonArray params, QString id)
+{
+    if(id == "")
+        id = command;
+    QJsonObject jsonObj;
+    jsonObj.insert("jsonrpc", 1.0);
+    jsonObj.insert("id", id);
+    jsonObj.insert("method", command);
+    jsonObj.insert("params", params);
+    //"{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }";
+
+    return QJsonDocument(jsonObj).toJson();
+}
+
+void Json::GetInfo()
+{
+    Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETINFO));
+}
+
+void Json::GetBalance()
+{
+    QJsonArray params;
+    params.append(QString(""));      // account
+    params.append(1);       // min confirmations, 1 is default
+
+    Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
+}
+
+void Json::GetAccountAddress()
+{
+
+}
+
+void Json::ListAccounts()
+{
+    Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_LISTACCOUNTS));
+}
+
+void Json::SendToAddress(QString btcAddress, double amount)
+{
+    QJsonArray params;
+    params.append(btcAddress);
+    params.append(amount);
+
+    Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_SENDTOADDRESS, params));
+}
+
+
+void Json::OnGetInfo(QJsonValue result)
+{
+
+}
+
+void Json::OnGetBalance(QJsonValue result)
+{
+    if(!result.isDouble())
+        return;
+
+    double balance = (float)result.toDouble();
+    OTLog::vOutput(0, "Account Balance: %F", balance);
+}
+
+void Json::OnGetAccountAddress(QJsonValue result)
+{
+
+}
+
+void Json::OnListAccounts(QJsonValue result)
+{
+    if(!result.isObject())
+        return;
+
+    QJsonObject accounts = result.toObject();
+    foreach(const QString key, accounts.keys())
+    {
+        double balance = accounts[key].toDouble();
+        OTLog::vOutput(0, "%s: %FBTC\n", key.toStdString().c_str(), balance);
+    }
+}
+
+void Json::OnSendToAddress(QJsonValue result)
+{
+    if(!result.isString() || )
+        return;
+
+    OTLog::vOutput(0, "Transaction successfull (%s)\n", result.toString().toStdString().c_str());
+    //OTLog::vOutput(0, "", 0);
 }
