@@ -34,11 +34,19 @@ HEADERS  += moneychanger.h \
     bitcoinrpc.h \
     modules.h \
     IStringProcessor.h \
+    MTRecord.hpp \
+    MTRecordList.hpp \
     btcintegration.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
-#LIBS += /usr/lib/libboost_thread.so.1.46.1 -ldl
+mac:{
+QT_CONFIG -= no-pkg-config
+LIBS += -lboost_system-mt -ldl
+}
+
+unix:LIBS += /usr/lib/libboost_thread.so.1.49.0 -ldl
+
 ##QMAKE_CXXFLAGS += -fPIC -DPIC --param ssp-buffer-size=4
 
 # Set libraries and includes at end, to use platform-defined defaults if not overridden
@@ -63,6 +71,7 @@ PANGO_INCLUDE_PATH      += /usr/include/pango-1.0
 CAIRO_INCLUDE_PATH      += /usr/include/cairo
 GDK_PIXBUF_INCLUDE_PATH += /usr/include/gdk-pixbuf-2.0
 ATK_INCLUDE_PATH        += /usr/include/atk-1.0
+OT_LIB_PATH
 
 INCLUDEPATH	+= $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH $$LIBAPPINDICATOR_INCLUDE_PATH $$GTK_INCLUDE_PATH $$GLIB_INCLUDE_PATH $$GLIBCONFIG_INCLUDE_PATH $$PANGO_INCLUDE_PATH $$CAIRO_INCLUDE_PATH $$GDK_PIXBUF_INCLUDE_PATH $$ATK_INCLUDE_PATH $$GDKCONFIG_INCLUDE_PATH
 DEPENDPATH	+= $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH
@@ -85,7 +94,6 @@ INCLUDEPATH     += include
 
 #unix: PKGCONFIG += opentxs
 
-OTHER_FILES +=
+#OTHER_FILES +=
 
-RESOURCES += \
-    resource.qrc
+RESOURCES += resource.qrc
