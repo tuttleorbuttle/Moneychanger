@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     modules.json->GetInfo();
     modules.json->GetBalance();
     modules.json->ListAccounts();
-    //modules.json->SendToAddress("n3UmDg8a6W8j79GvjBVgdzRGHQcKuJ7ESk", 100); // testnet-box to bitcoin-qt
+    //modules.json->SendToAddress("n3UmDg8a6W8j79GvjBVgdzRGHQcKuJ7ESk", 100.1234567); // testnet-box to bitcoin-qt, I think it only sends 100.123 instead of 100.1234567BTC.
     //modules.json->SendToAddress("n3dsfnpKhByZ3oVYzbLsCcJ2FDD8RRrJAC", 200); // bitcoin-qt to testnet-box
 
 

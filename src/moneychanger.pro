@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     unityindicator.cpp \
     json.cpp \
     bitcoinrpc.cpp \
-    modules.cpp
+    modules.cpp \
+    btcintegration.cpp
 
 HEADERS  += moneychanger.h \
     ot_worker.h \
@@ -32,7 +33,8 @@ HEADERS  += moneychanger.h \
     json.h \
     bitcoinrpc.h \
     modules.h \
-    IStringProcessor.h
+    IStringProcessor.h \
+    btcintegration.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 

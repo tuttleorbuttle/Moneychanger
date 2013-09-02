@@ -26,9 +26,9 @@ public:
     void RegisterStringProcessor(QByteArray contentType, ProcessString delegate);
 
 private:
-    void InitSession();
-    void InitBitcoinRpc();
-    void ConnectBitcoinRpc();
+    void InitSession();         // Called in constructor, makes sure we have internet or something
+    void InitBitcoinRpc();      // Also called in constr, sets header information to what bitcoin-qt is expecting
+    void ConnectBitcoinRpc();   // sends getinfo to bitcoin, was used for testing but can/should be removed now.
 
     void ProcessReply(QSharedPointer<QByteArray> replyContType, const QSharedPointer<QByteArray> replyContent);
     void ProcessErrorMessage(const QNetworkReply *reply);
