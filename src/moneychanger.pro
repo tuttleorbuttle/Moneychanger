@@ -14,29 +14,37 @@ TEMPLATE = app
 INCLUDEPATH+="/usr/local/include/"
 DEPENDPATH += .
 SOURCES += main.cpp\
-        moneychanger.cpp \
-    ot_worker.cpp \
-    MTRecordList.cpp \
-    MTRecord.cpp \
-    unityindicator.cpp \
-    json.cpp \
-    bitcoinrpc.cpp \
-    modules.cpp
+           moneychanger.cpp \
+           ot_worker.cpp \
+           MTRecordList.cpp \
+           MTRecord.cpp \
+           unityindicator.cpp \
+           json.cpp \
+           bitcoinrpc.cpp \
+           modules.cpp
 
 HEADERS  += moneychanger.h \
-    ot_worker.h \
-    ot_worker.h \
-    MTRecordList.h \
-    MTRecord.h \
-    unityindicator.h \
-    json.h \
-    bitcoinrpc.h \
-    modules.h \
-    IStringProcessor.h
+    		ot_worker.h \
+		    ot_worker.h \
+		    MTRecordList.h \
+		    MTRecord.h \
+		    unityindicator.h \
+		    json.h \
+		    bitcoinrpc.h \
+		    modules.h \
+		    IStringProcessor.h
+		    MTRecord.hpp \
+		    MTRecordList.hpp
 
 DEFINES += "OT_ZMQ_MODE=1"
 
-#LIBS += /usr/lib/libboost_thread.so.1.46.1 -ldl
+mac:{
+QT_CONFIG -= no-pkg-config
+LIBS += -lboost_system-mt -ldl
+}
+
+unix:LIBS += /usr/lib/libboost_thread.so.1.49.0 -ldl
+
 ##QMAKE_CXXFLAGS += -fPIC -DPIC --param ssp-buffer-size=4
 
 # Set libraries and includes at end, to use platform-defined defaults if not overridden
@@ -47,7 +55,7 @@ DEFINES += "OT_ZMQ_MODE=1"
 
 # Sorry about the mess here, I'll figure out how to clan that up another time.
 
-OPENTXS_INCLUDE_PATH	+= /home/ubuntu/.local/include/opentxs
+OPENTXS_INCLUDE_PATH	+= /home/ubuntu/.local/include
 OPENTXS_LIB_PATH	+= /home/ubuntu/.local/lib
 CHAI_INCLUDE_PATH	+= /home/ubuntu/.local/include
 OPENSSL_INCLUDE_PATH	+= /usr/lib/x86_64-linux-gnu
@@ -61,6 +69,7 @@ PANGO_INCLUDE_PATH      += /usr/include/pango-1.0
 CAIRO_INCLUDE_PATH      += /usr/include/cairo
 GDK_PIXBUF_INCLUDE_PATH += /usr/include/gdk-pixbuf-2.0
 ATK_INCLUDE_PATH        += /usr/include/atk-1.0
+OT_LIB_PATH
 
 INCLUDEPATH	+= $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH $$LIBAPPINDICATOR_INCLUDE_PATH $$GTK_INCLUDE_PATH $$GLIB_INCLUDE_PATH $$GLIBCONFIG_INCLUDE_PATH $$PANGO_INCLUDE_PATH $$CAIRO_INCLUDE_PATH $$GDK_PIXBUF_INCLUDE_PATH $$ATK_INCLUDE_PATH $$GDKCONFIG_INCLUDE_PATH
 DEPENDPATH	+= $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH
@@ -83,7 +92,6 @@ INCLUDEPATH     += include
 
 #unix: PKGCONFIG += opentxs
 
-OTHER_FILES +=
+#OTHER_FILES +=
 
-RESOURCES += \
-    resource.qrc
+RESOURCES += resource.qrc
