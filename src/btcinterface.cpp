@@ -1,6 +1,7 @@
-#include "btcintegration.h"
+#include "btcinterface.h"
+#include "btcjson.h"
 
-BtcIntegration::BtcIntegration(QObject *parent) :
+BtcInterface::BtcInterface(QObject *parent) :
     QObject(parent)
 {
 }

@@ -3,11 +3,13 @@
 
 #include <QObject>
 
-class BtcIntegration : public QObject
+class BtcInterface : public QObject
 {
     Q_OBJECT
 public:
-    explicit BtcIntegration(QObject *parent = 0);
+    explicit BtcInterface(QObject *parent = 0);
+
+    double GetBalance();
 
 private:
     

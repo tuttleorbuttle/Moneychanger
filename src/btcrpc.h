@@ -4,26 +4,31 @@
 #include <QtNetwork>
 #include <QString>
 #include <QLinkedList>
-//#include "IStringProcessor.h"
+#include "FastDelegate.h"
+#include "IStringProcessor.h"
 
 typedef void (*ProcessString)(QSharedPointer<QByteArray>);
+
+using namespace fastdelegate;
 
 ///!
 //! \brief The BitcoinRPC class will handle communication with bitcoin-qt.
 //!
-class BitcoinRpc : public QObject
+class BtcRpc : public QObject
 {
 public:
     ///!
     //! \brief Currently just calling bitcoin-qt on default port and asking "getinfo"
     //!
-    BitcoinRpc();
-    ~BitcoinRpc();
+    BtcRpc();
+    ~BtcRpc();
+
+    void ConnectToBitcoin(QString url, int port, QString user, QString password);
 
     void SendRpc(const QString jsonString);
     void SendRpc(const QByteArray jsonString);
 
-    void RegisterStringProcessor(QByteArray contentType, ProcessString delegate);
+    void RegisterStringProcessor(QByteArray contentType, FastDelegate1<QSharedPointer<QByteArray>, IStringProcessor> delegate);
 
 private:
     void InitSession();         // Called in constructor, makes sure we have internet or something
@@ -33,7 +38,7 @@ private:
     void ProcessReply(QSharedPointer<QByteArray> replyContType, const QSharedPointer<QByteArray> replyContent);
     void ProcessErrorMessage(const QNetworkReply *reply);
 
-    QMap<QByteArray, ProcessString> StringProcessors;
+    QMap<QByteArray, FastDelegate1<QSharedPointer<QByteArray>, IStringProcessor> > StringProcessors;
     QPointer<QNetworkSession> session;
 
     QScopedPointer<QNetworkAccessManager> rpcNAM;      // this is used to send http packets to bitcoin-qt

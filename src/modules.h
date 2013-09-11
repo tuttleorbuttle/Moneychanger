@@ -3,8 +3,8 @@
 
 #include <QObject>
 #include <QScopedPointer>
-#include "json.h"
-#include "bitcoinrpc.h"
+#include "btcjson.h"
+#include "btcrpc.h"
 
 
 //!
@@ -17,8 +17,8 @@ public:
     explicit Modules(QObject *parent = 0);
     ~Modules();
 
-    static QScopedPointer<Json> json;
-    static QScopedPointer<BitcoinRpc> bitcoinRpc;
+    static QScopedPointer<BtcJson> json;
+    static QScopedPointer<BtcRpc> bitcoinRpc;
 
 private:
 

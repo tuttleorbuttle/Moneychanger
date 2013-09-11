@@ -14,29 +14,31 @@ TEMPLATE = app
 INCLUDEPATH+="/usr/local/include/"
 DEPENDPATH += .
 SOURCES += main.cpp\
-        moneychanger.cpp \
-    ot_worker.cpp \
-    MTRecordList.cpp \
-    MTRecord.cpp \
-    unityindicator.cpp \
-    json.cpp \
-    bitcoinrpc.cpp \
-    modules.cpp \
-    btcintegration.cpp
+          moneychanger.cpp \
+          ot_worker.cpp \
+          MTRecordList.cpp \
+          MTRecord.cpp \
+          unityindicator.cpp \
+          modules.cpp \
+    btcjson.cpp \
+    btcinterface.cpp \
+    btcrpc.cpp
 
 HEADERS  += moneychanger.h \
-    ot_worker.h \
-    ot_worker.h \
-    MTRecordList.h \
-    MTRecord.h \
-    unityindicator.h \
-    json.h \
-    bitcoinrpc.h \
-    modules.h \
-    IStringProcessor.h \
-    MTRecord.hpp \
-    MTRecordList.hpp \
-    btcintegration.h
+            ot_worker.h \
+            ot_worker.h \
+            MTRecordList.h \
+            MTRecord.h \
+            unityindicator.h \
+            modules.h \
+            IStringProcessor.h \
+            MTRecord.hpp \
+            MTRecordList.hpp \
+            FastDelegate.h \
+            FastDelegateBind.h \
+    btcjson.h \
+    btcrpc.h \
+    btcinterface.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 

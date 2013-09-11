@@ -2,10 +2,11 @@
 #include <QJsonDocument>
 //#include <QJsonValue>
 #include <QJsonObject>
-#include "json.h"
+#include "btcjson.h"
 #include "OTLog.h"
 #include <QVariant>
 #include "modules.h"
+#include "FastDelegate.h"
 
 
 // bitcoin rpc methods
@@ -15,57 +16,53 @@
 #define METHOD_LISTACCOUNTS         "listaccounts"
 #define METHOD_SENDTOADDRESS        "sendtoaddress"
 
-Json::Json()
+using namespace fastdelegate;
+
+BtcJson::BtcJson()
 {
-    // the methods will be removed from the list when they're called.
-    RegisterOnRpcReply(METHOD_GETINFO, (OnRpcReply)&Json::OnGetInfo);   // I think the cast is illegal, funny that it's working. Gonna fix later.
 
 }
 
-void Json::Initialize()
+void BtcJson::Initialize()
 {
-    ProcessString reply = (ProcessString)&Json::ProcessRpcString;       // is this cast even legit?
+    FastDelegate1<QSharedPointer<QByteArray>, BtcJson> processDelegate;
+    processDelegate.bind(this, &BtcJson::ProcessRpcString);
+
+    ProcessString reply = (ProcessString)&BtcJson::ProcessRpcString;       // is this cast even legit?
     Modules::bitcoinRpc->RegisterStringProcessor("application/json", reply);
 }
 
-Json::~Json()
+BtcJson::~BtcJson()
 {
-    int a = 0;
 }
 
-void Json::RegisterOnRpcReply(QString id, OnRpcReply onReply)
+void BtcJson::ProcessRpcString(QSharedPointer<QByteArray> jsonString)
 {
-    if(id.isNull() || id.isEmpty())
+    QJsonDocument replyDoc = QJsonDocument::fromJson(*jsonString);
+    if(replyDoc.isNull() || replyDoc.isEmpty())
         return;
 
-    this->onReplyList[id] = onReply;
-}
+    OTLog::vOutput(0, "Received JSON:\n%s\n", QString(replyDoc.toJson()).toStdString().c_str());     // I think casting the json doc back to json adds linebreaks and stuff.
 
-void Json::ProcessRpcString(QSharedPointer<QByteArray> jsonString)
-{
-    QJsonDocument doc = QJsonDocument::fromJson(*jsonString);
-    if(doc.isNull() || doc.isEmpty())
-        return;
-
-    OTLog::vOutput(0, "Received JSON:\n%s\n", QString(doc.toJson()).toStdString().c_str());     // I think casting the json doc back to json adds linebreaks and stuff.
-
-    if(doc.isObject())
+    if(replyDoc.isObject())
     {
-        QJsonObject o = doc.object();
+        QJsonObject replyObj = replyDoc.object();
 
-        QJsonValue id = o["id"];    // this is the same ID we sent to bitcoin-qt earlier.
+        QJsonValue id = replyObj["id"];    // this is the same ID we sent to bitcoin-qt earlier.
         if(!id.isString())
             return;
         QString idStr = id.toString();
 
-        QJsonValue error = o["error"];
+        QJsonValue error = replyObj["error"];
         if(!error.isNull())
         {
             OTLog::vOutput(0, "Error in reply to \"%s\": %s\n\n", idStr.toStdString().c_str(), error.isObject() ? (error.toObject()["message"]).toString().toStdString().c_str() : "");
             //return;
         }
 
-        QJsonValue result = o["result"];
+        QJsonValue result = replyObj["result"];
+
+        this->rpcReplies[id.toString()] = replyObj;
 
         // TODO: also send error so functions can check if they were successfull
         if(idStr == METHOD_GETINFO)
@@ -81,7 +78,7 @@ void Json::ProcessRpcString(QSharedPointer<QByteArray> jsonString)
     }
 }
 
-QByteArray Json::CreateJsonQuery(QString command, QJsonArray params, QString id)
+QByteArray BtcJson::CreateJsonQuery(QString command, QJsonArray params, QString id)
 {
     if(id == "")
         id = command;
@@ -95,31 +92,31 @@ QByteArray Json::CreateJsonQuery(QString command, QJsonArray params, QString id)
     return QJsonDocument(jsonObj).toJson();
 }
 
-void Json::GetInfo()
+void BtcJson::GetInfo()
 {
     Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETINFO));
 }
 
-void Json::GetBalance()
+void BtcJson::GetBalance(QString account)
 {
     QJsonArray params;
-    params.append(QString(""));      // account
-    params.append(1);       // min confirmations, 1 is default
+    params.append(account);      // account
+    //params.append(1);       // min confirmations, 1 is default, we probably don't need this line.
 
     Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
 }
 
-void Json::GetAccountAddress()
+void BtcJson::GetAccountAddress()
 {
 
 }
 
-void Json::ListAccounts()
+void BtcJson::ListAccounts()
 {
     Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_LISTACCOUNTS));
 }
 
-void Json::SendToAddress(QString btcAddress, double amount)
+void BtcJson::SendToAddress(QString btcAddress, double amount)
 {
     QJsonArray params;
     params.append(btcAddress);
@@ -129,26 +126,26 @@ void Json::SendToAddress(QString btcAddress, double amount)
 }
 
 
-void Json::OnGetInfo(QJsonValue result, QJsonValue error)
+void BtcJson::OnGetInfo(QJsonValue result, QJsonValue error)
 {
 
 }
 
-void Json::OnGetBalance(QJsonValue result)
+void BtcJson::OnGetBalance(QJsonValue result)
 {
     if(!result.isDouble())
         return;
 
     double balance = (float)result.toDouble();
-    OTLog::vOutput(0, "Account Balance: %F", balance);
+    OTLog::vOutput(0, "Account Balance: %F\n", balance);
 }
 
-void Json::OnGetAccountAddress(QJsonValue result)
+void BtcJson::OnGetAccountAddress(QJsonValue result)
 {
 
 }
 
-void Json::OnListAccounts(QJsonValue result)
+void BtcJson::OnListAccounts(QJsonValue result)
 {
     if(!result.isObject())
         return;
@@ -161,7 +158,7 @@ void Json::OnListAccounts(QJsonValue result)
     }
 }
 
-void Json::OnSendToAddress(QJsonValue result)
+void BtcJson::OnSendToAddress(QJsonValue result)
 {
     if(!result.isString())
         return;

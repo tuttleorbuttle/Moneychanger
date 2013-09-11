@@ -9,9 +9,9 @@
 #include <QPointer>
 #include <QUrl>
 #include <OTLog.h>
-#include "bitcoinrpc.h"
+#include "btcrpc.h"
 
-BitcoinRpc::BitcoinRpc()
+BtcRpc::BtcRpc()
 {
     // opens network interface (step is not necessary on my computer but it was in the tutorial or something so I guess it has uses...
     InitSession();
@@ -23,7 +23,7 @@ BitcoinRpc::BitcoinRpc()
     // ConnectBitcoinRpc();
 }
 
-BitcoinRpc::~BitcoinRpc()
+BtcRpc::~BtcRpc()
 {
     int a = 0;
     if(this->session.isNull())
@@ -34,7 +34,7 @@ BitcoinRpc::~BitcoinRpc()
     this->session = NULL;   // I don't know why but it seems the object gets destroyed without my knowledge. Maybe connect the closed() signal or something...
 }
 
-void BitcoinRpc::InitSession()
+void BtcRpc::InitSession()
 {
     // Set Internet Access Point
     QNetworkConfigurationManager manager;
@@ -61,13 +61,13 @@ void BitcoinRpc::InitSession()
     OTLog::vOutput(0, "Network opened on %s\n", iff.humanReadableName().toStdString().c_str());
 }
 
-void BitcoinRpc::InitBitcoinRpc()
+void BtcRpc::InitBitcoinRpc()
 {
     this->rpcNAM.reset(new QNetworkAccessManager());
     QObject::connect(&(*rpcNAM), SIGNAL(finished(QNetworkReply*)), this, SLOT(finishedSlot(QNetworkReply*)));
     QObject::connect(&(*rpcNAM), SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
-    QUrl url("http://127.0.0.1:19001");      // default is 8332
+    QUrl url("http://127.0.0.1:8332");      // default is 8332
     this->rpcRequest.reset(new QNetworkRequest(url));
     this->rpcRequest->setRawHeader("User-Agent", "Moneychanger");
     this->rpcRequest->setRawHeader("X-Custom-User-Agent", "Moneychanger");
@@ -76,28 +76,29 @@ void BitcoinRpc::InitBitcoinRpc()
     //request.setRawHeader("Authorization", QString("Basic " + QString("moneychanger:money1234").toLocal8Bit().toBase64()).toLocal8Bit());  // authenticate instantly through first header:
 }
 
-void BitcoinRpc::ConnectBitcoinRpc()
+
+void BtcRpc::ConnectBitcoinRpc()
 {    
     QByteArray jsonString = "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }";
     OTLog::Output(0, "Connecting to bitcoin, sending \"getinfo\"...");
     SendRpc(jsonString);
 }
 
-void BitcoinRpc::SendRpc(const QString jsonString)
+void BtcRpc::SendRpc(const QString jsonString)
 {
     QByteArray postDataSize = QByteArray::number(jsonString.size());
     this->rpcRequest->setRawHeader("Content-Length", postDataSize);
     QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString.toLocal8Bit());
 }
 
-void BitcoinRpc::SendRpc(const QByteArray jsonString)
+void BtcRpc::SendRpc(const QByteArray jsonString)
 {
     QByteArray postDataSize = QByteArray::number(jsonString.size());
     this->rpcRequest->setRawHeader("Content-Length", postDataSize);
     QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString);
 }
 
-void BitcoinRpc::ProcessReply(QSharedPointer<QByteArray> replyContType, const QSharedPointer<QByteArray> replyContent)
+void BtcRpc::ProcessReply(QSharedPointer<QByteArray> replyContType, const QSharedPointer<QByteArray> replyContent)
 {
     if(this->StringProcessors[*replyContType] != NULL)
     {
@@ -106,7 +107,7 @@ void BitcoinRpc::ProcessReply(QSharedPointer<QByteArray> replyContType, const QS
     }
 }
 
-void BitcoinRpc::RegisterStringProcessor(QByteArray contentType, ProcessString delegate)
+void BtcRpc::RegisterStringProcessor(QByteArray contentType, FastDelegate1<QSharedPointer<QByteArray>, IStringProcessor> delegate)
 {
     if(contentType.size() == 0)
         return;
@@ -114,7 +115,7 @@ void BitcoinRpc::RegisterStringProcessor(QByteArray contentType, ProcessString d
     this->StringProcessors[contentType] = delegate;
 }
 
-void BitcoinRpc::authenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator)
+void BtcRpc::authenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator)
 {
     OTLog::vOutput(0, "%s\n", QString(reply->readAll()).toStdString().c_str());
 
@@ -127,7 +128,7 @@ void BitcoinRpc::authenticationRequired(QNetworkReply* reply, QAuthenticator* au
     authenticator->setPassword(pass);
 }
 
-void BitcoinRpc::finishedSlot(QNetworkReply *reply)
+void BtcRpc::finishedSlot(QNetworkReply *reply)
 {
     if(reply == NULL)
         return;
@@ -146,8 +147,8 @@ void BitcoinRpc::finishedSlot(QNetworkReply *reply)
 
     QSharedPointer<QByteArray> replyContType(new QByteArray(reply->rawHeader("Content-Type")));
     QSharedPointer<QByteArray> replyContent(new QByteArray(reply->readAll()));          // I think readAll() only works once, so here's where it is used.
-    OTLog::vOutput(0, "%s\n", QString(*replyContent).toStdString().c_str());
-    OTLog::vOutput(0, "Content-Type: %s\n", QString(reply->rawHeader("Content-Type")).toStdString().c_str());
+    //OTLog::vOutput(0, "%s\n", QString(*replyContent).toStdString().c_str());  // debug output, not needed anymore.
+    //OTLog::vOutput(0, "Content-Type: %s\n", QString(reply->rawHeader("Content-Type")).toStdString().c_str());
     ProcessReply(replyContType, replyContent);
 
     // We receive ownership of the reply object
@@ -155,7 +156,7 @@ void BitcoinRpc::finishedSlot(QNetworkReply *reply)
     delete reply;
 }
 
-void BitcoinRpc::ProcessErrorMessage(const QNetworkReply* reply)
+void BtcRpc::ProcessErrorMessage(const QNetworkReply* reply)
 {
     OTLog::vOutput(0, "Error connecting to bitcoin: %s\n", reply->errorString().toStdString().c_str());
     //OTLog::vOutput(0, "%s\n", QString(reply->readAll()).toStdString().c_str());

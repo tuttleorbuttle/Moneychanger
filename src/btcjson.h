@@ -5,22 +5,18 @@
 #include <QString>
 #include <QSharedPointer>
 #include "IStringProcessor.h"
-#include "bitcoinrpc.h"
-
-
-class Json;
-typedef void (*OnRpcReply)(QJsonValue result, QJsonValue error);
+#include "btcrpc.h"
 
 
 // This class will create/process json queries and send/receive them with the help of BitcoinRpc.
-class Json //: IStringProcessor
+class BtcJson //: IStringProcessor
 {    
 public:
     ///!
     //! \brief Currently just doing some testing to figure out how QJson works
     //!
-    Json();
-    ~Json();
+    BtcJson();
+    ~BtcJson();
 
     void Initialize();       // should make this part of all modules
 
@@ -28,7 +24,7 @@ public:
     void ProcessRpcString(QSharedPointer<QByteArray> jsonString);
 
     void GetInfo();
-    void GetBalance();
+    void GetBalance(QString account = NULL);
     void GetAccountAddress();
     void ListAccounts();
     void SendToAddress(QString btcAddress, double amount);
@@ -39,14 +35,10 @@ public:
     void OnListAccounts(QJsonValue result);
     void OnSendToAddress(QJsonValue result);
 
-    // used to send bitcoin's replies to the correct function. the function will be called if a reply with its ID is received.
-    // Once called, the function will be removed from the list. If we need to always call the same function, I'll implement that in another list.
-    void RegisterOnRpcReply(QString id, OnRpcReply onReply);
-
 private:
      QByteArray CreateJsonQuery(QString command, QJsonArray params = QJsonArray(), QString id = "");
 
-     QMap<QString, OnRpcReply> onReplyList;
+     QMap<QString, QJsonObject> rpcReplies;
 };
 
 #endif // JSON_H
