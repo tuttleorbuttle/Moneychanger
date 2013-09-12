@@ -102,12 +102,12 @@ void BtcRpc::ProcessReply(QSharedPointer<QByteArray> replyContType, const QShare
 {
     if(this->StringProcessors[*replyContType] != NULL)
     {
-        (*this->StringProcessors[*replyContType])(replyContent);
+        this->StringProcessors[*replyContType](replyContent);
         int a = 0;
     }
 }
 
-void BtcRpc::RegisterStringProcessor(QByteArray contentType, FastDelegate1<QSharedPointer<QByteArray>, IStringProcessor> delegate)
+void BtcRpc::RegisterStringProcessor(QByteArray contentType, FastDelegate1<QSharedPointer<QByteArray> > delegate)
 {
     if(contentType.size() == 0)
         return;

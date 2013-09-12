@@ -25,10 +25,13 @@ BtcJson::BtcJson()
 
 void BtcJson::Initialize()
 {
-    FastDelegate1<QSharedPointer<QByteArray>, BtcJson> processDelegate;
+    FastDelegate1<QSharedPointer<QByteArray> > processDelegate;
     processDelegate.bind(this, &BtcJson::ProcessRpcString);
+    QSharedPointer<QByteArray> arr;
+    processDelegate(arr);
 
-    ProcessString reply = (ProcessString)&BtcJson::ProcessRpcString;       // is this cast even legit?
+    FastDelegate1<QSharedPointer<QByteArray> > reply;
+    reply.bind(this, &BtcJson::ProcessRpcString);
     Modules::bitcoinRpc->RegisterStringProcessor("application/json", reply);
 }
 
@@ -38,11 +41,13 @@ BtcJson::~BtcJson()
 
 void BtcJson::ProcessRpcString(QSharedPointer<QByteArray> jsonString)
 {
+    if(jsonString == NULL || jsonString->length() == 0)
+        return;
     QJsonDocument replyDoc = QJsonDocument::fromJson(*jsonString);
     if(replyDoc.isNull() || replyDoc.isEmpty())
         return;
 
-    OTLog::vOutput(0, "Received JSON:\n%s\n", QString(replyDoc.toJson()).toStdString().c_str());     // I think casting the json doc back to json adds linebreaks and stuff.
+    //OTLog::vOutput(0, "Received JSON:\n%s\n", QString(replyDoc.toJson()).toStdString().c_str());     // I think casting the json doc back to json adds linebreaks and stuff.
 
     if(replyDoc.isObject())
     {
@@ -97,13 +102,15 @@ void BtcJson::GetInfo()
     Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETINFO));
 }
 
-void BtcJson::GetBalance(QString account)
+double BtcJson::GetBalance(QString account)
 {
     QJsonArray params;
     params.append(account);      // account
     //params.append(1);       // min confirmations, 1 is default, we probably don't need this line.
 
     Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
+
+    return 0.0;
 }
 
 void BtcJson::GetAccountAddress()

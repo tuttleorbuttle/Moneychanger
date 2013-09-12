@@ -24,10 +24,12 @@ public:
     void ProcessRpcString(QSharedPointer<QByteArray> jsonString);
 
     void GetInfo();
-    void GetBalance(QString account = NULL);
+    void GetBalanceAsync(QString account = NULL);
     void GetAccountAddress();
     void ListAccounts();
     void SendToAddress(QString btcAddress, double amount);
+
+    double GetBalance(QString account = NULL);  // new interface
 
     void OnGetInfo(QJsonValue result, QJsonValue error);
     void OnGetBalance(QJsonValue result);
@@ -37,6 +39,7 @@ public:
 
 private:
      QByteArray CreateJsonQuery(QString command, QJsonArray params = QJsonArray(), QString id = "");
+
 
      QMap<QString, QJsonObject> rpcReplies;
 };

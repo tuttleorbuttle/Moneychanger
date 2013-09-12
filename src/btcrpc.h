@@ -7,7 +7,6 @@
 #include "FastDelegate.h"
 #include "IStringProcessor.h"
 
-typedef void (*ProcessString)(QSharedPointer<QByteArray>);
 
 using namespace fastdelegate;
 
@@ -28,7 +27,7 @@ public:
     void SendRpc(const QString jsonString);
     void SendRpc(const QByteArray jsonString);
 
-    void RegisterStringProcessor(QByteArray contentType, FastDelegate1<QSharedPointer<QByteArray>, IStringProcessor> delegate);
+    void RegisterStringProcessor(QByteArray contentType, FastDelegate1<QSharedPointer<QByteArray> > delegate);
 
 private:
     void InitSession();         // Called in constructor, makes sure we have internet or something
@@ -38,7 +37,7 @@ private:
     void ProcessReply(QSharedPointer<QByteArray> replyContType, const QSharedPointer<QByteArray> replyContent);
     void ProcessErrorMessage(const QNetworkReply *reply);
 
-    QMap<QByteArray, FastDelegate1<QSharedPointer<QByteArray>, IStringProcessor> > StringProcessors;
+    QMap<QByteArray, FastDelegate1<QSharedPointer<QByteArray> > > StringProcessors;
     QPointer<QNetworkSession> session;
 
     QScopedPointer<QNetworkAccessManager> rpcNAM;      // this is used to send http packets to bitcoin-qt
