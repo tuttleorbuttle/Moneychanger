@@ -22,26 +22,29 @@ public:
     BtcRpc();
     ~BtcRpc();
 
-    void ConnectToBitcoin(QString url, int port, QString user, QString password);
+    bool IsConnected();
 
-    void SendRpc(const QString jsonString);
-    void SendRpc(const QByteArray jsonString);
-
-    void RegisterStringProcessor(QByteArray contentType, FastDelegate1<QSharedPointer<QByteArray> > delegate);
+    bool ConnectToBitcoin(QString user, QString password, QString url = "http://127.0.0.1", int port = 8332);
+    QSharedPointer<QByteArray> SendRpc(const QString jsonString);
+    QSharedPointer<QByteArray> SendRpc(const QByteArray jsonString);
 
 private:
     void InitSession();         // Called in constructor, makes sure we have internet or something
     void InitBitcoinRpc();      // Also called in constr, sets header information to what bitcoin-qt is expecting
-    void ConnectBitcoinRpc();   // sends getinfo to bitcoin, was used for testing but can/should be removed now.
+    void SetHeaderInformation(); // Called by ConnectToBitcoin, sets the HTTP header
 
     void ProcessReply(QSharedPointer<QByteArray> replyContType, const QSharedPointer<QByteArray> replyContent);
     void ProcessErrorMessage(const QNetworkReply *reply);
 
-    QMap<QByteArray, FastDelegate1<QSharedPointer<QByteArray> > > StringProcessors;
     QPointer<QNetworkSession> session;
 
     QScopedPointer<QNetworkAccessManager> rpcNAM;      // this is used to send http packets to bitcoin-qt
     QScopedPointer<QNetworkRequest> rpcRequest;
+    QSharedPointer<QByteArray> rpcReplyContent;
+
+    QString username = "";
+    QString password = "";
+    bool connected = false;
 
 Q_OBJECT
 public slots:

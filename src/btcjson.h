@@ -8,6 +8,14 @@
 #include "btcrpc.h"
 
 
+namespace BtcJsonReplies
+{
+    class GetInfoReply
+    {
+
+    };
+}
+
 // This class will create/process json queries and send/receive them with the help of BitcoinRpc.
 class BtcJson //: IStringProcessor
 {    
@@ -21,13 +29,16 @@ public:
     void Initialize();       // should make this part of all modules
 
     //void ProcessString(QSharedPointer<QByteArray>);
-    void ProcessRpcString(QSharedPointer<QByteArray> jsonString);
+    bool ProcessRpcString(QSharedPointer<QByteArray> jsonString, QJsonValue &result);
+    void ProcessRpcString(QSharedPointer<QByteArray> jsonString, QString& id, QJsonValue& error, QJsonValue& result);
 
     void GetInfo();
     void GetBalanceAsync(QString account = NULL);
-    void GetAccountAddress();
+    QString GetAccountAddress(QString account = NULL);
+    QString GetNewAddress(QString account = NULL);
     void ListAccounts();
-    void SendToAddress(QString btcAddress, double amount);
+    bool SendToAddress(QString btcAddress, double amount);
+    QString AddMultiSigAddress(<nrequired> <'["key","key"]'> [account] )    // gonna continue here at home, remove this line and it should compile.
 
     double GetBalance(QString account = NULL);  // new interface
 

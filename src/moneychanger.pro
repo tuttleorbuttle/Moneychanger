@@ -20,9 +20,10 @@ SOURCES += main.cpp\
           MTRecord.cpp \
           unityindicator.cpp \
           modules.cpp \
-    btcjson.cpp \
-    btcinterface.cpp \
-    btcrpc.cpp
+          btcjson.cpp \
+          btcinterface.cpp \
+          btcrpc.cpp \
+    utils.cpp
 
 HEADERS  += moneychanger.h \
             ot_worker.h \
@@ -38,7 +39,8 @@ HEADERS  += moneychanger.h \
             FastDelegateBind.h \
     btcjson.h \
     btcrpc.h \
-    btcinterface.h
+    btcinterface.h \
+    utils.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
@@ -59,15 +61,15 @@ unix:LIBS += /usr/lib/libboost_thread.so.1.49.0 -ldl
 
 # Sorry about the mess here, I'll figure out how to clan that up another time.
 
-OPENTXS_INCLUDE_PATH	+= /home/ubuntu/.local/include/opentxs
-OPENTXS_LIB_PATH	+= /home/ubuntu/.local/lib
-CHAI_INCLUDE_PATH	+= /home/ubuntu/.local/include
+OPENTXS_INCLUDE_PATH	+= /home/notjan/.local/include/opentxs
+OPENTXS_LIB_PATH	+= /home/notjan/.local/lib
+CHAI_INCLUDE_PATH	+= /home/notjan/.local/include
 OPENSSL_INCLUDE_PATH	+= /usr/lib/x86_64-linux-gnu
 OPENSSL_LIB_PATH	+= /usr/include
 LIBAPPINDICATOR_INCLUDE_PATH += /usr/include/libappindicator-0.1
-GTK_INCLUDE_PATH += /usr/include/gtk-2.0
-GDKCONFIG_INCLUDE_PATH += /usr/lib/x86_64-linux-gnu/gtk-2.0/include
-GLIB_INCLUDE_PATH += /usr/include/glib-2.0
+GTK_INCLUDE_PATH        += /usr/include/gtk-2.0
+GDKCONFIG_INCLUDE_PATH  += /usr/lib/x86_64-linux-gnu/gtk-2.0/include
+GLIB_INCLUDE_PATH       += /usr/include/glib-2.0
 GLIBCONFIG_INCLUDE_PATH += /usr/lib/x86_64-linux-gnu/glib-2.0/include
 PANGO_INCLUDE_PATH      += /usr/include/pango-1.0
 CAIRO_INCLUDE_PATH      += /usr/include/cairo

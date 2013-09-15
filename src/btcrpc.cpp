@@ -10,6 +10,7 @@
 #include <QUrl>
 #include <OTLog.h>
 #include "btcrpc.h"
+#include "utils.h"
 
 BtcRpc::BtcRpc()
 {
@@ -46,7 +47,7 @@ void BtcRpc::InitSession()
     if(!cfg.isValid() || !canStartIAP)
     {
         //Available Access Points not found
-        OTLog::Output(0, "Acailable Access Point not found");
+        OTLog::Output(0, "Available Access Point not found");
         return;
     }
 
@@ -63,69 +64,92 @@ void BtcRpc::InitSession()
 
 void BtcRpc::InitBitcoinRpc()
 {
+    // create new network access manager
     this->rpcNAM.reset(new QNetworkAccessManager());
-    QObject::connect(&(*rpcNAM), SIGNAL(finished(QNetworkReply*)), this, SLOT(finishedSlot(QNetworkReply*)));
-    QObject::connect(&(*rpcNAM), SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    // connect the function to receive replies from bitcoin qt
+    QObject::connect(this->rpcNAM.data(), SIGNAL(finished(QNetworkReply*)), this, SLOT(finishedSlot(QNetworkReply*)));
+    // connect the function to authenticate when required
+    QObject::connect(this->rpcNAM.data(), SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+}
 
-    QUrl url("http://127.0.0.1:8332");      // default is 8332
-    this->rpcRequest.reset(new QNetworkRequest(url));
+void BtcRpc::SetHeaderInformation()
+{
+    // without some of this, bitcoin won't understand us
     this->rpcRequest->setRawHeader("User-Agent", "Moneychanger");
     this->rpcRequest->setRawHeader("X-Custom-User-Agent", "Moneychanger");
     this->rpcRequest->setRawHeader("Content-Type", "application/json");
-    //this->rpcRequest->setRawHeader("Content-Length", 0);
+    //this->rpcRequest->setRawHeader("Content-Length", 0);  // varies, so we set it everytime before sending anything.
+    // to authenticate instantly via header:
     //request.setRawHeader("Authorization", QString("Basic " + QString("moneychanger:money1234").toLocal8Bit().toBase64()).toLocal8Bit());  // authenticate instantly through first header:
+
 }
 
+bool BtcRpc::IsConnected()
+{
+    return this->connected;
+}
 
-void BtcRpc::ConnectBitcoinRpc()
-{    
-    QByteArray jsonString = "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }";
-    OTLog::Output(0, "Connecting to bitcoin, sending \"getinfo\"...");
+bool BtcRpc::ConnectToBitcoin(QString user, QString password, QString url /*= http://127.0.0.1*/, int port /*= 8332*/)
+{
+    if(user == NULL || password == NULL)
+        return false;
+    this->username = user;
+    this->password = password;
+
+    QUrl qurl(url + ":" + QString::number(port));
+    this->rpcRequest.reset(new QNetworkRequest(qurl));
+    SetHeaderInformation();
+
+    QByteArray jsonString = "{\"jsonrpc\": \"1.0\", \"id\":\"connecttest\", \"method\": \"getinfo\", \"params\": [] }";
+    OTLog::Output(0, "Connecting to bitcoin, sending \"getinfo\" to test connectivity...\n");
+    this->connected = true;     // needs to be set to true or else SendRpc won't send. bad design, I know..
     SendRpc(jsonString);
+
+    if(this->connected)
+        OTLog::Output(0, "Connected and authenticated successfully.\n");
+    else
+        OTLog::Output(0, "Couldn't connect or authenticate to bitcoin.\n");
+
+    return true;
 }
 
-void BtcRpc::SendRpc(const QString jsonString)
+QSharedPointer<QByteArray> BtcRpc::SendRpc(const QString jsonString)
 {
-    QByteArray postDataSize = QByteArray::number(jsonString.size());
-    this->rpcRequest->setRawHeader("Content-Length", postDataSize);
-    QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString.toLocal8Bit());
+    return this->SendRpc(jsonString.toLocal8Bit());
 }
 
-void BtcRpc::SendRpc(const QByteArray jsonString)
+QSharedPointer<QByteArray> BtcRpc::SendRpc(const QByteArray jsonString)
 {
+    if(!this->connected)
+        return QSharedPointer<QByteArray>();
+
     QByteArray postDataSize = QByteArray::number(jsonString.size());
     this->rpcRequest->setRawHeader("Content-Length", postDataSize);
-    QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString);
+
+    QEventLoop loop;    // prepare loop
+    connect(this->rpcNAM.data(), SIGNAL(finished(QNetworkReply*)), &loop, SLOT(quit()));
+
+    QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString);  // send data
+
+    // stay in loop while updating GUI and everything until bitcoin replied. or something like that.
+    loop.exec();    // needs some sort of timeout. I'm sure qt offers a timer that can be linked to the quit() slot :)
+
+    return this->rpcReplyContent;
 }
 
 void BtcRpc::ProcessReply(QSharedPointer<QByteArray> replyContType, const QSharedPointer<QByteArray> replyContent)
 {
-    if(this->StringProcessors[*replyContType] != NULL)
-    {
-        this->StringProcessors[*replyContType](replyContent);
-        int a = 0;
-    }
-}
-
-void BtcRpc::RegisterStringProcessor(QByteArray contentType, FastDelegate1<QSharedPointer<QByteArray> > delegate)
-{
-    if(contentType.size() == 0)
-        return;
-
-    this->StringProcessors[contentType] = delegate;
+    this->rpcReplyContent = replyContent;
+    return;
 }
 
 void BtcRpc::authenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator)
 {
     OTLog::vOutput(0, "%s\n", QString(reply->readAll()).toStdString().c_str());
 
-    QString user("moneychanger");
-    QString pass("money1234");
-    user = "admin1";
-    pass = "123";
-    OTLog::vOutput(0, "Authenticating as %s:%s\n", user.toStdString().c_str(), pass.toStdString().c_str());
-    authenticator->setUser(user);
-    authenticator->setPassword(pass);
+    OTLog::vOutput(0, "Authenticating as %s:%s\n", this->username.toStdString().c_str(), this->password.toStdString().c_str());
+    authenticator->setUser(this->username);
+    authenticator->setPassword(this->password);
 }
 
 void BtcRpc::finishedSlot(QNetworkReply *reply)
@@ -141,9 +165,17 @@ void BtcRpc::finishedSlot(QNetworkReply *reply)
     // see CS001432 on how to handle this
 
 
-    // no error received?
+    // error received?
     if(!reply->error() == QNetworkReply::NoError)
-        ProcessErrorMessage(reply);
+    {
+        ProcessErrorMessage(reply);        
+        // whichever error occurs, we can assume that we aren't connected to bitcoin:
+        this->connected = false;
+    }
+    else
+    {
+        this->connected = true;
+    }
 
     QSharedPointer<QByteArray> replyContType(new QByteArray(reply->rawHeader("Content-Type")));
     QSharedPointer<QByteArray> replyContent(new QByteArray(reply->readAll()));          // I think readAll() only works once, so here's where it is used.
@@ -160,6 +192,7 @@ void BtcRpc::ProcessErrorMessage(const QNetworkReply* reply)
 {
     OTLog::vOutput(0, "Error connecting to bitcoin: %s\n", reply->errorString().toStdString().c_str());
     //OTLog::vOutput(0, "%s\n", QString(reply->readAll()).toStdString().c_str());
+
     switch(reply->error())
     {
     // network layer errors [relating to the destination server] (1-99):
