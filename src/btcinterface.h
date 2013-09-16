@@ -9,7 +9,7 @@ class BtcInterface : public QObject
 public:
     explicit BtcInterface(QObject *parent = 0);
 
-    QString CreateTwoOfTwoEscrow();
+    QString CreateTwoOfTwoEscrowAddress(QString myKey, QString hisKey);
 
 private:
     

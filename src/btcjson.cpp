@@ -137,6 +137,11 @@ QString BtcJson::GetAccountAddress(QString account/*= NULL*/)
     return result.toString();
 }
 
+QStringList BtcJson::GetAddressesByAccount(QString account)
+{
+    return QStringList();
+}
+
 QString BtcJson::GetNewAddress(QString account/*=NULL*/)
 {
     QJsonArray params;
@@ -184,10 +189,6 @@ QStringList BtcJson::ListAccounts()
     return accountsObj.keys();      // each key is an account, each value is the account's balance
 }
 
-QStringList BtcJson::GetAccountAddress(QString account)
-{
-
-}
 
 QString BtcJson::SendToAddress(QString btcAddress, double amount)
 {
