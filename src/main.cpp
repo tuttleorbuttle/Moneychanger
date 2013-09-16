@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
     QStringList keys;
     keys.append(Modules::json->GetNewAddress());    // key can be an address or public key
     keys.append(Modules::json->GetNewAddress());
-    QString multiSigAddr = Modules::json->AddMultiSigAddress(2, QJsonArray::fromStringList(keys));
+    QString multiSigAddr = Modules::json->AddMultiSigAddress(2, QJsonArray::fromStringList(keys));  // maybe add them to account moneychanger-multisig or w/e to keep an overview
     Modules::json->GetInfo();
 
     OTLog::vOutput(0, "Balance: %f\n", balance);

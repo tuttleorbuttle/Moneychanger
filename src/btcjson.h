@@ -38,6 +38,7 @@ public:
     QString GetNewAddress(QString account = NULL);
     QString AddMultiSigAddress(int nRequired, QJsonArray keys, QString account = NULL);    // gonna continue here at home, remove this line and it should compile.
     QStringList ListAccounts();
+    QStringList GetAddressesByAccount(QString account = "");    // list addresses for account, "" is the default account.
     QString SendToAddress(QString btcAddress, double amount);
 
 

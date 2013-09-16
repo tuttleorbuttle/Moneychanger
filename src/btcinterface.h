@@ -9,7 +9,7 @@ class BtcInterface : public QObject
 public:
     explicit BtcInterface(QObject *parent = 0);
 
-    double GetBalance();
+    QString CreateTwoOfTwoEscrow();
 
 private:
     

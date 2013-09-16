@@ -184,6 +184,11 @@ QStringList BtcJson::ListAccounts()
     return accountsObj.keys();      // each key is an account, each value is the account's balance
 }
 
+QStringList BtcJson::GetAccountAddress(QString account)
+{
+
+}
+
 QString BtcJson::SendToAddress(QString btcAddress, double amount)
 {
     QJsonArray params;
