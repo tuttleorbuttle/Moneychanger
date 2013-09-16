@@ -33,20 +33,13 @@ public:
     void ProcessRpcString(QSharedPointer<QByteArray> jsonString, QString& id, QJsonValue& error, QJsonValue& result);
 
     void GetInfo();
-    void GetBalanceAsync(QString account = NULL);
+    double GetBalance(QString account = NULL);
     QString GetAccountAddress(QString account = NULL);
     QString GetNewAddress(QString account = NULL);
-    void ListAccounts();
-    bool SendToAddress(QString btcAddress, double amount);
-    QString AddMultiSigAddress(<nrequired> <'["key","key"]'> [account] )    // gonna continue here at home, remove this line and it should compile.
+    QString AddMultiSigAddress(int nRequired, QJsonArray keys, QString account = NULL);    // gonna continue here at home, remove this line and it should compile.
+    QStringList ListAccounts();
+    QString SendToAddress(QString btcAddress, double amount);
 
-    double GetBalance(QString account = NULL);  // new interface
-
-    void OnGetInfo(QJsonValue result, QJsonValue error);
-    void OnGetBalance(QJsonValue result);
-    void OnGetAccountAddress(QJsonValue result);
-    void OnListAccounts(QJsonValue result);
-    void OnSendToAddress(QJsonValue result);
 
 private:
      QByteArray CreateJsonQuery(QString command, QJsonArray params = QJsonArray(), QString id = "");

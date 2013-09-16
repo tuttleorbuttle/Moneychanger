@@ -168,9 +168,8 @@ void BtcRpc::finishedSlot(QNetworkReply *reply)
     // error received?
     if(!reply->error() == QNetworkReply::NoError)
     {
-        ProcessErrorMessage(reply);        
-        // whichever error occurs, we can assume that we aren't connected to bitcoin:
-        this->connected = false;
+        // will set this->connected false depending on error
+        ProcessErrorMessage(reply);
     }
     else
     {
@@ -196,26 +195,27 @@ void BtcRpc::ProcessErrorMessage(const QNetworkReply* reply)
     switch(reply->error())
     {
     // network layer errors [relating to the destination server] (1-99):
-    case QNetworkReply::ConnectionRefusedError:
-        break;
     case QNetworkReply::RemoteHostClosedError:
         OTLog::Output(0, "Connection was closed. This also occurs when bitcoin-qt is not running or not accpting a connection on this port.");
-        break;
+        //break;
+    case QNetworkReply::ConnectionRefusedError:
+        //break;
     case QNetworkReply::HostNotFoundError:
-        break;
+        //break;
     case QNetworkReply::TimeoutError:
-        break;
+        //break;
     case QNetworkReply::OperationCanceledError:
-        break;
+        //break;
     case QNetworkReply::SslHandshakeFailedError:
-        break;
+        //break;
     case QNetworkReply::TemporaryNetworkFailureError:
-        break;
+        //break;
     case QNetworkReply::NetworkSessionFailedError:
-            break;
+        //break;
     case QNetworkReply::BackgroundRequestNotAllowedError:
-        break;
+        //break;
     case QNetworkReply::UnknownNetworkError:
+        this->connected = false;
         break;
 
     // proxy errors (101-199):
@@ -225,6 +225,7 @@ void BtcRpc::ProcessErrorMessage(const QNetworkReply* reply)
     case QNetworkReply::ProxyTimeoutError:
     case QNetworkReply::ProxyAuthenticationRequiredError:
     case QNetworkReply::UnknownProxyError:
+        this->connected = false;
         break;
 
     // content errors (201-299):
@@ -234,13 +235,16 @@ void BtcRpc::ProcessErrorMessage(const QNetworkReply* reply)
     case QNetworkReply::AuthenticationRequiredError:
     case QNetworkReply::ContentReSendError:
     case QNetworkReply::UnknownContentError:
+        this->connected = true;      // not sure if correct?
         break;
 
     // protocol errors
     case QNetworkReply::ProtocolUnknownError:
     case QNetworkReply::ProtocolInvalidOperationError:
     case QNetworkReply::ProtocolFailure:
+        this->connected = true;     // not sure if correct?
     default:
+        this->connected = false;    // not sure if correct?
         break;
     }
 

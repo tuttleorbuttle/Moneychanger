@@ -84,10 +84,27 @@ int main(int argc, char *argv[])
 
     /** Init JSON wrapper **/
 
-    Modules modules;
-    modules.json->GetInfo();
-    modules.json->GetBalance();
-    modules.json->ListAccounts();
+    { Modules modules; }    // run constructor once, initialize static pointers and free memory again (does this actually free any memory in a class like this?
+
+    //Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
+    Modules::bitcoinRpc->ConnectToBitcoin("moneychanger", "money1234");
+    Modules::json->GetInfo();
+    double balance = Modules::json->GetBalance();
+    QStringList accounts = Modules::json->ListAccounts();
+    QString address = Modules::json->GetNewAddress();
+    QStringList keys;
+    keys.append(Modules::json->GetNewAddress());    // key can be an address or public key
+    keys.append(Modules::json->GetNewAddress());
+    QString multiSigAddr = Modules::json->AddMultiSigAddress(2, QJsonArray::fromStringList(keys));
+    Modules::json->GetInfo();
+
+    OTLog::vOutput(0, "Balance: %f\n", balance);
+    if(address != NULL)
+        OTLog::vOutput(0, "New address created: \"%s\"\n", address.toStdString().c_str());
+    if(multiSigAddr != NULL)
+        OTLog::vOutput(0, "Multisig address created: \"%s\"\n", multiSigAddr.toStdString().c_str());
+
+
     //modules.json->SendToAddress("n3UmDg8a6W8j79GvjBVgdzRGHQcKuJ7ESk", 100.1234567); // testnet-box to bitcoin-qt, I think it only sends 100.123 instead of 100.1234567BTC.
     //modules.json->SendToAddress("n3dsfnpKhByZ3oVYzbLsCcJ2FDD8RRrJAC", 200); // bitcoin-qt to testnet-box
 

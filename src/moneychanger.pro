@@ -61,9 +61,9 @@ unix:LIBS += /usr/lib/libboost_thread.so.1.49.0 -ldl
 
 # Sorry about the mess here, I'll figure out how to clan that up another time.
 
-OPENTXS_INCLUDE_PATH	+= /home/notjan/.local/include/opentxs
-OPENTXS_LIB_PATH	+= /home/notjan/.local/lib
-CHAI_INCLUDE_PATH	+= /home/notjan/.local/include
+OPENTXS_INCLUDE_PATH	+= /home/ubuntu/.local/include/opentxs
+OPENTXS_LIB_PATH	+= /home/ubuntu/.local/lib
+CHAI_INCLUDE_PATH	+= /home/ubuntu/.local/include
 OPENSSL_INCLUDE_PATH	+= /usr/lib/x86_64-linux-gnu
 OPENSSL_LIB_PATH	+= /usr/include
 LIBAPPINDICATOR_INCLUDE_PATH += /usr/include/libappindicator-0.1

@@ -112,9 +112,9 @@ double BtcJson::GetBalance(QString account/*=NULL*/)
     QSharedPointer<QByteArray> reply = Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
 
     QJsonValue result;
-    if(!ProcessRpcString(reply, result))
+    if(!ProcessRpcString(reply, result) || !result.isDouble())
     {
-        return 0.0;  // error
+        return -999;  // error, TODO: throw error or return NaN but not -999
     }
 
     return result.toDouble();
@@ -128,16 +128,16 @@ QString BtcJson::GetAccountAddress(QString account/*= NULL*/)
     QJsonValue result;
     if(!ProcessRpcString(Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETACCOUNTADDRESS, params)), result))
     {
-        return;     // error
+        return NULL;     // error
     }
 
     if(!result.isString())
-        return;     // this should never happen unless the protocol was changed
+        return NULL;     // this should never happen unless the protocol was changed
 
     return result.toString();
 }
 
-QString Bitcoin::GetNewAddress(QString account/*=NULL*/)
+QString BtcJson::GetNewAddress(QString account/*=NULL*/)
 {
     QJsonArray params;
     params.append(account);
@@ -145,27 +145,46 @@ QString Bitcoin::GetNewAddress(QString account/*=NULL*/)
     QJsonValue result;
     if(!ProcessRpcString(Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETNEWADDRESS, params)), result))
     {
-        return;
+        return NULL;
     }
 
     if(!result.isString())
-        return;     // this should never happen unless the protocol was changed
+        return NULL;     // this should never happen unless the protocol was changed
 
     return result.toString();
 }
 
-void BtcJson::ListAccounts()
+QString BtcJson::AddMultiSigAddress(int nRequired, QJsonArray keys, QString account)
 {
-    QJsonValue reply;
-    if(!ProcessRpcString(Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_LISTACCOUNTS)), reply))
-    {
-        return;
-    }
+    QJsonArray params;
+    params.append(nRequired);
+    params.append(keys);
+    params.append(account);
 
-    // TODO: something useful with the result
+    QJsonValue result;
+    if(!ProcessRpcString(Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_ADDMULTISIGADDRESS, params)), result))
+        return NULL;      // error
+
+    if(!result.isString())
+        return NULL;      // shouldn't happen unless protocol is changed
+
+    return result.toString();
 }
 
-bool BtcJson::SendToAddress(QString btcAddress, double amount)
+QStringList BtcJson::ListAccounts()
+{
+    QJsonValue result;
+    if(!ProcessRpcString(Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_LISTACCOUNTS)), result))
+        return QStringList();     // error
+
+    if(!result.isObject())
+        return QStringList();        // this shouldn't happen unless the protocol was changed
+
+    QJsonObject accountsObj = result.toObject();
+    return accountsObj.keys();      // each key is an account, each value is the account's balance
+}
+
+QString BtcJson::SendToAddress(QString btcAddress, double amount)
 {
     QJsonArray params;
     params.append(btcAddress);
@@ -174,53 +193,12 @@ bool BtcJson::SendToAddress(QString btcAddress, double amount)
     QJsonValue result;
     if(!ProcessRpcString(
                 Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_SENDTOADDRESS, params)),result))
-    {
-        return false;   // error
-    }
+        return NULL;   // error
 
-    int a = 0;
-}
-
-
-void BtcJson::OnGetInfo(QJsonValue result, QJsonValue error)
-{
-
-}
-
-void BtcJson::OnGetBalance(QJsonValue result)
-{
-    if(!result.isDouble())
-        return;
-
-    double balance = (float)result.toDouble();
-    OTLog::vOutput(0, "Account Balance: %F\n", balance);
-}
-
-void BtcJson::OnGetAccountAddress(QJsonValue result)
-{
-
-}
-
-void BtcJson::OnListAccounts(QJsonValue result)
-{
-    if(!result.isObject())
-        return;
-
-    QJsonObject accounts = result.toObject();
-    foreach(const QString key, accounts.keys())
-    {
-        double balance = accounts[key].toDouble();
-        OTLog::vOutput(0, "%s: %FBTC\n", key.toStdString().c_str(), balance);
-    }
-}
-
-void BtcJson::OnSendToAddress(QJsonValue result)
-{
     if(!result.isString())
-        return;
+        return NULL;    // shouldn't happen unless protocol was changed
 
-    OTLog::vOutput(0, "Transaction successfull (%s)\n", result.toString().toStdString().c_str());
-    //OTLog::vOutput(0, "", 0);
+    return result.toString();
 }
 
 

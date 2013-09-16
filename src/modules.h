@@ -17,6 +17,8 @@ public:
     explicit Modules(QObject *parent = 0);
     ~Modules();
 
+    // TODO: _maybe_ overload the :: operator to check
+    // if the pointer isn't NULL
     static QScopedPointer<BtcJson> json;
     static QScopedPointer<BtcRpc> bitcoinRpc;
 

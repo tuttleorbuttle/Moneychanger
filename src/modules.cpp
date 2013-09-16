@@ -14,5 +14,6 @@ Modules::Modules(QObject *parent) :
 
 Modules::~Modules()
 {
+    // TODO: _maybe_ free memory again, would break { Modules modules; } initialization but does that even matter?
     int a = 0;
 }
