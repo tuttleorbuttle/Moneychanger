@@ -40,533 +40,430 @@
 #include "MTRecordList.h"
 #include "MTRecord.h"
 
+#include "Widgets/MarketWindow.h"
+#include "Widgets/overviewwindow.h"
+#include "Widgets/addressbookwindow.h"
+#include "Widgets/nymmanagerwindow.h"
+#include "Widgets/assetmanagerwindow.h"
+#include "Widgets/accountmanagerwindow.h"
+#include "Widgets/servermanagerwindow.h"
+#include "Widgets/withdrawascashwindow.h"
+#include "Widgets/withdrawasvoucherwindow.h"
+#include "Widgets/depositwindow.h"
+#include "Widgets/requestfundswindow.h"
+#include "Widgets/sendfundswindow.h"
+
+class OverviewWindow;
+class AddressBookWindow;
+class NymManagerWindow;
+class AssetManagerWindow;
+class AccountManagerWindow;
+class ServerManagerWindow;
+class WithdrawAsCashWindow;
+class WithdrawAsVoucherWindow;
+class DepositWindow;
+class RequestFundsWindow;
+class SendFundsWindow;
+class MarketWindow;
+
+
 class Moneychanger : public QWidget
 {
     Q_OBJECT
-
+    
 public:
     /** Constructor & Destructor **/
     Moneychanger(QWidget *parent = 0);
     ~Moneychanger();
-
+    
     /** Start **/
     void bootTray();
 
+    
+    
+    /** 
+     * Interfaces 
+     **/
+    
+    // Close Dialog Functions
+    void close_overview_dialog();
+    void close_addressbook();
+    void close_nymmanager_dialog();
+    void close_servermanager_dialog();
+    void close_assetmanager_dialog();
+    void close_withdrawascash_dialog();
+    void close_withdrawasvoucher_dialog();
+    void close_deposit_dialog();
+    void close_sendfunds_dialog();
+    void close_requestfunds_dialog();
+    void close_market_dialog();
+    
+    //Show address book
+    void mc_addressbook_show(QString text);
+    
+    
+    
+    /**
+     * Functions for setting Systray Values
+     **/
+    
+    // Set Systray Nym Value
+    void set_systrayMenu_nym_setDefaultNym(QString, QString);
+    
+    void set_systrayMenu_withdraw_asvoucher_nym_input(QString input);
+    
+    // Set Systray Asset Value
+    void set_systrayMenu_asset_setDefaultAsset(QString, QString);
+    
+    // Set Systray Account Value
+    void set_systrayMenu_account_setDefaultAccount(QString, QString);
+    void close_accountmanager_dialog();
+    
+    // Set Systray Server Value
+    void set_systrayMenu_server_setDefaultServer(QString, QString);
+    
+    
+    
+
+    /**
+     * Functions for pulling account information out of locally constructed lists.
+     **/
+    
+    QString get_default_nym_id(){return default_nym_id;};
+    int get_nym_list_id_size(){return nym_list_id->size();};
+    QString get_nym_id_at(int a){return nym_list_id->at(a).toString();}
+    QString get_nym_name_at(int a){return nym_list_name->at(a).toString();}
+    
+    QString get_default_asset_id(){return default_asset_id;};
+    int get_asset_list_id_size(){return asset_list_id->size();};
+    QString get_asset_id_at(int a){return asset_list_id->at(a).toString();}
+    QString get_asset_name_at(int a){return asset_list_name->at(a).toString();}
+    
+    QString get_default_account_id(){return default_account_id;};
+    int get_account_list_id_size(){return account_list_id->size();};
+    QString get_account_id_at(int a){return account_list_id->at(a).toString();}
+    QString get_account_name_at(int a){return account_list_name->at(a).toString();}
+    
+    QString get_default_server_id(){return default_server_id;};
+    int get_server_list_id_size(){return server_list_id->size();};
+    QString get_server_id_at(int a){return server_list_id->at(a).toString();}
+    QString get_server_name_at(int a){return server_list_name->at(a).toString();}
+    
+
+
+
+
+    
+    /**
+     * OT Interface Functions
+     **/
+    
+    // These should probably be moved to the main class file.
+    ot_worker * get_ot_worker_background(){return ot_worker_background;}; // Should probably replace this soon.
+
+    std::string ot_withdraw_cash(std::string selected_server_id_string, std::string nym_id, std::string selected_account_id_string, int amount_to_withdraw_int){return ot_me->withdraw_cash(selected_server_id_string, nym_id, selected_account_id_string, amount_to_withdraw_int);};
+    std::string ot_withdraw_voucher(std::string selected_server_id_string, std::string nym_id, std::string selected_account_id_string, std::string recip_nym_string, std::string memo_string, int amount_to_withdraw_int){return ot_me->withdraw_voucher(selected_server_id_string, nym_id, selected_account_id_string, recip_nym_string, memo_string, amount_to_withdraw_int);};
+    
 private:
 
-    /**           **
-     ** Variables **
-     **           **/
-        //Open Transaction
-        OT_ME * ot_me;
-
-        ot_worker * ot_worker_background;
-
-        //Sqlite database(s)
-        QSqlDatabase addressbook_db;
-
-        //MC Address book
-        int mc_addressbook_already_init;
-        int mc_addressbook_refreshing;
-        QString mc_addressbook_paste_into;
-
-            //Dialog
-            QDialog * mc_addressbook_dialog;
-            QGridLayout * mc_addressbook_gridlayout;
-
-                /** Top (Spans 2 columns) **/
-                //Label
-                QLabel * mc_addressbook_label;
-
-                /** Left side (column 1) **/
-                    //Table view
-                    QStandardItemModel * mc_addressbook_tableview_itemmodel;
-                    QTableView * mc_addressbook_tableview;
-
-                /** Right side (column 2) **/
-                    //Button Group
-                    QWidget * mc_addressbook_addremove_btngroup_widget;
-                    QVBoxLayout * mc_addressbook_addremove_btngroup_holder;
-
-                        //Add contact
-                        QPushButton * mc_addressbook_addremove_add_btn;
-
-                        //Remove contact
-                        QPushButton * mc_addressbook_addremove_remove_btn;
-
-                /** Bottom (Spans 2 columns) **/
-                //Button
-                QPushButton * mc_addressbook_select_nym_for_paste_btn;
-
-        //MC Systray icon
-        QSystemTrayIcon * mc_systrayIcon;
-
-            QIcon mc_systrayIcon_shutdown;
-
-            QIcon mc_systrayIcon_overview;
-
-            QIcon mc_systrayIcon_nym;
-            QIcon mc_systrayIcon_server;
-
-            QIcon mc_systrayIcon_goldaccount;
-            QIcon mc_systrayIcon_purse;
-
-            QIcon mc_systrayIcon_withdraw;
-            QIcon mc_systrayIcon_deposit;
-
-            QIcon mc_systrayIcon_sendfunds;
-            QIcon mc_systrayIcon_requestpayment;
-
-            QIcon mc_systrayIcon_advanced;
-                QIcon mc_systrayIcon_advanced_agreements;
-                QIcon mc_systrayIcon_advanced_markets;
-                QIcon mc_systrayIcon_advanced_settings;
-
-
-
-        //MC Systray menu
-        QMenu * mc_systrayMenu;
-
-            //Systray menu skeleton
-            QAction * mc_systrayMenu_headertext;
-            QAction * mc_systrayMenu_aboveBlank;
-
-            QAction * mc_systrayMenu_shutdown;
-
-            QAction * mc_systrayMenu_overview;
-
-            QMenu * mc_systrayMenu_nym;
-                //pseudonym list (backend) [For nym list in the qmenu and the nym manager]
-                QList<QVariant> * nym_list_id;
-                QList<QVariant> * nym_list_name;
-
-                //pseudonym default selected (backend) [For saving the user supplied default, set from DB and user selections]
-                QString default_nym_id;
-                QString default_nym_name;
-            QMenu * mc_systrayMenu_server;
-                //server list (backend )
-                QList<QVariant> * server_list_id;
-                QList<QVariant> * server_list_name;
-
-                //server default selected (backend)
-                QString default_server_id;
-                QString default_server_name;
-
-            QAction * mc_systrayMenu_goldaccount;
-            QAction * mc_systrayMenu_purse;
-
-            QMenu * mc_systrayMenu_withdraw;
-                //Withdraw submenu
-                QAction * mc_systrayMenu_withdraw_ascash;
-                QAction * mc_systrayMenu_withdraw_asvoucher;
-
-            QAction * mc_systrayMenu_deposit;
-
-            QAction * mc_systrayMenu_sendfunds;
-            QAction * mc_systrayMenu_requestpayment;
-
-            QMenu * mc_systrayMenu_advanced;
-                //Advanced submenu
-                QAction * mc_systrayMenu_advanced_agreements;
-                QAction * mc_systrayMenu_advanced_markets;
-                QAction * mc_systrayMenu_advanced_settings;
-
-            QAction * mc_systrayMenu_bottomblank;
-
-        //MC Systray Dialogs
-            /** Overview **/
-            int mc_overview_already_init;
-            QMutex mc_overview_refreshing_visuals_mutex;
-            QDialog * mc_overview_dialog_page;
-                //Grid layout
-                QGridLayout * mc_overview_gridlayout;
-                    //Header (label)
-                    QLabel * mc_overview_header_label;
-
-                    //In/out going pane (Table View)
-                    QWidget * mc_overview_inoutgoing_pane_holder;
-                    QVBoxLayout * mc_overview_inoutgoing_pane;
-                        //Header (label)
-                        QLabel * mc_overview_inoutgoing_header_label;
-
-                        //Gridview of Transactionslist
-                        QScrollArea * mc_overview_inoutgoing_scroll;
-                        QWidget * mc_overview_inoutgoing_gridview_widget;
-                        QGridLayout * mc_overview_inoutgoing_gridview;
-
-                            //Tracking index <> MTRecordlist index
-                            QList<QVariant> mc_overview_index_of_tx;
-
-
-            /** Nym Manager **/
-            int mc_nymmanager_already_init;
-            int mc_nymmanager_refreshing;
-
-            QDialog * mc_nym_manager_dialog;
-                //Grid layout
-                QGridLayout * mc_nym_manager_gridlayout;
-
-                    /** First row **/
-                    //Label (Nym Manager Header)
-                    QLabel * mc_nym_manager_label;
-
-                    /** Second Row **/
-                    //Horizontal holder (List of nyms; Add/Remove nym button)
-                    QWidget * mc_nym_manager_holder;
-                    QHBoxLayout * mc_nym_manager_hbox;
-
-                        //Tableview/item model for pseudo nym list.
-                        QStandardItemModel * mc_nym_manager_tableview_itemmodel;
-                        QTableView * mc_nym_manager_tableview;
-
-                        //Vertical holder (add/remove nym buttons)
-                        QWidget * mc_nym_manager_addremove_btngroup_holder;
-                        QVBoxLayout * mc_nym_manager_addremove_btngroup_vbox;
-
-                            //Add nym button
-                            QPushButton * mc_nym_manager_addremove_btngroup_addbtn;
-
-                            //Remove nym button
-                            QPushButton * mc_nym_manager_addremove_btngroup_removebtn;
-
-                    /** Third Row (most recent error) **/
-                        QLabel * mc_nym_manager_most_recent_erorr;
-
-                /** "Add Nym" Dialog **/
-                int mc_nymmanager_addnym_dialog_already_init;
-                int mc_nymmanager_addnym_dialog_advanced_showing;
-                QDialog * mc_nym_manager_addnym_dialog;
-                    //Grid layout
-                    QGridLayout * mc_nym_manager_addnym_gridlayout;
-                        //Label (header)
-                        QLabel * mc_nym_manager_addnym_header;
-
-                        //Label (Toggle Advanced Options Label/Button)
-                        QLabel * mc_nym_manager_addnym_subheader_toggleadvanced_options_label;
-
-                        //Label (instructions)
-                        QLabel * mc_nym_manager_addnym_subheader_instructions;
-
-                        //Label (choose source)
-                        QLabel * mc_nym_manager_addnym_choosesource_label;
-
-                        //Combobox (choose source)
-                        QComboBox * mc_nym_manager_addnym_choosesource_answer_selection;
-
-                        //Button (create nym)
-                        QPushButton * mc_nym_manager_addnym_create_nym_btn;
-
-                /** "Remove Nym Dialog **/
-                int mc_nymmanager_removenym_dialog_already_init;
-                QDialog * mc_nym_manager_removenym_dialog;
-                    //Grid layout
-                    QGridLayout * mc_nym_manager_removenym_gridlayout;
-
-                        //Label (header)
-                        QLabel * mc_nym_manager_removenym_header;
-
-
-                /** Nym Manger Slot locks **/
-                    int mc_nymmanager_proccessing_dataChanged;
-
-            /** Server Manager **/
-                int mc_servermanager_already_init;
-                QDialog * mc_servermanager_qdialog;
-                    //Grid layout
-                    QGridLayout * mc_servermanager_gridlayout;
-
-                        /** First Row **/
-                            //Label (header) [server manager]
-                            QLabel * mc_servermanager_header;
-
-                        /** Second Row **/
-                            /*** Column One ***/
-                                //Table view
-                                QStandardItemModel * mc_servermanager_tableview_itemmodel;
-                                QTableView * mc_servermanager_tableview;
-
-                            /*** Column Two ***/
-                                QPushButton * mc_servermanager_btn_remove_server;
-
-
-            /** Withdraw **/
-                //As Cash
-                int mc_withdraw_ascash_dialog_already_init;
-                QDialog * mc_systrayMenu_withdraw_ascash_dialog;
-                    //Grid layout
-                    QGridLayout * mc_systrayMenu_withdraw_ascash_gridlayout;
-
-                        //Withdraw (as cash) header label
-                        QLabel * mc_systrayMenu_withdraw_ascash_header_label;
-
-                        //Account Id (label)
-                        QLabel * mc_systrayMenu_withdraw_ascash_accountid_label;
-
-                        //Account Name (Dropdown box)
-                        QComboBox * mc_systrayMenu_withdraw_ascash_account_dropdown;
-
-                        //Amount (in integer for now)
-                        QLineEdit * mc_systrayMenu_withdraw_ascash_amount_input;
-
-                        //Activate withdraw button
-                        QPushButton * mc_systrayMenu_withdraw_ascash_button;
-
-                            //Withdraw as cash confirmation
-                            int mc_withdraw_ascash_confirm_dialog_already_init;
-                            QDialog * mc_systrayMenu_withdraw_ascash_confirm_dialog;
-
-                                //Grid layout
-                                QGridLayout * mc_systrayMenu_withdraw_ascash_confirm_gridlayout;
-
-                                    //Label
-                                    QLabel * mc_systrayMenu_withdraw_ascash_confirm_label;
-
-                                    //Label (Amount)
-                                    QLabel * mc_systrayMenu_withdraw_ascash_confirm_amount_label;
-
-                                    //Backend (Amount)
-                                    int withdraw_ascash_confirm_amount_int;
-
-                                    //Confirm/Cancel horizontal layout
-                                    QWidget * mc_systrayMenu_withdraw_ascash_confirm_amount_confirm_cancel_widget;
-                                    QHBoxLayout * mc_systrayMenu_withdraw_ascash_confirm_amount_confirm_cancel_layout;
-
-                                    //Cancel amount (button)
-                                    QPushButton * mc_systrayMenu_withdraw_ascash_confirm_amount_btn_cancel;
-
-                                    //Confirm amount (button)
-                                    QPushButton * mc_systrayMenu_withdraw_ascash_confirm_amount_btn_confirm;
-
-
-                //As Voucher
-                int mc_withdraw_asvoucher_dialog_already_init;
-                QDialog * mc_systrayMenu_withdraw_asvoucher_dialog;
-                    //Grid layout
-                    QGridLayout * mc_systrayMenu_withdraw_asvoucher_gridlayout;
-                        //Withdraw (as voucher) header label
-                        QLabel * mc_systrayMenu_withdraw_asvoucher_header_label;
-
-                        //Account Id (label)
-                        QLabel * mc_systrayMenu_withdraw_asvoucher_accountid_label;
-
-                        //Account Name (Dropdown box)
-                        QComboBox * mc_systrayMenu_withdraw_asvoucher_account_dropdown;
-
-                        //Nym ID (input)
-                            //Horitzontal Layout for Nym ID Input
-                            QWidget * mc_systrayMenu_withdraw_asvoucher_nym_holder;
-                            QHBoxLayout * mc_systrayMenu_withdraw_asvoucher_nym_hbox;
-
-                                //Nym Id (type/paste input)
-                                QLineEdit * mc_systrayMenu_withdraw_asvoucher_nym_input;
-
-                                //Address book (button as Icon)
-                                QIcon mc_systrayMenu_withdraw_asvoucher_nym_addressbook_icon;
-                                QPushButton * mc_systrayMenu_withdraw_asvoucher_nym_addressbook_btn;
-
-                                //QR Code Scanner (button as Icon)
-                                    //TODO ^^
-
-                        //Amount (in integer for now)
-                        QLineEdit * mc_systrayMenu_withdraw_asvoucher_amount_input;
-
-                        //Memo (Text box)
-                        QTextEdit * mc_systrayMenu_withdraw_asvoucher_memo_input;
-
-                        //Activate withdraw button
-                        QPushButton * mc_systrayMenu_withdraw_asvoucher_button;
-
-                            //Withdraw as Voucher confirmation
-                            int mc_withdraw_asvoucher_confirm_dialog_already_init;
-                            QDialog * mc_systrayMenu_withdraw_asvoucher_confirm_dialog;
-
-                                //Grid layout
-                                QGridLayout * mc_systrayMenu_withdraw_asvoucher_confirm_gridlayout;
-
-                                    //Label
-                                    QLabel * mc_systrayMenu_withdraw_asvoucher_confirm_label;
-
-                                    //Label (Amount)
-                                    QLabel * mc_systrayMenu_withdraw_asvoucher_confirm_amount_label;
-
-                                    //Backend (Amount)
-                                    int withdraw_asvoucher_confirm_amount_int;
-
-                                    //Confirm/cancel horizontal layout
-                                    QWidget * mc_systrayMenu_withdraw_asvoucher_confirm_amount_confirm_cancel_widget;
-                                    QHBoxLayout * mc_systrayMenu_withdraw_asvoucher_confirm_amount_confirm_cancel_layout;
-
-                                        //Cancel amount (button)
-                                        QPushButton * mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_cancel;
-
-                                        //Confirm amount (button)
-                                        QPushButton * mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_confirm;
-
-
-            /** Deposit **/
-                int mc_deposit_already_init;
-                QDialog * mc_deposit_dialog;
-                    //Gridlayout
-                    QGridLayout * mc_deposit_gridlayout;
-
-                        //header (label)
-                        QLabel * mc_deposit_header_label;
-
-                        //Dropdown box (combobox) (choose deposit type)
-                        QComboBox * mc_deposit_deposit_type;
-
-                        /** Deposit into account **/
-                        QWidget * mc_deposit_account_widget;
-                        QHBoxLayout * mc_deposit_account_layout;
-                            //(subheader) Deposit into account
-                            QLabel * mc_deposit_account_header_label;
-
-                        /** Deposit into purse **/
-                        QWidget * mc_deposit_purse_widget;
-                        QHBoxLayout * mc_deposit_purse_layout;
-                            //(header) Deposit into purse
-                            QLabel * mc_deposit_purse_header_label;
-
-            /** Send Funds **/
-                int mc_sendfunds_already_init;
-                QDialog * mc_sendfunds_dialog;
-                    //Gridlayout
-                    QGridLayout * mc_sendfunds_gridlayout;
-
-                        //Send funds type selection (combobox)
-                        QComboBox * mc_sendfunds_sendtype_combobox;
-
-
-
-    /**           **
-     ** Functions **
-     **           **/
-
-        //Address Book Dialog
-            //Show address book
-            void mc_addressbook_show();
-            void mc_addressbook_show(QString);
-
-            //Add contact to address book
-            void mc_addressbook_addblankrow(); //Adds a blank editable row for the user to add a contact with
-
-
-        //Menu Dialog
-
-            //Overview
-            void mc_overview_dialog();
-                //Refresh visual
-                void mc_overview_dialog_refresh();
-
-            //Default Nym
-            void mc_nymmanager_dialog();
-                //Load nym
-                void mc_systrayMenu_nym_setDefaultNym(QString, QString);
-
-                //Reload nym list
-                void mc_systrayMenu_reload_nymlist();
-
-            //Default Server
-            void mc_servermanager_dialog();
-                //Load server
-                void mc_systrayMenu_server_setDefaultServer(QString, QString);
-
-                //Reload server list
-                void mc_systrayMenu_reload_serverlist();
-
-            //Withdraw
-                //As Cash
-                void mc_withdraw_ascash_dialog();
-
-                //As Voucher
-                void mc_withdraw_asvoucher_dialog();
-
-
-            //Deposit
-                void mc_deposit_show_dialog();
-
-
-            //Send funds
-                void mc_sendfunds_show_dialog();
-
-
+    /**
+     * Open Transaction Variables
+     **/
+    
+    OT_ME * ot_me;
+    ot_worker * ot_worker_background;
+    
+    
+    
+    /**
+     * Booleans for tracking initialization
+     **/
+    
+    bool mc_overview_already_init;
+    bool mc_market_window_already_init;
+    bool mc_addressbook_already_init;
+    bool mc_nymmanager_already_init;
+    bool mc_assetmanager_already_init;
+    bool mc_accountmanager_already_init;
+    bool mc_servermanager_already_init;
+    bool mc_withdraw_ascash_already_init;
+    bool mc_withdraw_asvoucher_already_init;
+    bool mc_deposit_already_init;
+    bool mc_sendfunds_already_init;
+    bool mc_requestfunds_already_init;
+    
+    
+    
+    /**
+     * Window Classes
+     **/
+    
+    OverviewWindow * overviewwindow;
+    AddressBookWindow * addressbookwindow;
+    NymManagerWindow * nymmanagerwindow;
+    AssetManagerWindow * assetmanagerwindow;
+    AccountManagerWindow * accountmanagerwindow;
+    ServerManagerWindow * servermanagerwindow;
+    WithdrawAsCashWindow * withdrawascashwindow;
+    WithdrawAsVoucherWindow * withdrawasvoucherwindow;
+    DepositWindow * depositwindow;
+    RequestFundsWindow * requestfundswindow;
+    SendFundsWindow * sendfundswindow;
+    MarketWindow * market_window;
+    
+    
+    
+    
+    /**
+     * Menu Dialogs
+     **/
+    
+    
+    //Overview
+    void mc_overview_dialog();
+    //Refresh visual
+    void mc_overview_dialog_refresh();
+    // ------------------------------------------------
+    
+    //Default Nym
+    void mc_nymmanager_dialog();
+    //Reload nym list
+    void mc_systrayMenu_reload_nymlist();
+    // ------------------------------------------------
+    
+    //Default Server
+    void mc_servermanager_dialog();
+    //Reload server list
+    void mc_systrayMenu_reload_serverlist();
+    // ------------------------------------------------
+    
+    //Default Asset
+    void mc_assetmanager_dialog();
+    //Reload asset list
+    void mc_systrayMenu_reload_assetlist();
+    // ------------------------------------------------
+    
+    //Default Account
+    void mc_accountmanager_dialog();
+    //Reload account list
+    void mc_systrayMenu_reload_accountlist();
+    // ------------------------------------------------
+    
+    //Withdraw As Cash
+    void mc_withdraw_ascash_dialog();
+    // ------------------------------------------------
+
+    //Withdraw As Voucher
+    void mc_withdraw_asvoucher_dialog();
+    // ------------------------------------------------
+    
+    //Deposit
+    void mc_deposit_show_dialog();
+    // ------------------------------------------------
+    
+    //Send Funds
+    void mc_sendfunds_show_dialog();    
+    // ------------------------------------------------
+
+    //Request Funds
+    void mc_requestfunds_show_dialog();
+    // ------------------------------------------------
+    
+    
+    
+    /**
+     * Variables For Various Pieces of Account Information
+     **/
+    
+    
+    //pseudonym list (backend) [For nym list in the qmenu and the nym manager]
+    QList<QVariant> * nym_list_id;
+    QList<QVariant> * nym_list_name;
+    
+    //pseudonym default selected (backend) [For saving the user supplied default, set from DB and user selections]
+    QString default_nym_id;
+    QString default_nym_name;
+    // ---------------------------------------------------------
+    
+    QMenu * mc_systrayMenu_server;
+    //server list (backend )
+    QList<QVariant> * server_list_id;
+    QList<QVariant> * server_list_name;
+    
+    //server default selected (backend)
+    QString default_server_id;
+    QString default_server_name;
+    // ---------------------------------------------------------
+    
+    
+    
+    
+    /** 
+     * Systray Icons
+     **/
+    
+    QSystemTrayIcon * mc_systrayIcon;
+    
+    QIcon mc_systrayIcon_shutdown;
+    
+    QIcon mc_systrayIcon_overview;
+    
+    QIcon mc_systrayIcon_nym;
+    QIcon mc_systrayIcon_server;
+    
+    QIcon mc_systrayIcon_goldaccount;
+    QIcon mc_systrayIcon_purse;
+    
+    QIcon mc_systrayIcon_withdraw;
+    QIcon mc_systrayIcon_deposit;
+    
+    QIcon mc_systrayIcon_sendfunds;
+    QIcon mc_systrayIcon_requestfunds;
+    
+    QIcon mc_systrayIcon_advanced;
+    QIcon mc_systrayIcon_advanced_agreements;
+    QIcon mc_systrayIcon_advanced_markets;
+    QIcon mc_systrayIcon_advanced_settings;
+    
+    // ------------------------------------------------
+    
+    
+    
+    /**  
+     * Systray menu
+     **/
+    
+    //Systray Menu Skeleton
+    QMenu * mc_systrayMenu;
+    
+    QAction * mc_systrayMenu_headertext;
+    QAction * mc_systrayMenu_aboveBlank;
+    QAction * mc_systrayMenu_shutdown;
+    QAction * mc_systrayMenu_overview;
+    // ---------------------------------------------------------
+    
+    //Asset type list (backend )
+    QMenu * mc_systrayMenu_asset;
+
+    QList<QVariant> * asset_list_id;
+    QList<QVariant> * asset_list_name;
+    
+    //Asset default selected (backend)
+    QString default_asset_id;
+    QString default_asset_name;
+    // ---------------------------------------------------------
+        
+    //Account list (backend )
+    QMenu * mc_systrayMenu_account;
+
+    QList<QVariant> * account_list_id;
+    QList<QVariant> * account_list_name;
+    
+    //Account default selected (backend)
+    QString default_account_id;
+    QString default_account_name;
+    // ---------------------------------------------------------
+
+    QMenu * mc_systrayMenu_nym;
+    
+    // ---------------------------------------------------------
+    
+    QAction * mc_systrayMenu_goldaccount;
+    QAction * mc_systrayMenu_purse;
+    // ---------------------------------------------------------
+    
+    //Withdraw submenu
+    QMenu * mc_systrayMenu_withdraw;
+    
+    QAction * mc_systrayMenu_withdraw_ascash;
+    QAction * mc_systrayMenu_withdraw_asvoucher;
+    // ---------------------------------------------------------
+    
+    QAction * mc_systrayMenu_deposit;
+    // ---------------------------------------------------------
+    
+    QAction * mc_systrayMenu_sendfunds;
+    QAction * mc_systrayMenu_requestfunds;
+    // ---------------------------------------------------------
+    
+    
+    //Advanced submenu
+    QMenu * mc_systrayMenu_advanced;
+
+    QAction * mc_systrayMenu_advanced_agreements;
+    QAction * mc_systrayMenu_advanced_markets;
+    QAction * mc_systrayMenu_advanced_settings;
+    // ---------------------------------------------------------
+    
+    
+    QAction * mc_systrayMenu_bottomblank;
+    // ---------------------------------------------------------
+    
+    
 private slots:
 
-        //Nym Manager slots
-            void mc_nymmanager_addnym_slot();
-            void mc_nymmanager_removenym_slot();
-            void mc_nymmanager_dataChanged_slot(QModelIndex,QModelIndex);
+    /** 
+     * Systray Menu Slots
+     **/
+    
+    //Shutdown
+    void mc_shutdown_slot();
+    
+    //Overview
+    void mc_overview_slot();
+    
+    
+    //Nym
+    void mc_defaultnym_slot();
+    
+    //new default nym selected
+    void mc_nymselection_triggered(QAction*);
+    
+    
+    //Server
+    void mc_defaultserver_slot();
 
-                //Add Nym Dialog slots
-                void mc_addnym_dialog_showadvanced_slot(QString);
-                void mc_addnym_dialog_createnym_slot();
+    //new default server selected
+    void mc_serverselection_triggered(QAction*);
+    
 
+    //Asset
+    void mc_defaultasset_slot();
+    
+    //new default asset selected
+    void mc_assetselection_triggered(QAction*);
 
-        //Address Book slots
-            //Create a new blank editable address book row
-            void mc_addressbook_addblankrow_slot();
+   
+    //Account
+    void mc_defaultaccount_slot();
+    
+    //new default account selected
+    void mc_accountselection_triggered(QAction*);
+    
+    
+    //Withdraw As Cash
+    void mc_withdraw_ascash_slot();
+    
+    
+    //Withdraw As Voucher
+    void mc_withdraw_asvoucher_slot();
 
-            //Remove contact from address book
-            void mc_addressbook_confirm_remove_contact_slot();
+    
+    //Deposit
+    void mc_deposit_slot();
 
-            //When the operator is done editing a data row, sync it with the database
-            void mc_addressbook_dataChanged_slot(QModelIndex,QModelIndex);
-
-            //When the operator has clicked the "Select and paste" button, we will detect what to paste and where to paste it into.
-            void mc_addressbook_paste_selected_slot();
-
-
-
-
-        //Systray Menu Slots
-            //Shutdown
-            void mc_shutdown_slot();
-
-            //Overview
-            void mc_overview_slot();
-
-            //Nym
-            void mc_defaultnym_slot();
-                //new default nym selected
-                void mc_nymselection_triggered(QAction*);
-
-            //Server
-            void mc_defaultserver_slot();
-                //new default server selected
-                void mc_serverselection_triggered(QAction*);
-
-                //request to remove a selected server from the serverlist manager
-                void mc_servermanager_request_remove_server_slot();
-
-            //Withdraw
-                //As Cash
-                 void mc_withdraw_ascash_slot();
-                 void mc_withdraw_ascash_confirm_amount_dialog_slot();
-
-                 void mc_withdraw_ascash_account_dropdown_highlighted_slot(int);
-                 void mc_withdraw_ascash_confirm_amount_slot();
-                 void mc_withdraw_ascash_cancel_amount_slot();
-
-                 //As Voucher
-                 void mc_withdraw_asvoucher_slot();
-                 void mc_withdraw_asvoucher_show_addressbook_slot();
-                 void mc_withdraw_asvoucher_confirm_amount_dialog_slot();
-
-                 void mc_withdraw_asvoucher_account_dropdown_highlighted_slot(int);
-                 void mc_withdraw_asvoucher_confirm_amount_slot();
-                 void mc_withdraw_asvoucher_cancel_amount_slot();
-
-
-            //Deposit
-                 void mc_deposit_slot();
-
-                 //The user changed the "deposit type" switch open/available menu
-                 void mc_deposit_type_changed_slot(int);
-
-
-            //Send funds
-                 void mc_sendfunds_slot();
-
+   
+    //Send Funds
+    void mc_sendfunds_slot();
+    
+   
+    //Request Funds
+    void mc_requestfunds_slot();
+    
+    
+    // Market Slot
+    void mc_market_slot();
+    
 };
 
 #endif // MONEYCHANGER_H
