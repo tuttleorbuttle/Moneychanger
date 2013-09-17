@@ -6,6 +6,8 @@ namespace GUI
 {
     void quitIndicator(GtkMenu *, gpointer);
 
+    // this will create an indicator with nothing but a "Quit" button.
+    // obviously not a final solution but works for me at the moment.
     void ShowUnityIndicator()
     {
         QString desktop;

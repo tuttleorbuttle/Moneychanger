@@ -22,6 +22,7 @@ SOURCES += main.cpp\
           btcjson.cpp \
           btcinterface.cpp \
           btcrpc.cpp \
+    unityindicator.cpp \
     utils.cpp \
     Widgets/MarketWindow.cpp \
     Widgets/overviewwindow.cpp \
@@ -54,6 +55,7 @@ HEADERS += moneychanger.h \
     btcrpc.h \
     btcinterface.h \
     utils.h \
+    unityindicator.h \
     Widgets/MarketWindow.h \
     Widgets/overviewwindow.h \
     Handlers/FileHandler.h \
