@@ -93,11 +93,14 @@ linux:{
 
 # Sorry about the mess here, I'll figure out how to clan that up another time.
 
-OPENTXS_INCLUDE_PATH   += /home/ubuntu/.local/include/opentxs
-OPENTXS_LIB_PATH       += /home/ubuntu/.local/lib
-CHAI_INCLUDE_PATH      += /home/ubuntu/.local/include
+HOME = $$(HOME)
+OPENTXS_INCLUDE_PATH   += $$HOME/.local/include/opentxs
+OPENTXS_LIB_PATH       += $$HOME/.local/lib
+CHAI_INCLUDE_PATH      += $$HOME/.local/include
 OPENSSL_INCLUDE_PATH   += /usr/lib/x86_64-linux-gnu
 OPENSSL_LIB_PATH       += /usr/include
+
+# I think all of the following includes are for unityindicator.h so they can easily be removed later.
 LIBAPPINDICATOR_INCLUDE_PATH += /usr/include/libappindicator-0.1
 GTK_INCLUDE_PATH        += /usr/include/gtk-2.0
 GDKCONFIG_INCLUDE_PATH  += /usr/lib/x86_64-linux-gnu/gtk-2.0/include
