@@ -11,6 +11,9 @@ public:
 
     QString CreateTwoOfTwoEscrowAddress(QString myKey, QString hisKey);
 
+    // cba to implement proper unit testing for now so this will have to do:
+    bool TestBtcJson();
+
 private:
     
 signals:

@@ -3,17 +3,19 @@
 
 QScopedPointer<BtcRpc> Modules::bitcoinRpc;
 QScopedPointer<BtcJson> Modules::json;
+QScopedPointer<BtcInterface> Modules::btcInterface;
+
 
 Modules::Modules(QObject *parent) :
     QObject(parent)
 {
     Modules::bitcoinRpc.reset(new BtcRpc());
     Modules::json.reset(new BtcJson());
+    Modules::btcInterface.reset(new BtcInterface());
     json->Initialize();
 }
 
 Modules::~Modules()
 {
-    // TODO: _maybe_ free memory again, would break { Modules modules; } initialization but does that even matter?
-    int a = 0;
+
 }
