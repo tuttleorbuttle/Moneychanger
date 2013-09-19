@@ -207,6 +207,8 @@ QString BtcJson::SendToAddress(QString btcAddress, double amount)
     return result.toString();
 }
 
+BtcTransaction
+
 
 
 

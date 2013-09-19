@@ -18,8 +18,8 @@ QString BtcInterface::CreateTwoOfTwoEscrowAddress(QString myKey, QString hisKey)
 
 bool BtcInterface::TestBtcJson()
 {
-    //Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
-    Modules::bitcoinRpc->ConnectToBitcoin("moneychanger", "money1234");
+    Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
+    //Modules::bitcoinRpc->ConnectToBitcoin("moneychanger", "money1234");
     Modules::json->GetInfo();
     double balance = Modules::json->GetBalance();
     QStringList accounts = Modules::json->ListAccounts();
@@ -35,4 +35,12 @@ bool BtcInterface::TestBtcJson()
         OTLog::vOutput(0, "New address created: \"%s\"\n", address.toStdString().c_str());
     if(multiSigAddr != NULL)
         OTLog::vOutput(0, "Multisig address created: \"%s\"\n", multiSigAddr.toStdString().c_str());
+
+    Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123");
+    QString recvAddr = Modules::json->GetNewAddress();
+    Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
+    QString txID = Modules::json->SendToAddress(recvAddr, 1.23456789);
+    QString txIDinvalid = Modules::json->SendToAddress("1qthisisnotanaddress", 1.23456789);
+
+    // gettransaction
 }

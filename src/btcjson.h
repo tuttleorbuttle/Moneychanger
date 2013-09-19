@@ -10,9 +10,21 @@
 
 namespace BtcJsonReplies
 {
-    class GetInfoReply
-    {
+    // if a query returns a complex object we should convert it to a struct instead of
+    // passing around the QJsonObject
 
+    struct BtcTransaction
+    {
+        BtcTransaction(QJsonObject reply);
+        double TotalAmount;
+        int Confirmations;
+        double Amount;
+        double Fee;
+        QString TxID;
+        QString Time;       // is this a string?
+        QString Account;
+        QString Address;
+        QString Category;   // dafuq is this?
     };
 }
 
@@ -20,9 +32,6 @@ namespace BtcJsonReplies
 class BtcJson //: IStringProcessor
 {    
 public:
-    ///!
-    //! \brief Currently just doing some testing to figure out how QJson works
-    //!
     BtcJson();
     ~BtcJson();
 
@@ -34,12 +43,20 @@ public:
 
     void GetInfo();
     double GetBalance(QString account = NULL);
+
     QString GetAccountAddress(QString account = NULL);
+
     QStringList GetAddressesByAccount(QString account = "");    // list addresses for account, "" is the default account.
+
     QString GetNewAddress(QString account = NULL);
+
     QString AddMultiSigAddress(int nRequired, QJsonArray keys, QString account = NULL);    // gonna continue here at home, remove this line and it should compile.
+
     QStringList ListAccounts();
+
     QString SendToAddress(QString btcAddress, double amount);
+
+    BtcJsonReplies::BtcTransaction GetTransaction(QString txID);
 
 
 private:
