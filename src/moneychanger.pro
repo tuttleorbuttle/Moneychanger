@@ -31,12 +31,15 @@ SOURCES += main.cpp\
     Widgets/withdrawasvoucherwindow.cpp \
     Widgets/depositwindow.cpp \
     Widgets/sendfundswindow.cpp \
-    Widgets/requestfundswindow.cpp
+    Widgets/requestfundswindow.cpp \
+    Widgets/home.cpp \
+    Widgets/homedetail.cpp \
+    Handlers/contacthandler.cpp \
+    Widgets/createinsurancecompany.cpp
+
 
 HEADERS += moneychanger.h \
            ot_worker.h \
-           MTRecordList.h \
-           MTRecord.h \
     MTRecord.hpp \
     MTRecordList.hpp \
     Widgets/marketwindow.h \
@@ -52,11 +55,17 @@ HEADERS += moneychanger.h \
     Widgets/withdrawasvoucherwindow.h \
     Widgets/depositwindow.h \
     Widgets/sendfundswindow.h \
-    Widgets/requestfundswindow.h
+    Widgets/requestfundswindow.h \
+    Widgets/home.h \
+    Widgets/homedetail.h \
+    Handlers/contacthandler.h \
+    Widgets/createinsurancecompany.h
+
 
 DEFINES += "OT_ZMQ_MODE=1"
 
 mac:{
+    QMAKE_CXXFLAGS -= -fstack-check
 	QT_CONFIG -= no-pkg-config
 	LIBS += -lboost_system-mt -lboost_thread-mt -ldl
 }
@@ -109,4 +118,8 @@ RESOURCES += resource.qrc
 OTHER_FILES +=
 
 FORMS += \
-    UI/marketwindow.ui
+    UI/marketwindow.ui \
+    Widgets/home.ui \
+    Widgets/homedetail.ui \ 
+    UI/createinsurancecompany.ui
+

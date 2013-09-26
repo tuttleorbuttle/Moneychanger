@@ -1,6 +1,9 @@
+
 #include "ot_worker.h"
 
-ot_worker::ot_worker(QObject *parent) : QObject(parent), list(lookup)
+#include "Handlers/contacthandler.h"
+
+ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookupQT))
 {
     /** ** ** **
      ** Init MTList
