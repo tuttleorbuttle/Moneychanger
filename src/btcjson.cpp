@@ -19,9 +19,11 @@
 #define METHOD_LISTACCOUNTS         "listaccounts"
 #define METHOD_SENDTOADDRESS        "sendtoaddress"
 #define METHOD_ADDMULTISIGADDRESS   "addmultisigaddress"
+#define METHOD_GETTRANSACTION       "gettransaction"
 
 
 using namespace fastdelegate;
+using namespace BtcJsonReplies;
 
 BtcJson::BtcJson()
 {
@@ -207,7 +209,63 @@ QString BtcJson::SendToAddress(QString btcAddress, double amount)
     return result.toString();
 }
 
-BtcTransaction
+QSharedPointer<BtcTransaction> BtcJson::GetTransaction(QString txID)
+{
+    // TODO: maybe we can automate the process of appending arguments
+    //      and calling SendRPC(CreateJsonQuery..) as it's
+    //      virtually the same code in every function.
+    QJsonArray params;
+    params.append(txID);
+
+    QJsonValue result;
+    if(!ProcessRpcString(
+                Modules::bitcoinRpc->SendRpc(
+                    CreateJsonQuery(METHOD_GETTRANSACTION, params)), result))
+        return QSharedPointer<BtcTransaction>();    // error
+
+    if(!result.isObject())
+        return QSharedPointer<BtcTransaction>();
+
+    //TODO: Finish implementation of BtcTransaction and of this function
+    return QSharedPointer<BtcTransaction>();
+    QSharedPointer<BtcTransaction> transaction;
+    transaction.reset(new BtcTransaction(result.toObject()));
+    return transaction;
+
+    /*
+     * sample gettransaction response
+     * I think "details" contains additional information if you were sender or receiver.
+     * TODO: test what happens when you are neither sender nor receiver of txID
+{
+    "error": null,
+    "id": "gettransaction",
+    "result": {
+        "amount": 0,
+        "confirmations": 0,
+        "details": [
+            {
+                "account": "",
+                "address": "mggsAaus69pH46TDWFA3oyL1vg1v1UNivs",
+                "amount": -1.23457,
+                "category": "send",
+                "fee": 0
+            },
+            {
+                "account": "",
+                "address": "mggsAaus69pH46TDWFA3oyL1vg1v1UNivs",
+                "amount": 1.23457,
+                "category": "receive"
+            }
+        ],
+        "fee": 0,
+        "time": 1.38021e+09,
+        "timereceived": 1.38021e+09,
+        "txid": "fe6e73e6ab672f8029e98e9277a6589c1140c569d1169a71fbd0a275c51619e6"
+    }
+}
+     *
+    */
+}
 
 
 

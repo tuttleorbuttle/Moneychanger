@@ -15,7 +15,13 @@ namespace BtcJsonReplies
 
     struct BtcTransaction
     {
-        BtcTransaction(QJsonObject reply);
+        BtcTransaction(QJsonObject reply)
+            :TotalAmount(reply["amount"].toDouble()),
+            Confirmations((int)(reply["confirmations"].toDouble())),
+            Fee(reply["fee"].toDouble())
+        {
+
+        }
         double TotalAmount;
         int Confirmations;
         double Amount;
@@ -56,7 +62,7 @@ public:
 
     QString SendToAddress(QString btcAddress, double amount);
 
-    BtcJsonReplies::BtcTransaction GetTransaction(QString txID);
+    QSharedPointer<BtcJsonReplies::BtcTransaction> GetTransaction(QString txID);
 
 
 private:

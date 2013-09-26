@@ -36,11 +36,17 @@ bool BtcInterface::TestBtcJson()
     if(multiSigAddr != NULL)
         OTLog::vOutput(0, "Multisig address created: \"%s\"\n", multiSigAddr.toStdString().c_str());
 
-    Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123");
+    // receive to bitcoin-testnet-box #2
+    Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
     QString recvAddr = Modules::json->GetNewAddress();
+    // send from bitcoin-testnet-box #1
     Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
     QString txID = Modules::json->SendToAddress(recvAddr, 1.23456789);
     QString txIDinvalid = Modules::json->SendToAddress("1qthisisnotanaddress", 1.23456789);
 
     // gettransaction
+    if(txID != NULL && txID != "")
+        Modules::json->GetTransaction(txID);
 }
+
+//TODO: add bool TransactionSuccessfull(int minconfirms = 6) function here.
