@@ -3,6 +3,8 @@
 #include "btcjson.h"
 #include "modules.h"
 
+using namespace BtcJsonReplies;
+
 BtcInterface::BtcInterface(QObject *parent) :
     QObject(parent)
 {
@@ -36,17 +38,43 @@ bool BtcInterface::TestBtcJson()
     if(multiSigAddr != NULL)
         OTLog::vOutput(0, "Multisig address created: \"%s\"\n", multiSigAddr.toStdString().c_str());
 
+    // test sending, receiving and validating transactions
     // receive to bitcoin-testnet-box #2
     Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
     QString recvAddr = Modules::json->GetNewAddress();
+    Modules::json->SetTxFee(10.2);
+
     // send from bitcoin-testnet-box #1
     Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
+    Modules::json->SetTxFee(10.1);
     QString txID = Modules::json->SendToAddress(recvAddr, 1.23456789);
     QString txIDinvalid = Modules::json->SendToAddress("1qthisisnotanaddress", 1.23456789);
 
-    // gettransaction
-    if(txID != NULL && txID != "")
-        Modules::json->GetTransaction(txID);
+    if(txID == NULL || txID == "")
+        return false;
+
+    // validate transaction
+    Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
+    QSharedPointer<BtcTransaction> transaction = Modules::json->GetTransaction(txID);
+    if(transaction == NULL)
+        return false;
+    double fee = transaction->Fee;
+    double amount = transaction->Amount;
+    double totalAmount = transaction->TotalAmount;
+    int confirms = transaction->Confirmations;
+
+    QString success = TransactionSuccessfull(transaction->Amount, transaction, 0) ? "" : "not";
+    OTLog::vOutput(0, "Transaction %s %s completed successfully, %i confirmations", txID.toStdString().c_str(), success.toStdString().c_str(), transaction->Confirmations);
+
+    return true;
 }
 
-//TODO: add bool TransactionSuccessfull(int minconfirms = 6) function here.
+bool BtcInterface::TransactionConfirmed(QSharedPointer<BtcTransaction> transaction, int minConfirms)
+{
+    return transaction->Confirmations >= minConfirms;   // check if confirmed often enough
+}
+
+bool BtcInterface::TransactionSuccessfull(double amount, QSharedPointer<BtcTransaction> transaction, int minConfirms)
+{
+    return TransactionConfirmed(transaction, minConfirms) && transaction->Amount >= amount; // check if confirmed AND enough btc
+}

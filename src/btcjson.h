@@ -15,22 +15,47 @@ namespace BtcJsonReplies
 
     struct BtcTransaction
     {
-        BtcTransaction(QJsonObject reply)
-            :TotalAmount(reply["amount"].toDouble()),
-            Confirmations((int)(reply["confirmations"].toDouble())),
-            Fee(reply["fee"].toDouble())
-        {
-
-        }
-        double TotalAmount;
+        double TotalAmount;     // amount with fee
         int Confirmations;
-        double Amount;
-        double Fee;
+        double Amount;          // amount without fee
+        double Fee;             // I think fee is not always displayed?
         QString TxID;
-        QString Time;       // is this a string?
+        double Time;       // is this a string?
         QString Account;
         QString Address;
         QString Category;   // dafuq is this?
+
+        BtcTransaction(QJsonObject reply)
+        {
+            if(!reply["error"].isNull())
+            {
+                SetDefaults();
+                return;
+            }
+
+            this->Confirmations = (int)(reply["confirmations"].toDouble());
+            this->Amount = reply["amount"].toDouble();
+            this->Fee = reply["fee"].toDouble();
+            this->TotalAmount = reply["amount"].toDouble(); + this->Fee;
+            this->TxID = reply["txid"].toString();
+            this->Time = reply["time"].toDouble();
+            this->Account = reply["time"].toString();
+            this->Category = reply["category"].toString();
+        }
+
+    private:
+        void SetDefaults()
+        {
+            TotalAmount = 0.0;
+            Confirmations = 0;
+            Amount = 0.0;
+            Fee = 0.0;
+            TxID = QString();
+            Time = 0;
+            Account = QString();
+            Address = QString();
+            Category = QString();
+        }
     };
 }
 
@@ -61,6 +86,8 @@ public:
     QStringList ListAccounts();
 
     QString SendToAddress(QString btcAddress, double amount);
+
+    bool SetTxFee(double fee);
 
     QSharedPointer<BtcJsonReplies::BtcTransaction> GetTransaction(QString txID);
 

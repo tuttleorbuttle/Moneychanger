@@ -2,6 +2,10 @@
 #define BTCINTEGRATION_H
 
 #include <QObject>
+#include <QSharedPointer>
+#include "btcjson.h"
+
+using namespace BtcJsonReplies;
 
 class BtcInterface : public QObject
 {
@@ -11,8 +15,13 @@ public:
 
     QString CreateTwoOfTwoEscrowAddress(QString myKey, QString hisKey);
 
+    bool TransactionConfirmed(QSharedPointer<BtcTransaction> transaction, int minconfirms = 6);
+
+    bool TransactionSuccessfull(double amount, QSharedPointer<BtcTransaction> transaction, int minConfirms = 6);
+
     // cba to implement proper unit testing for now so this will have to do:
     bool TestBtcJson();
+
 
 private:
     

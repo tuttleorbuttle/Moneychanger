@@ -18,6 +18,7 @@
 #define METHOD_GETNEWADDRESS        "getnewaddress"
 #define METHOD_LISTACCOUNTS         "listaccounts"
 #define METHOD_SENDTOADDRESS        "sendtoaddress"
+#define METHOD_SETTXFEE             "settxfee"
 #define METHOD_ADDMULTISIGADDRESS   "addmultisigaddress"
 #define METHOD_GETTRANSACTION       "gettransaction"
 
@@ -209,6 +210,21 @@ QString BtcJson::SendToAddress(QString btcAddress, double amount)
     return result.toString();
 }
 
+bool BtcJson::SetTxFee(double fee)
+{
+    QJsonArray params;
+    params.append(fee);
+
+    QJsonValue result;
+    if(!ProcessRpcString(
+                Modules::bitcoinRpc->SendRpc(
+                    CreateJsonQuery(METHOD_SETTXFEE, params)),
+                result))
+            return false;
+
+    return true;    // todo: check for more errors
+}
+
 QSharedPointer<BtcTransaction> BtcJson::GetTransaction(QString txID)
 {
     // TODO: maybe we can automate the process of appending arguments
@@ -226,8 +242,6 @@ QSharedPointer<BtcTransaction> BtcJson::GetTransaction(QString txID)
     if(!result.isObject())
         return QSharedPointer<BtcTransaction>();
 
-    //TODO: Finish implementation of BtcTransaction and of this function
-    return QSharedPointer<BtcTransaction>();
     QSharedPointer<BtcTransaction> transaction;
     transaction.reset(new BtcTransaction(result.toObject()));
     return transaction;
