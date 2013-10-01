@@ -5,7 +5,7 @@
 #include <QSharedPointer>
 #include "btcjson.h"
 
-using namespace BtcJsonReplies;
+using namespace BtcJsonObjects;
 
 class BtcInterface : public QObject
 {

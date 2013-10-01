@@ -6,7 +6,7 @@
 #include "OTLog.h"
 #include <QVariant>
 #include "modules.h"
-#include "FastDelegate.h"
+#include "FastDelegate.h"   // I think we don't need these anymore because of Qt's Signals
 #include "utils.h"
 
 // https://en.bitcoin.it/wiki/Proper_Money_Handling_%28JSON-RPC%29 on how to avoid rounding errors and such. might be worth a read someday.
@@ -18,13 +18,15 @@
 #define METHOD_GETNEWADDRESS        "getnewaddress"
 #define METHOD_LISTACCOUNTS         "listaccounts"
 #define METHOD_SENDTOADDRESS        "sendtoaddress"
+#define METHOD_SENDMANY             "sendmany"
 #define METHOD_SETTXFEE             "settxfee"
 #define METHOD_ADDMULTISIGADDRESS   "addmultisigaddress"
 #define METHOD_GETTRANSACTION       "gettransaction"
+#define METHOD_GETRAWTRANSACTION    "getrawtransaction"
 
 
 using namespace fastdelegate;
-using namespace BtcJsonReplies;
+using namespace BtcJsonObjects;
 
 BtcJson::BtcJson()
 {
@@ -220,9 +222,28 @@ bool BtcJson::SetTxFee(double fee)
                 Modules::bitcoinRpc->SendRpc(
                     CreateJsonQuery(METHOD_SETTXFEE, params)),
                 result))
-            return false;
+        return false;
 
     return true;    // todo: check for more errors
+}
+
+QString BtcJson::SendMany(QList<BtcAddressAmount> txTargets, QString fromAccount)
+{
+    QJsonArray params;
+    params.append(fromAccount);
+    params.append(txTargets);
+lökj
+    QJsonValue result;
+    if(!ProcessRpcString(
+                Modules::bitcoinRpc->SendRpc(
+                    CreateJsonQuery(METHOD_SENDMANY, params)),
+                result))
+        return false;
+
+    if(!result.isString())
+        return NULL;
+
+    return result.toString();
 }
 
 QSharedPointer<BtcTransaction> BtcJson::GetTransaction(QString txID)
@@ -246,43 +267,17 @@ QSharedPointer<BtcTransaction> BtcJson::GetTransaction(QString txID)
     transaction.reset(new BtcTransaction(result.toObject()));
     return transaction;
 
-    /*
-     * sample gettransaction response
-     * I think "details" contains additional information if you were sender or receiver.
-     * TODO: test what happens when you are neither sender nor receiver of txID
-{
-    "error": null,
-    "id": "gettransaction",
-    "result": {
-        "amount": 0,
-        "confirmations": 0,
-        "details": [
-            {
-                "account": "",
-                "address": "mggsAaus69pH46TDWFA3oyL1vg1v1UNivs",
-                "amount": -1.23457,
-                "category": "send",
-                "fee": 0
-            },
-            {
-                "account": "",
-                "address": "mggsAaus69pH46TDWFA3oyL1vg1v1UNivs",
-                "amount": 1.23457,
-                "category": "receive"
-            }
-        ],
-        "fee": 0,
-        "time": 1.38021e+09,
-        "timereceived": 1.38021e+09,
-        "txid": "fe6e73e6ab672f8029e98e9277a6589c1140c569d1169a71fbd0a275c51619e6"
-    }
-}
-     *
-    */
+    // TODO:
+    // for checking balance see "details"->received, confirmations, amount (and address(es)?)
+
+    // also check what happens in multi-sig-transactions.
 }
 
 
+// TODO: maybe getrawtransaction but if we own one of the private keys we probably don't need that.
+// oh wait we do, for signing multisigs
 
+// TODO: sendmany so we can test TransactionSuccessfull() on those
 
 
 
