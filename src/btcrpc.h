@@ -4,36 +4,45 @@
 #include <QtNetwork>
 #include <QString>
 #include <QLinkedList>
-#include "FastDelegate.h"
-#include "IStringProcessor.h"
 
-
-using namespace fastdelegate;
-
-///!
-//! \brief The BitcoinRPC class will handle communication with bitcoin-qt.
-//!
+// This class will handle network communication.
+// It can only connect to one http interface at once
+// but you can connect to a new one at will using ConnectToBitcoin()
 class BtcRpc : public QObject
 {
 public:
-    ///!
-    //! \brief Currently just calling bitcoin-qt on default port and asking "getinfo"
-    //!
     BtcRpc();
     ~BtcRpc();
 
+    // Returns whether we're connected to bitcoin's http interface
+    // Not implemented properly! And probably not necessary. Will have to check to be sure.
     bool IsConnected();
 
+    // Connects to bitcoin, sets some http header information and sends a test query (getinfo)
+    // The whole connected/disconnected implementation is poorly done (my fault) but it works.
+    // This function can be called again and again and nothing will crash if it fails.
     bool ConnectToBitcoin(QString user, QString password, QString url = "http://127.0.0.1", int port = 8332);
+
+    // Sends a string over the network
+    // This string should be a json-rpc call if we're talking to bitcoin,
+    // but we could send anything and expand this class to also connect to other http(s) interfaces.
     QSharedPointer<QByteArray> SendRpc(const QString jsonString);
+
+    // Sends a byte array over the network
+    // Should be json-rpc if talking to bitcoin
     QSharedPointer<QByteArray> SendRpc(const QByteArray jsonString);
 
 private:
-    void InitSession();         // Called in constructor, makes sure we have internet or something
-    void InitBitcoinRpc();      // Also called in constr, sets header information to what bitcoin-qt is expecting
+    void InitSession();         // Called in constructor, makes sure we have a network interface or something
+    void InitNAM();             // Also called in constr, creates the Network Access Manager.
     void SetHeaderInformation(); // Called by ConnectToBitcoin, sets the HTTP header
 
+    // Processes a network reply
+    // Probably not needed anymore
     void ProcessReply(QSharedPointer<QByteArray> replyContType, const QSharedPointer<QByteArray> replyContent);
+
+    // Processes an error message
+    // These can come from a failed network connection, erroneus json-rpc calls or meta-errors like lack of funds.
     void ProcessErrorMessage(const QNetworkReply *reply);
 
     QPointer<QNetworkSession> session;
@@ -48,12 +57,12 @@ private:
 
 Q_OBJECT
 public slots:
-    ///!
-    //! \brief finishedSlot is called when there's a response from bitcoin-qt
-    //! \param reply is aforementioned response
-    //!
-    void finishedSlot(QNetworkReply* reply);
-    void authenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator);
+
+    // Called when there's a network reply from bitcoin
+    void OnNetReplySlot(QNetworkReply* reply);
+
+    // Called if bitcoin requires authentication (user/pw)
+    void OnAuthReqSlot(QNetworkReply* reply, QAuthenticator* authenticator);
 };
 
 #endif // JSONRPC_H

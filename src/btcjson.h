@@ -4,7 +4,6 @@
 #include <QByteArray>
 #include <QString>
 #include <QSharedPointer>
-#include "IStringProcessor.h"
 #include "btcrpc.h"
 
 
@@ -146,7 +145,7 @@ namespace BtcJsonObjects
 
 using namespace BtcJsonObjects;
 
-// This class will create/process json queries and send/receive them with the help of BitcoinRpc.
+// This class will create/process json queries and send/receive them with the help of BitcoinRpc
 class BtcJson //: IStringProcessor
 {    
 public:
@@ -155,26 +154,35 @@ public:
 
     void Initialize();       // should make this part of all modules
 
-    //void ProcessString(QSharedPointer<QByteArray>);
+    // Checks the reply object received from bitcoin-qt for errors and returns the reply
     bool ProcessRpcString(QSharedPointer<QByteArray> jsonString, QJsonValue &result);
+    // Splits the reply object received from bitcoin-qt into error and result objects
     void ProcessRpcString(QSharedPointer<QByteArray> jsonString, QString& id, QJsonValue& error, QJsonValue& result);
 
     void GetInfo();
     double GetBalance(QString account = NULL);
 
+    // Gets the default address for the specified account
     QString GetAccountAddress(QString account = NULL);
 
+    // Returns list of all addresses belonging to account
     QStringList GetAddressesByAccount(QString account = "");    // list addresses for account, "" is the default account.
 
+    // Add new address to account
     QString GetNewAddress(QString account = NULL);
 
+    // Adds an address requiring n keys to sign before it can spend its inputs
     QString AddMultiSigAddress(int nRequired, QJsonArray keys, QString account = NULL);    // gonna continue here at home, remove this line and it should compile.
 
+    // Returns list of account names
+    // Could also return the balance of each account but I find that confusing
     QStringList ListAccounts();
 
     QString SendToAddress(QString btcAddress, double amount);
     
-    QString SendMany(QList<BtcAddressAmount> txTargets, QString fromAccount = NULL);
+    // Send to multiple addresses at once
+    // txOutput maps amounts (double) to addresses (QString)
+    QString SendMany(QVariantMap txOutputs, QString fromAccount = NULL);
 
     bool SetTxFee(double fee);
 

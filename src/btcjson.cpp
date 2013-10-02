@@ -227,12 +227,12 @@ bool BtcJson::SetTxFee(double fee)
     return true;    // todo: check for more errors
 }
 
-QString BtcJson::SendMany(QList<BtcAddressAmount> txTargets, QString fromAccount)
+QString BtcJson::SendMany(QVariantMap txOutputs, QString fromAccount)
 {
     QJsonArray params;
     params.append(fromAccount);
-    params.append(txTargets);
-lökj
+    params.append(QJsonObject::fromVariantMap(txOutputs));
+
     QJsonValue result;
     if(!ProcessRpcString(
                 Modules::bitcoinRpc->SendRpc(

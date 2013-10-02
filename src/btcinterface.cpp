@@ -54,8 +54,11 @@ bool BtcInterface::TestBtcJson()
     if(txID == NULL || txID == "")
         return false;
 
-    // validate transaction
+    // validate simple transactions
     Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
+
+    // TODO: if we call GetTransaction before this client knows about the transaction,
+    // it will return error "Invalid or non-wallet transaction id".
     QSharedPointer<BtcTransaction> transaction = Modules::json->GetTransaction(txID);
     if(transaction == NULL)
         return false;
@@ -76,12 +79,18 @@ bool BtcInterface::TestBtcJson()
                    transaction->Confirmations, MIN_CONFIRMS,
                    success.toStdString().c_str());
 
+    return true;
+
+    // sendmany
     QVariantMap txTargets;
     for(int i = 0; i < 4; i++)
     {
-        txTargets[Modules::json->GetNewAddress] = i+0.1*i+0.01*i+0.001*i;
+        txTargets[Modules::json->GetNewAddress()] = i+0.1*i+0.01*i+0.001*i;
     }
-    sendmany
+    QString txManyID = Modules::json->SendMany(txTargets);
+
+
+
 
     return true;
 

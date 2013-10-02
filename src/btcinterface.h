@@ -13,13 +13,18 @@ class BtcInterface : public QObject
 public:
     explicit BtcInterface(QObject *parent = 0);
 
+    // This function will faciliate two-of-two escrow
+    // Or maybe I will remove it again and replace it with something more dynamic.
     QString CreateTwoOfTwoEscrowAddress(QString myKey, QString hisKey);
 
+    // Checks whether a transaction has been confirmed often enough
     bool TransactionConfirmed(QSharedPointer<BtcTransaction> transaction, int minconfirms = 6);
 
+    // Checks a transaction for correct amount and confirmations.
     bool TransactionSuccessfull(double amount, QSharedPointer<BtcTransaction> transaction, int minConfirms = 6);
 
-    // cba to implement proper unit testing for now so this will have to do:
+
+    // cba to implement proper unit testing so for now this will have to do
     bool TestBtcJson();
 
 

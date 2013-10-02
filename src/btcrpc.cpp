@@ -18,7 +18,7 @@ BtcRpc::BtcRpc()
     InitSession();
 
     // set up the http header and stuff
-    InitBitcoinRpc();
+    InitNAM();
 
     // send a getinfo query over the network to see if bitcoin-qt responds
     // ConnectBitcoinRpc();
@@ -62,14 +62,14 @@ void BtcRpc::InitSession()
     OTLog::vOutput(0, "Network opened on %s\n", iff.humanReadableName().toStdString().c_str());
 }
 
-void BtcRpc::InitBitcoinRpc()
+void BtcRpc::InitNAM()
 {
     // create new network access manager
     this->rpcNAM.reset(new QNetworkAccessManager());
     // connect the function to receive replies from bitcoin qt
-    QObject::connect(this->rpcNAM.data(), SIGNAL(finished(QNetworkReply*)), this, SLOT(finishedSlot(QNetworkReply*)));
+    QObject::connect(this->rpcNAM.data(), SIGNAL(finished(QNetworkReply*)), this, SLOT(OnNetReplySlot(QNetworkReply*)));
     // connect the function to authenticate when required
-    QObject::connect(this->rpcNAM.data(), SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QObject::connect(this->rpcNAM.data(), SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(OnAuthReqSlot(QNetworkReply*,QAuthenticator*)));
 }
 
 void BtcRpc::SetHeaderInformation()
@@ -143,7 +143,7 @@ void BtcRpc::ProcessReply(QSharedPointer<QByteArray> replyContType, const QShare
     return;
 }
 
-void BtcRpc::authenticationRequired(QNetworkReply* reply, QAuthenticator* authenticator)
+void BtcRpc::OnAuthReqSlot(QNetworkReply* reply, QAuthenticator* authenticator)
 {
     OTLog::vOutput(0, "%s\n", QString(reply->readAll()).toStdString().c_str());
 
@@ -152,7 +152,7 @@ void BtcRpc::authenticationRequired(QNetworkReply* reply, QAuthenticator* authen
     authenticator->setPassword(this->password);
 }
 
-void BtcRpc::finishedSlot(QNetworkReply *reply)
+void BtcRpc::OnNetReplySlot(QNetworkReply *reply)
 {
     if(reply == NULL)
         return;
