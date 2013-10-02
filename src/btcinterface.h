@@ -23,6 +23,8 @@ public:
     // Checks a transaction for correct amount and confirmations.
     bool TransactionSuccessfull(double amount, QSharedPointer<BtcTransaction> transaction, int minConfirms = 6);
 
+    // Halts program execution until the bitcoin client learns about a new transaction
+    bool WaitForTransaction(QString txID, int timerMS = 500, int maxAttempts = 20);
 
     // cba to implement proper unit testing so for now this will have to do
     bool TestBtcJson();

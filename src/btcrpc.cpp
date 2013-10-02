@@ -65,6 +65,7 @@ void BtcRpc::InitSession()
 void BtcRpc::InitNAM()
 {
     // create new network access manager
+    // rpcNAM is a pointer object, hence the .reset() and .data() functions.
     this->rpcNAM.reset(new QNetworkAccessManager());
     // connect the function to receive replies from bitcoin qt
     QObject::connect(this->rpcNAM.data(), SIGNAL(finished(QNetworkReply*)), this, SLOT(OnNetReplySlot(QNetworkReply*)));

@@ -6,7 +6,7 @@
 #include <QLinkedList>
 
 // This class will handle network communication.
-// It can only connect to one http interface at once
+// It can only connect to one http interface at a time,
 // but you can connect to a new one at will using ConnectToBitcoin()
 class BtcRpc : public QObject
 {

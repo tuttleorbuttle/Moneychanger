@@ -2,6 +2,7 @@
 #include "btcinterface.h"
 #include "btcjson.h"
 #include "modules.h"
+#include "utils.h"
 
 using namespace BtcJsonObjects;
 
@@ -59,6 +60,7 @@ bool BtcInterface::TestBtcJson()
 
     // TODO: if we call GetTransaction before this client knows about the transaction,
     // it will return error "Invalid or non-wallet transaction id".
+    WaitForTransaction(txID);
     QSharedPointer<BtcTransaction> transaction = Modules::json->GetTransaction(txID);
     if(transaction == NULL)
         return false;
@@ -109,6 +111,18 @@ bool BtcInterface::TransactionSuccessfull(double amount, QSharedPointer<BtcTrans
     // TODO: check for rounding errors when comparing amounts?
 
     return TransactionConfirmed(transaction, minConfirms) && transaction->Amount >= amount; // check if confirmed AND enough btc
+}
+
+bool BtcInterface::WaitForTransaction(QString txID, int timerMS, int maxAttempts)
+{
+    utils::SleepSimulator sleeper;
+
+    // TODO: if this blocks the GUI then we should multithread or async it
+    // or let the user press a refresh button until he gets a result
+    while(Modules::json->GetTransaction(txID) == NULL && maxAttempts--)
+    {
+        sleeper.sleep(1000);
+    }
 }
 
 
