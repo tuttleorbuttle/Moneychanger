@@ -12,46 +12,65 @@ namespace BtcJsonObjects
     // if a query returns a complex object we should convert it to a struct instead of
     // passing around the QJsonObject
 
+    // This struct holds various information about a bitcoin transaction.
+    // Its constructor accepts the QJsonObject returned by "gettransaction".
+    // Does not take into account block rewards.
     struct BtcTransaction
     {
-        //double TotalAmount;     // amount with fee but we don't need that
+        //double TotalAmount;   // amount with fee but we don't need that
         int Confirmations;
-        double Amount;          // amount without fee
+        double AmountReceived;  // amount received
+        double AmountSent;      // amount sent
+        double Amount;          // +received -sent
         double Fee;             // only displayed when sender
         QString TxID;
-        double Time;       // is this a string?
-        QString Account;
-        QString Address;    // recipient address. how do we find sender? also this should be an array I think because details[] is one.
-        QString Category;   // "send", "receive", "immature" (unconfirmed block reward), ...?
+        double Time;
+        //QString Account;
+        QList<QString> AddressesRecv;   // received to addresses
+        QList<QString> AddressesSent;   // sent to addresses
+        //QString Category;           // "send", "receive", "immature" (unconfirmed block reward), ...?
 
         BtcTransaction(QJsonObject reply)
         {
+            SetDefaults();
+
             if(!reply["error"].isNull())
-            {
-                SetDefaults();
                 return;
-            }
 
             this->Confirmations = (int)(reply["confirmations"].toDouble());
-            this->Amount = reply["amount"].toDouble();  // is negative when sending and zero if block reward or if you are sender AND receiver
-                                                        // correct amounts can be found in "details"[]
+            this->Amount = reply["amount"].toDouble();
+
             this->Fee = reply["fee"].toDouble();
-            //this->TotalAmount = reply["amount"].toDouble(); + this->Fee;  not needed and doesn't work like that anyway
             this->TxID = reply["txid"].toString();
             this->Time = reply["time"].toDouble();
 
+            // details
             if(!reply["details"].isArray())
                 return;
             QJsonArray details = reply["details"].toArray();
             if(details.size() == 0)
                 return;
-            QJsonObject detail = details[0].toObject();
-            // TODO: the entire array.
-            // what if a transaction sends to multiple addresses at once but only one is ours?
 
-            this->Address = detail["address"].toString();
-            this->Category = detail["category"].toString();
-            this->Account = detail["account"].toString();
+            for(int i = 0; i < details.size(); i++)
+            {
+                QJsonObject detail = details[i].toObject();
+                QString address = detail["address"].toString();
+                QString category = detail["category"].toString();
+                double amount = detail["amount"].toDouble();
+                if(category == "send")
+                {
+                    this->AddressesSent += address;
+                    this->AmountSent += amount; // will be 0 or less
+                }
+                else if(category == "receive")
+                {
+                    this->AddressesRecv += address;
+                    this->AmountReceived += amount; // will be 0 or more
+                }
+                else if(category == "immature")
+                {
+                }
+            }
 
             /*
              * sample gettransaction response
@@ -117,14 +136,15 @@ namespace BtcJsonObjects
         void SetDefaults()
         {
             //TotalAmount = 0.0;
-            Confirmations = 0;
-            Amount = 0.0;
-            Fee = 0.0;
-            TxID = QString();
-            Time = 0;
-            Account = QString();
-            Address = QString();
-            Category = QString();
+            this->Confirmations = 0;
+            this->AmountReceived = 0.0;
+            this->AmountSent = 0.0;
+            this->Amount = 0.0;
+            this->Fee = 0.0;
+            this->TxID = QString();
+            this->Time = 0;
+            this->AddressesRecv = QList<QString>();
+            this->AddressesSent = QList<QString>();
         }
     };
 

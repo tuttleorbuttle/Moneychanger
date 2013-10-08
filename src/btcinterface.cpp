@@ -6,7 +6,7 @@
 
 using namespace BtcJsonObjects;
 
-#define MIN_CONFIRMS 6
+#define MIN_CONFIRMS 0  // should be 6
 
 BtcInterface::BtcInterface(QObject *parent) :
     QObject(parent)
@@ -23,25 +23,44 @@ QString BtcInterface::CreateTwoOfTwoEscrowAddress(QString myKey, QString hisKey)
 
 bool BtcInterface::TestBtcJson()
 {
+    //-----------------------
+    // test various simple rpc calls
+    //-----------------------
     Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
-    //Modules::bitcoinRpc->ConnectToBitcoin("moneychanger", "money1234");
     Modules::json->GetInfo();
     double balance = Modules::json->GetBalance();
     QStringList accounts = Modules::json->ListAccounts();
     QString address = Modules::json->GetNewAddress();
-    QStringList keys;
-    keys.append(Modules::json->GetNewAddress());    // key can be an address or public key
-    keys.append(Modules::json->GetNewAddress());
-    QString multiSigAddr = Modules::json->AddMultiSigAddress(2, QJsonArray::fromStringList(keys));  // maybe add them to account moneychanger-multisig or w/e to keep an overview
-    Modules::json->GetInfo();
-
-    OTLog::vOutput(0, "Balance: %f\n", balance);
     if(address != NULL)
         OTLog::vOutput(0, "New address created: \"%s\"\n", address.toStdString().c_str());
-    if(multiSigAddr != NULL)
-        OTLog::vOutput(0, "Multisig address created: \"%s\"\n", multiSigAddr.toStdString().c_str());
 
-    // test sending, receiving and validating transactions
+    OTLog::vOutput(0, "Balance: %f\n", balance);
+
+    //------------------------
+    // create multisig address
+    //------------------------
+    QStringList keys;   // list of public keys or addresses
+    keys.append(Modules::json->GetNewAddress("testmultisig"));
+    keys.append(Modules::json->GetNewAddress("testmultisig"));
+    // add new multisig address to account "testmultisig"
+    QString multiSigAddr = Modules::json->AddMultiSigAddress(2, QJsonArray::fromStringList(keys), "testmultisig");
+
+    if(multiSigAddr != NULL && multiSigAddr != "")
+        OTLog::vOutput(0, "Multisig address created: \"%s\"\n", multiSigAddr.toStdString().c_str());
+    else
+        return false;
+
+    keys.clear();
+    keys += "3invalidkey";
+    keys += "3invalidkey2";
+    // attempt to create an address with invalid keys
+    QString multiSigAddrInvalid = Modules::json->AddMultiSigAddress(2, QJsonArray::fromStringList(keys), "testmultisig");
+    if(multiSigAddrInvalid != NULL && multiSigAddrInvalid != "")
+        return false;   // if that's the case we'll have to check the keys for validity
+
+    //--------------
+    // sending funds
+    //--------------
     // receive to bitcoin-testnet-box #2
     Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
     QString recvAddr = Modules::json->GetNewAddress("testAccount");
@@ -49,54 +68,120 @@ bool BtcInterface::TestBtcJson()
 
     // send from bitcoin-testnet-box #1
     Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
+
+    // set transaction fee
     Modules::json->SetTxFee(10.1);
-    QString txID = Modules::json->SendToAddress(recvAddr, 1.23456789);
+
+    // remember how much we send (want) so we can verify the tx later
+    double amountRequested = 1.23456789;
+
+    // send the funds
+    QString txID = Modules::json->SendToAddress(recvAddr, amountRequested);
 
     if(txID == NULL || txID == "")
         return false;
 
-    // validate simple transactions
+    //-----------------------------
+    // validate simple transaction (the one we just sent)
+    //-----------------------------
     Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
 
-    // TODO: if we call GetTransaction before this client knows about the transaction,
+    // if we call GetTransaction before this client knows about the transaction,
     // it will return error "Invalid or non-wallet transaction id".
+    // so we wait for it:
     WaitForTransaction(txID);
     QSharedPointer<BtcTransaction> transaction = Modules::json->GetTransaction(txID);
     if(transaction == NULL)
         return false;
-    double fee = transaction->Fee;
-    double amount = transaction->Amount;
-    //double totalAmount = transaction->TotalAmount;
-    int confirms = transaction->Confirmations;
-    QString txAddress = transaction->Address;
 
-    QString success = TransactionSuccessfull(transaction->Amount, transaction, MIN_CONFIRMS) ? "" : "not";
+    double fee = transaction->Fee;
+    double amountReceived = transaction->Amount;
+    int confirms = transaction->Confirmations;
+
+    // check for correct amount and confirmations
+    bool txSuccess = TransactionSuccessfull(amountRequested, transaction, MIN_CONFIRMS);
+
+    // output some details about transaction success
+    QString txSuccessStr = txSuccess ? "" : "not ";
     OTLog::vOutput(0, "Transaction\n\
                    ID %s\n\
-                   to Address %s\n\
                    %i of %i confirmations\n\
-                   did %s complete successfully.\n",
+                   did %s complete successfully:\n\
+                   %fBTC received (you requested %f)",
                    txID.toStdString().c_str(),
-                   txAddress.toStdString().c_str(),
-                   transaction->Confirmations, MIN_CONFIRMS,
-                   success.toStdString().c_str());
+                   confirms, MIN_CONFIRMS,
+                   txSuccessStr.toStdString().c_str(),
+                   amountReceived, amountRequested);
+    if(!txSuccess) return false;
 
-    return true;
-
+    //---------
     // sendmany
-    QVariantMap txTargets;
-    for(int i = 0; i < 4; i++)
+    //---------
+    QVariantMap txTargets;  // maps amounts to addresses
+
+    double amounts[6];      // amounts that will be sent in one tx
+    QString addresses[6];   // addresses to which to send those amounts
+    for(int i = 0; i < 6; i++)
     {
-        txTargets[Modules::json->GetNewAddress()] = i+0.1*i+0.01*i+0.001*i;
+        amounts[i] = i + 1;     // generate the amounts (0 is invalid)
     }
+
+    // connect to first recipient, who will also be the sender
+    Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123","http://127.0.0.1", 19001);
+    addresses[0] = Modules::json->GetNewAddress("testsendmany");
+    addresses[1] = Modules::json->GetNewAddress("testsendmany");
+
+    // connect to second recipient
+    Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
+    addresses[2] = Modules::json->GetNewAddress("testsendmany");
+    addresses[3] = Modules::json->GetNewAddress("testsendmany");
+
+    // connect to third recipient
+    Modules::bitcoinRpc->ConnectToBitcoin("moneychanger", "money1234", "http://127.0.0.1", 8332);
+    addresses[4] = Modules::json->GetNewAddress("testsendmany");
+    addresses[5] = Modules::json->GetNewAddress("testsendmany");
+
+    // fill the target map
+    for(int i = 0; i < 6; i++)
+    {
+        txTargets[addresses[i]] = amounts[i];
+    }
+
+    // connect to sender
+    Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123","http://127.0.0.1", 19001);
+    // send to the targets
     QString txManyID = Modules::json->SendMany(txTargets);
 
+    if(txManyID == NULL || txManyID == "")
+        return false;
 
+    //-----------------------------------------------------
+    // validate sendmany transaction (the one we just sent)
+    //-----------------------------------------------------
+    WaitForTransaction(txManyID);   // TODO: tx = WaitForAndGetTransaction(txID)
+    transaction = Modules::json->GetTransaction(txManyID);
 
+    // validate transaction for recipient #1
+    double sent;
+    for(int i = 0; i < 6; i++) sent += amounts[i];
+    txSuccess = TransactionSuccessfull(amounts[0] + amounts[1] - sent, transaction, MIN_CONFIRMS);
+    if(!txSuccess) return false;
+
+    // validate transaction for recipient #2
+    Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123","http://127.0.0.1", 19011);
+    WaitForTransaction(txManyID);
+    transaction = Modules::json->GetTransaction(txManyID);
+    txSuccess = TransactionSuccessfull(amounts[2] + amounts[3], transaction, MIN_CONFIRMS);
+    if(!txSuccess) return false;
+
+    // validate transaction for recipient #3
+    Modules::bitcoinRpc->ConnectToBitcoin("moneychanger", "money1234", "http://127.0.0.1", 8332);
+    WaitForTransaction(txManyID);
+    transaction = Modules::json->GetTransaction(txManyID);
+    txSuccess = TransactionSuccessfull(amounts[4] + amounts[5], transaction, MIN_CONFIRMS);
+    if(!txSuccess) return false;
 
     return true;
-
-    // TODO: see if bitcoin returns an error when attempting to create a multisigaddress with invalid keys
 }
 
 // returns whether a transaction has been confirmed often enough
