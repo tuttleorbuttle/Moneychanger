@@ -26,6 +26,9 @@ public:
     // Halts program execution until the bitcoin client learns about a new transaction
     bool WaitForTransaction(QString txID, int timerMS = 500, int maxAttempts = 20);
 
+    // Halts program execution and returns the transaction once it arrives
+    QSharedPointer<BtcTransaction> WaitGetTransaction(QString txID, int timerMS = 500, int maxAttempts = 20);
+
     // cba to implement proper unit testing so for now this will have to do
     bool TestBtcJson();
 

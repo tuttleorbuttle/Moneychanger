@@ -89,8 +89,7 @@ bool BtcInterface::TestBtcJson()
     // if we call GetTransaction before this client knows about the transaction,
     // it will return error "Invalid or non-wallet transaction id".
     // so we wait for it:
-    WaitForTransaction(txID);
-    QSharedPointer<BtcTransaction> transaction = Modules::json->GetTransaction(txID);
+    QSharedPointer<BtcTransaction> transaction = WaitGetTransaction(txID);
     if(transaction == NULL)
         return false;
 
@@ -158,8 +157,7 @@ bool BtcInterface::TestBtcJson()
     //-----------------------------------------------------
     // validate sendmany transaction (the one we just sent)
     //-----------------------------------------------------
-    WaitForTransaction(txManyID);   // TODO: tx = WaitForAndGetTransaction(txID)
-    transaction = Modules::json->GetTransaction(txManyID);
+    transaction = WaitGetTransaction(txManyID);
 
     // validate transaction for recipient #1
     double sent;
@@ -169,15 +167,13 @@ bool BtcInterface::TestBtcJson()
 
     // validate transaction for recipient #2
     Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123","http://127.0.0.1", 19011);
-    WaitForTransaction(txManyID);
-    transaction = Modules::json->GetTransaction(txManyID);
+    transaction = WaitGetTransaction(txManyID);
     txSuccess = TransactionSuccessfull(amounts[2] + amounts[3], transaction, MIN_CONFIRMS);
     if(!txSuccess) return false;
 
     // validate transaction for recipient #3
     Modules::bitcoinRpc->ConnectToBitcoin("moneychanger", "money1234", "http://127.0.0.1", 8332);
-    WaitForTransaction(txManyID);
-    transaction = Modules::json->GetTransaction(txManyID);
+    transaction = WaitGetTransaction(txManyID);
     txSuccess = TransactionSuccessfull(amounts[4] + amounts[5], transaction, MIN_CONFIRMS);
     if(!txSuccess) return false;
 
@@ -200,14 +196,23 @@ bool BtcInterface::TransactionSuccessfull(double amount, QSharedPointer<BtcTrans
 
 bool BtcInterface::WaitForTransaction(QString txID, int timerMS, int maxAttempts)
 {
+    return !WaitGetTransaction(txID, timerMS, maxAttempts).isNull();
+}
+
+QSharedPointer<BtcTransaction> BtcInterface::WaitGetTransaction(QString txID, int timerMS, int maxAttempts)
+{
     utils::SleepSimulator sleeper;
+
+    QSharedPointer<BtcTransaction> transaction;
 
     // TODO: if this blocks the GUI then we should multithread or async it
     // or let the user press a refresh button until he gets a result
-    while(Modules::json->GetTransaction(txID) == NULL && maxAttempts--)
+    while((transaction = Modules::json->GetTransaction(txID)) == NULL && maxAttempts--)
     {
-        sleeper.sleep(1000);
+        sleeper.sleep(timerMS);
     }
+
+    return transaction;
 }
 
 
