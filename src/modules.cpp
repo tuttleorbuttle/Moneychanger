@@ -1,18 +1,18 @@
 #include "modules.h"
 
 
-QScopedPointer<BtcRpc> Modules::bitcoinRpc;
-QScopedPointer<BtcJson> Modules::json;
+QScopedPointer<BtcRpc> Modules::btcRpc;
+QScopedPointer<BtcJson> Modules::btcJson;
 QScopedPointer<BtcInterface> Modules::btcInterface;
 
 
 Modules::Modules(QObject *parent) :
     QObject(parent)
 {
-    Modules::bitcoinRpc.reset(new BtcRpc());
-    Modules::json.reset(new BtcJson());
+    Modules::btcRpc.reset(new BtcRpc());
+    Modules::btcJson.reset(new BtcJson());
     Modules::btcInterface.reset(new BtcInterface());
-    json->Initialize();
+    btcJson->Initialize();
 }
 
 Modules::~Modules()

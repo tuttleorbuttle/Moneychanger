@@ -18,7 +18,7 @@ QString BtcInterface::CreateTwoOfTwoEscrowAddress(QString myKey, QString hisKey)
 {
     QJsonArray keys;
     keys.append(myKey); keys.append(hisKey);
-    return Modules::json->AddMultiSigAddress(2, keys, "moneychanger-twooftwo");
+    return Modules::btcJson->AddMultiSigAddress(2, keys, "moneychanger-twooftwo");
 }
 
 bool BtcInterface::TestBtcJson()
@@ -26,11 +26,11 @@ bool BtcInterface::TestBtcJson()
     //-----------------------
     // test various simple rpc calls
     //-----------------------
-    Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
-    Modules::json->GetInfo();
-    double balance = Modules::json->GetBalance();
-    QStringList accounts = Modules::json->ListAccounts();
-    QString address = Modules::json->GetNewAddress();
+    Modules::btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
+    Modules::btcJson->GetInfo();
+    double balance = Modules::btcJson->GetBalance();
+    QStringList accounts = Modules::btcJson->ListAccounts();
+    QString address = Modules::btcJson->GetNewAddress();
     if(address != NULL)
         OTLog::vOutput(0, "New address created: \"%s\"\n", address.toStdString().c_str());
 
@@ -40,10 +40,10 @@ bool BtcInterface::TestBtcJson()
     // create multisig address
     //------------------------
     QStringList keys;   // list of public keys or addresses
-    keys.append(Modules::json->GetNewAddress("testmultisig"));
-    keys.append(Modules::json->GetNewAddress("testmultisig"));
+    keys.append(Modules::btcJson->GetNewAddress("testmultisig"));
+    keys.append(Modules::btcJson->GetNewAddress("testmultisig"));
     // add new multisig address to account "testmultisig"
-    QString multiSigAddr = Modules::json->AddMultiSigAddress(2, QJsonArray::fromStringList(keys), "testmultisig");
+    QString multiSigAddr = Modules::btcJson->AddMultiSigAddress(2, QJsonArray::fromStringList(keys), "testmultisig");
 
     if(multiSigAddr != NULL && multiSigAddr != "")
         OTLog::vOutput(0, "Multisig address created: \"%s\"\n", multiSigAddr.toStdString().c_str());
@@ -54,7 +54,7 @@ bool BtcInterface::TestBtcJson()
     keys += "3invalidkey";
     keys += "3invalidkey2";
     // attempt to create an address with invalid keys
-    QString multiSigAddrInvalid = Modules::json->AddMultiSigAddress(2, QJsonArray::fromStringList(keys), "testmultisig");
+    QString multiSigAddrInvalid = Modules::btcJson->AddMultiSigAddress(2, QJsonArray::fromStringList(keys), "testmultisig");
     if(multiSigAddrInvalid != NULL && multiSigAddrInvalid != "")
         return false;   // if that's the case we'll have to check the keys for validity
 
@@ -62,21 +62,21 @@ bool BtcInterface::TestBtcJson()
     // sending funds
     //--------------
     // receive to bitcoin-testnet-box #2
-    Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
-    QString recvAddr = Modules::json->GetNewAddress("testAccount");
-    Modules::json->SetTxFee(10.2);
+    Modules::btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
+    QString recvAddr = Modules::btcJson->GetNewAddress("testAccount");
+    Modules::btcJson->SetTxFee(10.2);
 
     // send from bitcoin-testnet-box #1
-    Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
+    Modules::btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
 
     // set transaction fee
-    Modules::json->SetTxFee(10.1);
+    Modules::btcJson->SetTxFee(10.1);
 
     // remember how much we send (want) so we can verify the tx later
     double amountRequested = 1.23456789;
 
     // send the funds
-    QString txID = Modules::json->SendToAddress(recvAddr, amountRequested);
+    QString txID = Modules::btcJson->SendToAddress(recvAddr, amountRequested);
 
     if(txID == NULL || txID == "")
         return false;
@@ -84,7 +84,7 @@ bool BtcInterface::TestBtcJson()
     //-----------------------------
     // validate simple transaction (the one we just sent)
     //-----------------------------
-    Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
+    Modules::btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
 
     // if we call GetTransaction before this client knows about the transaction,
     // it will return error "Invalid or non-wallet transaction id".
@@ -126,19 +126,19 @@ bool BtcInterface::TestBtcJson()
     }
 
     // connect to first recipient, who will also be the sender
-    Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123","http://127.0.0.1", 19001);
-    addresses[0] = Modules::json->GetNewAddress("testsendmany");
-    addresses[1] = Modules::json->GetNewAddress("testsendmany");
+    Modules::btcRpc->ConnectToBitcoin("admin1", "123","http://127.0.0.1", 19001);
+    addresses[0] = Modules::btcJson->GetNewAddress("testsendmany");
+    addresses[1] = Modules::btcJson->GetNewAddress("testsendmany");
 
     // connect to second recipient
-    Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
-    addresses[2] = Modules::json->GetNewAddress("testsendmany");
-    addresses[3] = Modules::json->GetNewAddress("testsendmany");
+    Modules::btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
+    addresses[2] = Modules::btcJson->GetNewAddress("testsendmany");
+    addresses[3] = Modules::btcJson->GetNewAddress("testsendmany");
 
     // connect to third recipient
-    Modules::bitcoinRpc->ConnectToBitcoin("moneychanger", "money1234", "http://127.0.0.1", 8332);
-    addresses[4] = Modules::json->GetNewAddress("testsendmany");
-    addresses[5] = Modules::json->GetNewAddress("testsendmany");
+    Modules::btcRpc->ConnectToBitcoin("moneychanger", "money1234", "http://127.0.0.1", 8332);
+    addresses[4] = Modules::btcJson->GetNewAddress("testsendmany");
+    addresses[5] = Modules::btcJson->GetNewAddress("testsendmany");
 
     // fill the target map
     for(int i = 0; i < 6; i++)
@@ -147,9 +147,9 @@ bool BtcInterface::TestBtcJson()
     }
 
     // connect to sender
-    Modules::bitcoinRpc->ConnectToBitcoin("admin1", "123","http://127.0.0.1", 19001);
+    Modules::btcRpc->ConnectToBitcoin("admin1", "123","http://127.0.0.1", 19001);
     // send to the targets
-    QString txManyID = Modules::json->SendMany(txTargets);
+    QString txManyID = Modules::btcJson->SendMany(txTargets);
 
     if(txManyID == NULL || txManyID == "")
         return false;
@@ -166,13 +166,13 @@ bool BtcInterface::TestBtcJson()
     if(!txSuccess) return false;
 
     // validate transaction for recipient #2
-    Modules::bitcoinRpc->ConnectToBitcoin("admin2", "123","http://127.0.0.1", 19011);
+    Modules::btcRpc->ConnectToBitcoin("admin2", "123","http://127.0.0.1", 19011);
     transaction = WaitGetTransaction(txManyID);
     txSuccess = TransactionSuccessfull(amounts[2] + amounts[3], transaction, MIN_CONFIRMS);
     if(!txSuccess) return false;
 
     // validate transaction for recipient #3
-    Modules::bitcoinRpc->ConnectToBitcoin("moneychanger", "money1234", "http://127.0.0.1", 8332);
+    Modules::btcRpc->ConnectToBitcoin("moneychanger", "money1234", "http://127.0.0.1", 8332);
     transaction = WaitGetTransaction(txManyID);
     txSuccess = TransactionSuccessfull(amounts[4] + amounts[5], transaction, MIN_CONFIRMS);
     if(!txSuccess) return false;
@@ -207,7 +207,7 @@ QSharedPointer<BtcTransaction> BtcInterface::WaitGetTransaction(QString txID, in
 
     // TODO: if this blocks the GUI then we should multithread or async it
     // or let the user press a refresh button until he gets a result
-    while((transaction = Modules::json->GetTransaction(txID)) == NULL && maxAttempts--)
+    while((transaction = Modules::btcJson->GetTransaction(txID)) == NULL && maxAttempts--)
     {
         sleeper.sleep(timerMS);
     }

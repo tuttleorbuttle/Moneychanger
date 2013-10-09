@@ -95,7 +95,7 @@ QByteArray BtcJson::CreateJsonQuery(QString command, QJsonArray params, QString 
 
 void BtcJson::GetInfo() // if we ever need this for anything we can return a struct holding all the information
 {
-    QSharedPointer<QByteArray> reply = Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETINFO));
+    QSharedPointer<QByteArray> reply = Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_GETINFO));
     QString id;
     QJsonValue error;
     QJsonValue result;
@@ -114,7 +114,7 @@ double BtcJson::GetBalance(QString account/*=NULL*/)
     params.append(account);      // account
     //params.append(1);       // min confirmations, 1 is default, we probably don't need this line.
 
-    QSharedPointer<QByteArray> reply = Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
+    QSharedPointer<QByteArray> reply = Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
 
     QJsonValue result;
     if(!ProcessRpcString(reply, result) || !result.isDouble())
@@ -131,7 +131,7 @@ QString BtcJson::GetAccountAddress(QString account/*= NULL*/)
     params.append(account);
 
     QJsonValue result;
-    if(!ProcessRpcString(Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETACCOUNTADDRESS, params)), result))
+    if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_GETACCOUNTADDRESS, params)), result))
     {
         return NULL;     // error
     }
@@ -153,7 +153,7 @@ QString BtcJson::GetNewAddress(QString account/*=NULL*/)
     params.append(account);
 
     QJsonValue result;
-    if(!ProcessRpcString(Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_GETNEWADDRESS, params)), result))
+    if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_GETNEWADDRESS, params)), result))
     {
         return NULL;
     }
@@ -172,7 +172,7 @@ QString BtcJson::AddMultiSigAddress(int nRequired, QJsonArray keys, QString acco
     params.append(account);
 
     QJsonValue result;
-    if(!ProcessRpcString(Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_ADDMULTISIGADDRESS, params)), result))
+    if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_ADDMULTISIGADDRESS, params)), result))
         return NULL;      // error
 
     if(!result.isString())
@@ -184,7 +184,7 @@ QString BtcJson::AddMultiSigAddress(int nRequired, QJsonArray keys, QString acco
 QStringList BtcJson::ListAccounts()
 {
     QJsonValue result;
-    if(!ProcessRpcString(Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_LISTACCOUNTS)), result))
+    if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_LISTACCOUNTS)), result))
         return QStringList();     // error
 
     if(!result.isObject())
@@ -203,7 +203,7 @@ QString BtcJson::SendToAddress(QString btcAddress, double amount)
 
     QJsonValue result;
     if(!ProcessRpcString(
-                Modules::bitcoinRpc->SendRpc(CreateJsonQuery(METHOD_SENDTOADDRESS, params)),result))
+                Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_SENDTOADDRESS, params)),result))
         return NULL;   // error
 
     if(!result.isString())
@@ -219,7 +219,7 @@ bool BtcJson::SetTxFee(double fee)
 
     QJsonValue result;
     if(!ProcessRpcString(
-                Modules::bitcoinRpc->SendRpc(
+                Modules::btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_SETTXFEE, params)),
                 result))
         return false;
@@ -235,7 +235,7 @@ QString BtcJson::SendMany(QVariantMap txOutputs, QString fromAccount)
 
     QJsonValue result;
     if(!ProcessRpcString(
-                Modules::bitcoinRpc->SendRpc(
+                Modules::btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_SENDMANY, params)),
                 result))
         return false;
@@ -256,7 +256,7 @@ QSharedPointer<BtcTransaction> BtcJson::GetTransaction(QString txID)
 
     QJsonValue result;
     if(!ProcessRpcString(
-                Modules::bitcoinRpc->SendRpc(
+                Modules::btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_GETTRANSACTION, params)), result))
         return QSharedPointer<BtcTransaction>();    // error
 

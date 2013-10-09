@@ -18,8 +18,8 @@ public:
 
     // TODO: _maybe_ overload the :: operator to check if the pointer isn't NULL
     // and maybe use QSharedPointer?
-    static QScopedPointer<BtcJson> json;
-    static QScopedPointer<BtcRpc> bitcoinRpc;
+    static QScopedPointer<BtcJson> btcJson;
+    static QScopedPointer<BtcRpc> btcRpc;
     static QScopedPointer<BtcInterface> btcInterface;
 
 
