@@ -86,13 +86,10 @@ int main(int argc, char *argv[])
     /** Init JSON wrapper **/
 
     { Modules modules; }    // run constructor once, initialize static pointers and free memory again (does this actually free any memory in a class like this?
+    if(!Modules::btcInterface->TestBtcJson())
+        OTLog::vOutput(0, "Error testing bitcoin integration. Maybe test environment is not set up");
 
-    Modules::btcInterface->TestBtcJson();
 
-    //modules.json->SendToAddress("n3UmDg8a6W8j79GvjBVgdzRGHQcKuJ7ESk", 100.1234567); // testnet-box to bitcoin-qt, I think it only sends 100.123 instead of 100.1234567BTC.
-    //modules.json->SendToAddress("n3dsfnpKhByZ3oVYzbLsCcJ2FDD8RRrJAC", 200); // bitcoin-qt to testnet-box
-
-    
     /** Check Systray capabilities **/
     // This app relies on system tray capabilites;
     // Make sure the system has this capability before running

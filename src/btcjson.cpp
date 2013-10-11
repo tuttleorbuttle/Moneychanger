@@ -16,6 +16,7 @@
 #define METHOD_GETBALANCE           "getbalance"
 #define METHOD_GETACCOUNTADDRESS    "getaccountaddress"
 #define METHOD_GETNEWADDRESS        "getnewaddress"
+#define METHOD_VALIDATEADDRESS      "validateaddress"
 #define METHOD_LISTACCOUNTS         "listaccounts"
 #define METHOD_SENDTOADDRESS        "sendtoaddress"
 #define METHOD_SENDMANY             "sendmany"
@@ -162,6 +163,27 @@ QString BtcJson::GetNewAddress(QString account/*=NULL*/)
         return NULL;     // this should never happen unless the protocol was changed
 
     return result.toString();
+}
+
+bool BtcJson::ValidateAddress(QString address)
+{
+    // this function hasn't been tested yet and might not work.
+
+    QJsonArray params;
+    params.append(address);
+
+    QJsonValue result;
+    if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_VALIDATEADDRESS, params)), result))
+        return false;
+
+    if(!result.isObject())
+        return false;   // shouldn't happen unless protocol is changed
+
+    QJsonObject resultObj = result.toObject();
+    if(!resultObj["isvalid"].isBool())
+        return false;   // shouldn't happen unless protocol is changed
+
+    return resultObj["isvalid"].toBool();
 }
 
 QString BtcJson::AddMultiSigAddress(int nRequired, QJsonArray keys, QString account)

@@ -36,6 +36,12 @@ bool BtcInterface::TestBtcJson()
 
     OTLog::vOutput(0, "Balance: %f\n", balance);
 
+    // validate address
+    if(!Modules::btcJson->ValidateAddress(address))
+        return false;
+    if(Modules::btcJson->ValidateAddress("notanaddress"))
+        return false;
+
     //------------------------
     // create multisig address
     //------------------------

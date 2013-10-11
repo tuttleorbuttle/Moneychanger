@@ -7,6 +7,7 @@
 #include "btcrpc.h"
 
 
+// the actual BtcJson class is below this namespace
 namespace BtcJsonObjects
 {
     // if a query returns a complex object we should convert it to a struct instead of
@@ -131,6 +132,9 @@ public:
 
     // Add new address to account
     QString GetNewAddress(QString account = NULL);
+
+    // Validate an address
+    bool ValidateAddress(QString address);
 
     // Adds an address requiring n keys to sign before it can spend its inputs
     QString AddMultiSigAddress(int nRequired, QJsonArray keys, QString account = NULL);    // gonna continue here at home, remove this line and it should compile.
