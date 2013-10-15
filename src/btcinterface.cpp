@@ -23,10 +23,20 @@ QString BtcInterface::CreateTwoOfTwoEscrowAddress(QString myKey, QString hisKey)
 
 bool BtcInterface::TestBtcJson()
 {
+    // initialize bitcoin rpc servers
+    // on my computer I use the two bitcoin-testnet-box servers
+    // with a slightly modified config so my regular testnet bitcoin-qt client can connect to them.
+    // the GUI and debug console is sometimes easier to read than the terminal output of bitcoind
+    QSharedPointer<BitcoinServer> server1, server2, bitcoinqt;
+
+    server1.reset(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
+    server2.reset(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
+    bitcoinqt.reset(new BitcoinServer("moneychanger", "money1234", "http://127.0.0.1", 8332));
+
     //-----------------------
     // test various simple rpc calls
     //-----------------------
-    Modules::btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
+    Modules::btcRpc->ConnectToBitcoin(server1);
     Modules::btcJson->GetInfo();
     double balance = Modules::btcJson->GetBalance();
     QStringList accounts = Modules::btcJson->ListAccounts();
@@ -68,12 +78,12 @@ bool BtcInterface::TestBtcJson()
     // sending funds
     //--------------
     // receive to bitcoin-testnet-box #2
-    Modules::btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
+    Modules::btcRpc->ConnectToBitcoin(server2);
     QString recvAddr = Modules::btcJson->GetNewAddress("testAccount");
     Modules::btcJson->SetTxFee(10.2);
 
     // send from bitcoin-testnet-box #1
-    Modules::btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
+    Modules::btcRpc->ConnectToBitcoin(server1);
 
     // set transaction fee
     Modules::btcJson->SetTxFee(10.1);
@@ -90,7 +100,7 @@ bool BtcInterface::TestBtcJson()
     //-----------------------------
     // validate simple transaction (the one we just sent)
     //-----------------------------
-    Modules::btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
+    Modules::btcRpc->ConnectToBitcoin(server2);
 
     // if we call GetTransaction before this client knows about the transaction,
     // it will return error "Invalid or non-wallet transaction id".
@@ -132,17 +142,17 @@ bool BtcInterface::TestBtcJson()
     }
 
     // connect to first recipient, who will also be the sender
-    Modules::btcRpc->ConnectToBitcoin("admin1", "123","http://127.0.0.1", 19001);
+    Modules::btcRpc->ConnectToBitcoin(server1);
     addresses[0] = Modules::btcJson->GetNewAddress("testsendmany");
     addresses[1] = Modules::btcJson->GetNewAddress("testsendmany");
 
     // connect to second recipient
-    Modules::btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
+    Modules::btcRpc->ConnectToBitcoin(server2);
     addresses[2] = Modules::btcJson->GetNewAddress("testsendmany");
     addresses[3] = Modules::btcJson->GetNewAddress("testsendmany");
 
     // connect to third recipient
-    Modules::btcRpc->ConnectToBitcoin("moneychanger", "money1234", "http://127.0.0.1", 8332);
+    Modules::btcRpc->ConnectToBitcoin(bitcoinqt);
     addresses[4] = Modules::btcJson->GetNewAddress("testsendmany");
     addresses[5] = Modules::btcJson->GetNewAddress("testsendmany");
 
@@ -153,7 +163,7 @@ bool BtcInterface::TestBtcJson()
     }
 
     // connect to sender
-    Modules::btcRpc->ConnectToBitcoin("admin1", "123","http://127.0.0.1", 19001);
+    Modules::btcRpc->ConnectToBitcoin(server1);
     // send to the targets
     QString txManyID = Modules::btcJson->SendMany(txTargets);
 
@@ -172,13 +182,13 @@ bool BtcInterface::TestBtcJson()
     if(!txSuccess) return false;
 
     // validate transaction for recipient #2
-    Modules::btcRpc->ConnectToBitcoin("admin2", "123","http://127.0.0.1", 19011);
+    Modules::btcRpc->ConnectToBitcoin(server2);
     transaction = WaitGetTransaction(txManyID);
     txSuccess = TransactionSuccessfull(amounts[2] + amounts[3], transaction, MIN_CONFIRMS);
     if(!txSuccess) return false;
 
     // validate transaction for recipient #3
-    Modules::btcRpc->ConnectToBitcoin("moneychanger", "money1234", "http://127.0.0.1", 8332);
+    Modules::btcRpc->ConnectToBitcoin(bitcoinqt);
     transaction = WaitGetTransaction(txManyID);
     txSuccess = TransactionSuccessfull(amounts[4] + amounts[5], transaction, MIN_CONFIRMS);
     if(!txSuccess) return false;

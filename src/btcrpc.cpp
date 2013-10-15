@@ -114,6 +114,11 @@ bool BtcRpc::ConnectToBitcoin(QString user, QString password, QString url /*= ht
     return true;
 }
 
+bool BtcRpc::ConnectToBitcoin(QSharedPointer<BitcoinServer> server)
+{
+    ConnectToBitcoin(server->user, server->password, server->url, server->port);
+}
+
 QSharedPointer<QByteArray> BtcRpc::SendRpc(const QString jsonString)
 {
     return this->SendRpc(jsonString.toLocal8Bit());
@@ -190,8 +195,13 @@ void BtcRpc::OnNetReplySlot(QNetworkReply *reply)
 
 void BtcRpc::ProcessErrorMessage(const QNetworkReply* reply)
 {
+    // the following Log output can be incredibly useful in determining what is wrong:
     OTLog::vOutput(0, "Error connecting to bitcoin: %s\n", reply->errorString().toStdString().c_str());
-    //OTLog::vOutput(0, "%s\n", QString(reply->readAll()).toStdString().c_str());
+
+    /*
+     * This might help debugging connection problems:
+     * Protocol "" is unknown means you wrote 127.0.0.1 instead of http://127.0.0.1
+    */
 
     switch(reply->error())
     {

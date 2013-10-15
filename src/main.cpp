@@ -88,6 +88,8 @@ int main(int argc, char *argv[])
     { Modules modules; }    // run constructor once, initialize static pointers and free memory again (does this actually free any memory in a class like this?
     if(!Modules::btcInterface->TestBtcJson())
         OTLog::vOutput(0, "Error testing bitcoin integration. Maybe test environment is not set up");
+    else
+        OTLog::vOutput(0, "Bitcoin integration successfully tested.");
 
 
     /** Check Systray capabilities **/
