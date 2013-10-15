@@ -6,7 +6,6 @@
 
 using namespace BtcJsonObjects;
 
-#define MIN_CONFIRMS 0  // should be 6
 
 BtcInterface::BtcInterface(QObject *parent) :
     QObject(parent)
@@ -114,7 +113,7 @@ bool BtcInterface::TestBtcJson()
     int confirms = transaction->Confirmations;
 
     // check for correct amount and confirmations
-    bool txSuccess = TransactionSuccessfull(amountRequested, transaction, MIN_CONFIRMS);
+    bool txSuccess = TransactionSuccessfull(amountRequested, transaction, MinConfirms);
 
     // output some details about transaction success
     QString txSuccessStr = txSuccess ? "" : "not ";
@@ -124,7 +123,7 @@ bool BtcInterface::TestBtcJson()
                    did %s complete successfully:\n\
                    %fBTC received (you requested %f)",
                    txID.toStdString().c_str(),
-                   confirms, MIN_CONFIRMS,
+                   confirms, MinConfirms,
                    txSuccessStr.toStdString().c_str(),
                    amountReceived, amountRequested);
     if(!txSuccess) return false;
@@ -178,20 +177,120 @@ bool BtcInterface::TestBtcJson()
     // validate transaction for recipient #1
     double sent;
     for(int i = 0; i < 6; i++) sent += amounts[i];
-    txSuccess = TransactionSuccessfull(amounts[0] + amounts[1] - sent, transaction, MIN_CONFIRMS);
+    txSuccess = TransactionSuccessfull(amounts[0] + amounts[1] - sent, transaction, MinConfirms);
     if(!txSuccess) return false;
 
     // validate transaction for recipient #2
     Modules::btcRpc->ConnectToBitcoin(server2);
     transaction = WaitGetTransaction(txManyID);
-    txSuccess = TransactionSuccessfull(amounts[2] + amounts[3], transaction, MIN_CONFIRMS);
+    txSuccess = TransactionSuccessfull(amounts[2] + amounts[3], transaction, MinConfirms);
     if(!txSuccess) return false;
 
     // validate transaction for recipient #3
     Modules::btcRpc->ConnectToBitcoin(bitcoinqt);
     transaction = WaitGetTransaction(txManyID);
-    txSuccess = TransactionSuccessfull(amounts[4] + amounts[5], transaction, MIN_CONFIRMS);
+    txSuccess = TransactionSuccessfull(amounts[4] + amounts[5], transaction, MinConfirms);
     if(!txSuccess) return false;
+
+    return true;
+}
+
+bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
+{
+    // https://people.xiph.org/~greg/escrowexample.txt
+
+    /*
+    2-of-2 escrow example
+
+    Carbide81 wants to pay carbide80 50tnbtc but prevent carebide80 from cheating him.
+
+    First each party creates a new address, and then shares them. Then uses the
+    resulting addresses to make a p2sh address (begins with '3' for bitcoin,
+    '2' for testnet) that requires both parties to sign to release:
+
+    The distributed redemption here (where no party has all the required keys
+    requires bitcoin 0.7 or later)
+
+    Instead the parties could do a 2-of-3 which would allow a mediator to
+    settle a dispute, that works exactly the same but instead of two public keys
+    three would be provided.
+    */
+
+    QSharedPointer<BitcoinServer> buyer, vendor;
+    buyer.reset(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
+    vendor.reset(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
+
+    // connect to buyer (carbide81):
+    Modules::btcRpc->ConnectToBitcoin(buyer);
+    // create new address to be used in multi-sig
+    QString addressBuyer = Modules::btcJson->GetNewAddress("testescrow");
+
+    // connect to vendor (carbide80):
+    Modules::btcRpc->ConnectToBitcoin(vendor);
+    // create new address to be used in multi-sig
+    QString addressVendor = Modules::btcJson->GetNewAddress("testescrow");
+
+
+    // now the vendor and client have to exchange their public addresses somehow.
+    // let's imagine this happened by magic.
+
+
+    // once exchanged, they can both create the same multi-sig-address using those addresses
+    QJsonArray keys;
+    keys.append(addressBuyer);
+    keys.append(addressVendor);
+
+    // vendor: create multi-sig address
+    QString multiSigAddrVendor = Modules::btcJson->AddMultiSigAddress(2, keys, "testescrow");
+
+    // buyer: create multi-sig-address
+    Modules::btcRpc->ConnectToBitcoin(buyer);
+    QString multiSigAddressBuyer = Modules::btcJson->AddMultiSigAddress(2, keys, "testescrow");
+
+    // buyer: pay the requested amount into the multi-sig address
+    double amountRequested = 1.22;
+    QString txToEscrow = Modules::btcJson->SendToAddress(multiSigAddressBuyer, amountRequested);
+
+
+    // now the client needs to tell the vendor what the transaction ID is
+    // alternatively we could use getreceivedbyaddress to wait for any incoming transaction to that address,
+    // but let's assume they exchanged the tx ID.
+
+
+    // vendor: wait for the transaction to be confirmed
+    Modules::btcRpc->ConnectToBitcoin(vendor);
+    QSharedPointer<BtcTransaction> transToEscrow = WaitGetTransaction(txToEscrow);
+    if(!WaitTransactionSuccessfull(amountRequested, txToEscrow, 1))
+        return false;   // wrong amount or lack of confirmations after timeout period
+
+    // vendor: withdraw the funds from the multi-sig address into one he owns
+    QString withdrawAddr = Modules::btcJson->GetNewAddress("testescrow");
+
+    // vendor: create raw transaction to send from multisig to withdrawaddr
+    // rawTx = WithdrawAllFromAddress(multiSigAddrVendor, withdrawAddr);
+
+    // vendor: sign the raw transaction
+    // rawTx = Modules::btcJson->SignRawTransaction(rawTx)
+
+
+    // vendor then sends the signed raw transaction to buyer
+    // this happens through magic again
+
+
+    // buyer: verify that the vendor did not send us a malicious transaction request
+    //      because if we blindly sign anything we could be signing a tx stealing all our coins.
+    //      my idea is to loop through all rawTx inputs and see if they are the unspent inputs of multiSigAddress.. or something like that.
+    // CheckRawTransaction(rawTx, txToEscrow or multiSigAddressClient or whatever)
+
+    // buyer: if everything is alright, sign the raw transaction
+    // rawTx = Modules::btcJson->SignRawTransaction(rawTx)
+
+    // buyer: broadcast the transaction
+    // Modules::btcJson->SendRawTransaction(rawTx)
+
+    // vendor: wait for the transaction to be confirmed
+    // (as above)
+    // if confirmed, everything is fine and we can all be happy together.
 
     return true;
 }
@@ -210,6 +309,32 @@ bool BtcInterface::TransactionSuccessfull(double amount, QSharedPointer<BtcTrans
     return TransactionConfirmed(transaction, minConfirms) && transaction->Amount >= amount; // check if confirmed AND enough btc
 }
 
+bool BtcInterface::WaitTransactionSuccessfull(double amount, QString txID, int minConfirms, double timeOutSeconds, double timerSeconds)
+{
+    // TODO: we'll have to replace this function with a constant background check for all unconfirmed transactions
+    // and to store the outstanding transactions in some database
+
+    utils::SleepSimulator sleeper;
+
+    QSharedPointer<BtcTransaction> transaction;
+
+    transaction = Modules::btcJson->GetTransaction(txID);
+    if(transaction == NULL)
+        return false;
+
+    // if the transaction has the wrong amount it will never be successfull so we can return here and not wait for timeout
+    if(transaction->Amount < amount)
+        return false;
+
+    while((transaction = Modules::btcJson->GetTransaction(txID)) != NULL && (timeOutSeconds -= timerSeconds) > 0)
+    {
+        if(TransactionSuccessfull(amount, transaction, minConfirms))
+            return true;
+    }
+
+    return false;
+}
+
 bool BtcInterface::WaitForTransaction(QString txID, int timerMS, int maxAttempts)
 {
     return !WaitGetTransaction(txID, timerMS, maxAttempts).isNull();
@@ -221,7 +346,7 @@ QSharedPointer<BtcTransaction> BtcInterface::WaitGetTransaction(QString txID, in
 
     QSharedPointer<BtcTransaction> transaction;
 
-    // TODO: if this blocks the GUI then we should multithread or async it
+    // TODO: if this blocks the GUI then we should multithread or async it through callbacks
     // or let the user press a refresh button until he gets a result
     while((transaction = Modules::btcJson->GetTransaction(txID)) == NULL && maxAttempts--)
     {

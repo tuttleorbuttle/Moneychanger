@@ -219,6 +219,8 @@ QStringList BtcJson::ListAccounts()
 
 QString BtcJson::SendToAddress(QString btcAddress, double amount)
 {
+    // TODO: handle lack of funds, need of transaction fees and unlocking of the wallet
+
     QJsonArray params;
     params.append(btcAddress);
     params.append(amount);
