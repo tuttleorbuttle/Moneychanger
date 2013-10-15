@@ -222,5 +222,3 @@ QSharedPointer<BtcTransaction> BtcInterface::WaitGetTransaction(QString txID, in
 }
 
 
-
-
