@@ -224,21 +224,23 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     Modules::btcRpc->ConnectToBitcoin(buyer);
     // buyer: create new address to be used in multi-sig
     QString addressBuyer = Modules::btcJson->GetNewAddress("testescrow");
+    QString pubKeyBuyer = GetPublicKey(addressBuyer);
 
     // connect to vendor (carbide80):
     Modules::btcRpc->ConnectToBitcoin(vendor);
     // vendor: create new address to be used in multi-sig
     QString addressVendor = Modules::btcJson->GetNewAddress("testescrow");
+    QString pubKeyVendor = GetPublicKey(addressVendor);
 
 
     // now the vendor and client have to exchange their public KEYS somehow. addresses won't work here.
     // let's imagine this happened by magic.
 
 
-    // once exchanged, they can both create the same multi-sig-address using those addresses
+    // once exchanged, they can both create the same multi-sig-address using those public keys
     QJsonArray keys;
-    keys.append(addressBuyer);
-    keys.append(addressVendor);
+    keys.append(pubKeyBuyer);
+    keys.append(pubKeyVendor);
 
     // vendor: create multi-sig address
     QString multiSigAddrVendor = Modules::btcJson->AddMultiSigAddress(2, keys, "testescrow");
@@ -295,7 +297,15 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     return true;
 }
 
-// returns whether a transaction has been confirmed often enough
+QString BtcInterface::GetPublicKey(QString address)
+{
+    QSharedPointer<BtcAddressInfo> addressInfo = Modules::btcJson->ValidateAddress(address);
+    if(addressInfo == NULL)
+        return NULL;
+
+    return addressInfo->pubkey;
+}
+
 bool BtcInterface::TransactionConfirmed(QSharedPointer<BtcTransaction> transaction, int minConfirms)
 {
     return transaction->Confirmations >= minConfirms;   // check if confirmed often enough

@@ -19,6 +19,8 @@ public:
     // Or maybe I will remove it again and replace it with something more dynamic.
     QString CreateTwoOfTwoEscrowAddress(QString myKey, QString hisKey);
 
+    QString GetPublicKey(QString address);
+
     // Checks whether a transaction has been confirmed often enough
     bool TransactionConfirmed(QSharedPointer<BtcTransaction> transaction, int minconfirms = MinConfirms);
 
