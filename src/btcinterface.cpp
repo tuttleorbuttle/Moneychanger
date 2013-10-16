@@ -259,7 +259,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
     // vendor: wait for the transaction to be received and confirmed
     Modules::btcRpc->ConnectToBitcoin(vendor);
-    WaitForTransaction(txToEscrow);     // wait for the tx to be received
+    WaitForTransaction(txToEscrow, 500, 2);     // wait for the tx to be received
     if(!WaitTransactionSuccessfull(amountRequested, txToEscrow, 1))
         return false;   // wrong btc amount or lack of confirmations after timeout period
 

@@ -100,6 +100,23 @@ namespace BtcJsonObjects
         }
     };
 
+    struct BtcAddressInfo
+    {
+        QString address = NULL;
+        QString pubkey = NULL;
+        bool ismine = false;
+        bool isvalid = false;
+
+        BtcAddressInfo(QJsonObject result)
+        {
+            // it seems we don't need to do any error checking. thanks, qt.
+            this->address = result["address"].toString();
+            this->pubkey = result["pubkey"].toString();
+            this->ismine = result["ismine"].toBool();
+            this->isvalid = result["isvalid"].toBool();
+        }
+    };
+
     struct BtcAddressAmount
     {
         QString Address;
@@ -136,7 +153,7 @@ public:
     QString GetNewAddress(QString account = NULL);
 
     // Validate an address
-    bool ValidateAddress(QString address);
+    QSharedPointer<BtcAddressInfo> ValidateAddress(QString address);
 
     // Adds an address requiring n keys to sign before it can spend its inputs
     // Returns the multi-sig address

@@ -165,7 +165,7 @@ QString BtcJson::GetNewAddress(QString account/*=NULL*/)
     return result.toString();
 }
 
-bool BtcJson::ValidateAddress(QString address)
+QSharedPointer<BtcAddressInfo> BtcJson::ValidateAddress(QString address)
 {
     // this function hasn't been tested yet and might not work.
 
@@ -174,16 +174,24 @@ bool BtcJson::ValidateAddress(QString address)
 
     QJsonValue result;
     if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_VALIDATEADDRESS, params)), result))
-        return false;
+        return QSharedPointer<BtcAddressInfo>();
 
     if(!result.isObject())
-        return false;   // shouldn't happen unless protocol is changed
+        return QSharedPointer<BtcAddressInfo>();   // shouldn't happen unless protocol is changed
 
-    QJsonObject resultObj = result.toObject();
-    if(!resultObj["isvalid"].isBool())
-        return false;   // shouldn't happen unless protocol is changed
+    QSharedPointer<BtcAddressInfo> addressInfo;
+    addressInfo.reset(new BtcAddressInfo(result.toObject()));
 
-    return resultObj["isvalid"].toBool();
+    if(!addressInfo->isvalid)
+        return QSharedPointer<BtcAddressInfo>();    // return NULL
+
+    return addressInfo;
+
+    //QsonObject resultObj = result.toObject();
+    //if(!resultObj["isvalid"].isBool())
+    //    return false;   // shouldn't happen unless protocol is changed
+
+    //return resultObj["isvalid"].toBool();
 }
 
 QString BtcJson::AddMultiSigAddress(int nRequired, QJsonArray keys, QString account)
