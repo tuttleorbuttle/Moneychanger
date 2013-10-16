@@ -85,11 +85,17 @@ int main(int argc, char *argv[])
 
     /** Init JSON wrapper **/
 
-    { Modules modules; }    // run constructor once, initialize static pointers and free memory again (does this actually free any memory in a class like this?
+    { Modules modules; }    // run constructor once, initialize static pointers
+
     if(!Modules::btcInterface->TestBtcJson())
-        OTLog::vOutput(0, "Error testing bitcoin integration. Maybe test environment is not set up");
+        OTLog::vOutput(0, "Error testing bitcoin integration. Maybe test environment is not set up.\n");
     else
-        OTLog::vOutput(0, "Bitcoin integration successfully tested.");
+        OTLog::vOutput(0, "Bitcoin integration successfully tested.\n");
+
+    if(!Modules::btcInterface->TestBtcJsonEscrowTwoOfTwo())
+        OTLog::vOutput(0, "Error testing bitcoin escrow functions. Maybe test environment is not set up.\n");
+    else
+        OTLog::vOutput(0, "Bitcoin escrow integration sucessfully tested.\n");
 
 
     /** Check Systray capabilities **/

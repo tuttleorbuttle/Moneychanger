@@ -222,16 +222,16 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
     // connect to buyer (carbide81):
     Modules::btcRpc->ConnectToBitcoin(buyer);
-    // create new address to be used in multi-sig
+    // buyer: create new address to be used in multi-sig
     QString addressBuyer = Modules::btcJson->GetNewAddress("testescrow");
 
     // connect to vendor (carbide80):
     Modules::btcRpc->ConnectToBitcoin(vendor);
-    // create new address to be used in multi-sig
+    // vendor: create new address to be used in multi-sig
     QString addressVendor = Modules::btcJson->GetNewAddress("testescrow");
 
 
-    // now the vendor and client have to exchange their public addresses somehow.
+    // now the vendor and client have to exchange their public KEYS somehow. addresses won't work here.
     // let's imagine this happened by magic.
 
 
@@ -248,7 +248,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     QString multiSigAddressBuyer = Modules::btcJson->AddMultiSigAddress(2, keys, "testescrow");
 
     // buyer: pay the requested amount into the multi-sig address
-    double amountRequested = 1.22;
+    double amountRequested = 1.22;  // .22 because two of two escrow...
     QString txToEscrow = Modules::btcJson->SendToAddress(multiSigAddressBuyer, amountRequested);
 
 
@@ -257,11 +257,11 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     // but let's assume they exchanged the tx ID.
 
 
-    // vendor: wait for the transaction to be confirmed
+    // vendor: wait for the transaction to be received and confirmed
     Modules::btcRpc->ConnectToBitcoin(vendor);
-    QSharedPointer<BtcTransaction> transToEscrow = WaitGetTransaction(txToEscrow);
+    WaitForTransaction(txToEscrow);     // wait for the tx to be received
     if(!WaitTransactionSuccessfull(amountRequested, txToEscrow, 1))
-        return false;   // wrong amount or lack of confirmations after timeout period
+        return false;   // wrong btc amount or lack of confirmations after timeout period
 
     // vendor: withdraw the funds from the multi-sig address into one he owns
     QString withdrawAddr = Modules::btcJson->GetNewAddress("testescrow");
@@ -312,12 +312,17 @@ bool BtcInterface::TransactionSuccessfull(double amount, QSharedPointer<BtcTrans
 bool BtcInterface::WaitTransactionSuccessfull(double amount, QString txID, int minConfirms, double timeOutSeconds, double timerSeconds)
 {
     // TODO: we'll have to replace this function with a constant background check for all unconfirmed transactions
-    // and to store the outstanding transactions in some database
+    // and to store the outstanding transactions in some database.
+    // On the same machine it only takes a few ms for a transaction to be sent but in the real world
+    // this can be arbitrarily long and we don't want a thread running in the background for every unconfirmed
+    // transaction for hours, days, months,...
 
     utils::SleepSimulator sleeper;
 
     QSharedPointer<BtcTransaction> transaction;
 
+    // if the transaction hasn't even be received yet we'll return.
+    // it is therefore a good idea to call WaitForTransaction() before calling this function
     transaction = Modules::btcJson->GetTransaction(txID);
     if(transaction == NULL)
         return false;

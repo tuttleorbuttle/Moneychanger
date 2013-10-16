@@ -11,7 +11,7 @@ class BtcInterface : public QObject
 {
     Q_OBJECT
 public:
-    static const int MinConfirms = 6;
+    static const int MinConfirms = 0;   // default is 6
 
     explicit BtcInterface(QObject *parent = 0);
 
@@ -36,6 +36,9 @@ public:
 
     // Halts thread execution and returns the transaction once it arrives
     QSharedPointer<BtcTransaction> WaitGetTransaction(QString txID, int timerMS = 500, int maxAttempts = 20);
+
+    // Creates a raw transaction that sends all inputs of
+    QString WithdrawAllFromAddress(QString sourceAddress, QString destinationAddress);
 
     // cba to implement proper unit testing so for now this will have to do
     bool TestBtcJson();

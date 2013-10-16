@@ -156,6 +156,9 @@ void BtcRpc::OnAuthReqSlot(QNetworkReply* reply, QAuthenticator* authenticator)
     OTLog::vOutput(0, "Authenticating as %s:%s\n", this->username.toStdString().c_str(), this->password.toStdString().c_str());
     authenticator->setUser(this->username);
     authenticator->setPassword(this->password);
+
+    // TODO: if login info is wrong this function will be called again.
+    // so maybe show a popup here to enter a new pw/username or click cancel
 }
 
 void BtcRpc::OnNetReplySlot(QNetworkReply *reply)
