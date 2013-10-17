@@ -192,6 +192,14 @@ bool BtcInterface::TestBtcJson()
     txSuccess = TransactionSuccessfull(amounts[4] + amounts[5], transaction, MinConfirms);
     if(!txSuccess) return false;
 
+    //----------------------
+    // test raw transactions
+    //----------------------
+    QString rawTx = Modules::btcJson->GetRawTransaction(txManyID);
+    BtcRawTransactionRef decodedTx = Modules::btcJson->DecodeRawTransaction(rawTx);
+    if(!decodedTx)
+        return false;
+
     return true;
 }
 
@@ -258,6 +266,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     // alternatively we could use getreceivedbyaddress to wait for any incoming transaction to that address,
     // but let's assume they exchanged the tx ID.
 
+    return false;   // need to return here as following commands need fixing
 
     // vendor: wait for the transaction to be received and confirmed
     Modules::btcRpc->ConnectToBitcoin(vendor);

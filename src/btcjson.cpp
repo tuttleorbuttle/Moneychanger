@@ -24,6 +24,7 @@
 #define METHOD_ADDMULTISIGADDRESS   "addmultisigaddress"
 #define METHOD_GETTRANSACTION       "gettransaction"
 #define METHOD_GETRAWTRANSACTION    "getrawtransaction"
+#define METHOD_DECODERAWTRANSACTION "decoderawtransaction"
 
 
 using namespace fastdelegate;
@@ -305,11 +306,41 @@ QSharedPointer<BtcTransaction> BtcJson::GetTransaction(QString txID)
     // also check what happens in multi-sig-transactions.
 }
 
+QString BtcJson::GetRawTransaction(QString txID)
+{
+    QJsonArray params;
+    params.append((txID));
 
-// TODO: maybe getrawtransaction but if we own one of the private keys we probably don't need that.
-// oh wait we do, for signing multisigs
+    QJsonValue result;
+    if(!ProcessRpcString(
+                Modules::btcRpc->SendRpc(
+                    CreateJsonQuery(METHOD_GETRAWTRANSACTION, params)), result))
+        return NULL;    // error
 
-// TODO: sendmany so we can test TransactionSuccessfull() on those
+    if(!result.isString())
+        return NULL;    // error
+
+    return result.toString();
+}
+
+BtcRawTransactionRef BtcJson::DecodeRawTransaction(QString rawTransaction)
+{
+    QJsonArray params;
+    params.append(rawTransaction);
+
+    QJsonValue result;
+    if(!ProcessRpcString(
+                Modules::btcRpc->SendRpc(
+                    CreateJsonQuery(METHOD_DECODERAWTRANSACTION, params)), result))
+        return BtcRawTransactionRef();  // return NULL
+
+    if(!result.isObject())
+        return BtcRawTransactionRef();  // return NULL
+
+    BtcRawTransactionRef decodedRawTransaction;
+    decodedRawTransaction.reset(new BtcRawTransaction(result.toObject()));
+    return decodedRawTransaction;
+}
 
 
 

@@ -94,8 +94,66 @@ namespace BtcJsonObjects
 
     struct BtcRawTransaction
     {
+        QString txID = NULL;
+
+        struct VIN
+        {
+            QString txInID = NULL;
+            int vout = 0;   // number of txInID's output to be used as input
+
+            VIN(QString txInID, int vout)
+                :txInID(txInID), vout(vout)
+            {}
+        };
+        QList<VIN> inputs = QList<VIN>();
+
+        struct VOUT
+        {
+            double value = 0.0;     // amount of btc to be sent
+            int n = 0;              // outputs array index
+            int reqSigs = 0;        // signatures required to withdraw from the output addresses
+            QList<QString> addresses = QList<QString>();    // an array of addresses receiving the value. used in multi-sig.
+
+            VOUT()
+            {}
+
+            VOUT(double value, int n, int reqSigs, QList<QString> addresses)
+                :value(value), n(n), reqSigs(reqSigs), addresses(addresses)
+            {}
+
+        };
+        QList<VOUT> outputs = QList<VOUT>();
+
         BtcRawTransaction(QJsonObject rawTx)
         {
+            this->txID = rawTx["txid"].toString();
+
+            QJsonArray vin = rawTx["vin"].toArray();
+            for(int i = 0; i < vin.size(); i++)
+            {
+                QJsonObject inputObj = vin[i].toObject();
+                this->inputs += VIN(inputObj["txid"].toString(), (int)inputObj["vout"].toDouble());
+            }
+
+            QJsonArray vout  = rawTx["vout"].toArray();
+            for(int i = 0; i < vout.size(); i++)
+            {
+                QJsonObject outputObj = vout[i].toObject();
+                VOUT output;
+
+                output.value = outputObj["value"].toDouble();
+                output.n = (int)outputObj["n"].toDouble();      // JSON doesn't know integers
+
+                QJsonObject scriptPubKey = outputObj["scriptPubKey"].toObject();
+                output.reqSigs = (int)scriptPubKey["reqSigs"].toDouble();
+                QJsonArray addresses = scriptPubKey["addresses"].toArray();
+                for(int i= 0; i < addresses.size(); i++)
+                {
+                    output.addresses += addresses[i].toString();
+                }
+
+                this->outputs += output;
+            }
 
         }
     };
@@ -125,6 +183,8 @@ namespace BtcJsonObjects
 }
 
 using namespace BtcJsonObjects;
+
+typedef QSharedPointer<BtcRawTransaction> BtcRawTransactionRef;
 
 // This class will create/process json queries and send/receive them with the help of BitcoinRpc
 class BtcJson //: IStringProcessor
@@ -173,6 +233,9 @@ public:
 
     QSharedPointer<BtcJsonObjects::BtcTransaction> GetTransaction(QString txID);
 
+    QString GetRawTransaction(QString txID);
+
+    BtcRawTransactionRef DecodeRawTransaction(QString rawTransaction);
 
 private:
      QByteArray CreateJsonQuery(QString command, QJsonArray params = QJsonArray(), QString id = "");
