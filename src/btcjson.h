@@ -112,7 +112,7 @@ namespace BtcJsonObjects
             double value = 0.0;     // amount of btc to be sent
             int n = 0;              // outputs array index
             int reqSigs = 0;        // signatures required to withdraw from the output addresses
-            QList<QString> addresses = QList<QString>();    // an array of addresses receiving the value. used in multi-sig.
+            QList<QString> addresses = QList<QString>();    // an array of addresses receiving the value.
 
             VOUT()
             {}
@@ -234,6 +234,8 @@ public:
     QSharedPointer<BtcJsonObjects::BtcTransaction> GetTransaction(QString txID);
 
     QString GetRawTransaction(QString txID);
+
+    BtcRawTransactionRef GetDecodedRawTransaction(QString txID);
 
     BtcRawTransactionRef DecodeRawTransaction(QString rawTransaction);
 

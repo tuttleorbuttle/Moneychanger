@@ -226,7 +226,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
     QSharedPointer<BitcoinServer> buyer, vendor;
     buyer.reset(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
-    vendor.reset(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
+    vendor.reset(new BitcoinServer("moneychanger", "money1234", "http://127.0.0.1", 8332));
 
     // connect to buyer (carbide81):
     Modules::btcRpc->ConnectToBitcoin(buyer);
@@ -266,11 +266,9 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     // alternatively we could use getreceivedbyaddress to wait for any incoming transaction to that address,
     // but let's assume they exchanged the tx ID.
 
-    return false;   // need to return here as following commands need fixing
-
     // vendor: wait for the transaction to be received and confirmed
     Modules::btcRpc->ConnectToBitcoin(vendor);
-    WaitForTransaction(txToEscrow, 500, 2);     // wait for the tx to be received
+    WaitForTransaction(txToEscrow, 500, 3);     // wait for the tx to be received
     if(!WaitTransactionSuccessfull(amountRequested, txToEscrow, 1))
         return false;   // wrong btc amount or lack of confirmations after timeout period
 
@@ -361,7 +359,7 @@ bool BtcInterface::WaitTransactionSuccessfull(double amount, QString txID, int m
 
 bool BtcInterface::WaitForTransaction(QString txID, int timerMS, int maxAttempts)
 {
-    return !WaitGetTransaction(txID, timerMS, maxAttempts).isNull();
+    return WaitGetRawTransaction(txID, timerMS, maxAttempts) != NULL;
 }
 
 QSharedPointer<BtcTransaction> BtcInterface::WaitGetTransaction(QString txID, int timerMS, int maxAttempts)
@@ -373,6 +371,21 @@ QSharedPointer<BtcTransaction> BtcInterface::WaitGetTransaction(QString txID, in
     // TODO: if this blocks the GUI then we should multithread or async it through callbacks
     // or let the user press a refresh button until he gets a result
     while((transaction = Modules::btcJson->GetTransaction(txID)) == NULL && maxAttempts--)
+    {
+        sleeper.sleep(timerMS);
+    }
+
+    return transaction;
+}
+
+BtcRawTransactionRef BtcInterface::WaitGetRawTransaction(QString txID, int timerMS, int maxAttempts)
+{
+    utils::SleepSimulator sleeper;
+
+    BtcRawTransactionRef transaction;
+
+    // TODO: see WaitGetTransaction()
+    while((transaction = Modules::btcJson->GetDecodedRawTransaction(txID)) == NULL && maxAttempts--)
     {
         sleeper.sleep(timerMS);
     }

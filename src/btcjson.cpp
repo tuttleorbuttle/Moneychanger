@@ -309,7 +309,7 @@ QSharedPointer<BtcTransaction> BtcJson::GetTransaction(QString txID)
 QString BtcJson::GetRawTransaction(QString txID)
 {
     QJsonArray params;
-    params.append((txID));
+    params.append(txID);
 
     QJsonValue result;
     if(!ProcessRpcString(
@@ -321,6 +321,28 @@ QString BtcJson::GetRawTransaction(QString txID)
         return NULL;    // error
 
     return result.toString();
+}
+
+BtcRawTransactionRef BtcJson::GetDecodedRawTransaction(QString txID)
+{
+    QJsonArray params;
+    params.append(txID);
+    params.append(1);
+
+    QJsonValue result;
+    if(!ProcessRpcString(
+                Modules::btcRpc->SendRpc(
+                    CreateJsonQuery(METHOD_GETRAWTRANSACTION, params)), result))
+        return BtcRawTransactionRef();  // return NULL
+
+    if(!result.isObject())
+        return BtcRawTransactionRef();  // return NULL
+
+    BtcRawTransactionRef decodedRawTransaction;
+    decodedRawTransaction.reset(new BtcRawTransaction(result.toObject()));
+    return decodedRawTransaction;
+
+
 }
 
 BtcRawTransactionRef BtcJson::DecodeRawTransaction(QString rawTransaction)

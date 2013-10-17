@@ -37,7 +37,11 @@ public:
     bool WaitForTransaction(QString txID, int timerMS = 500, int maxAttempts = 20);
 
     // Halts thread execution and returns the transaction once it arrives
+    // Will only work if you have all keys of the receiving address.
     QSharedPointer<BtcTransaction> WaitGetTransaction(QString txID, int timerMS = 500, int maxAttempts = 20);
+
+    // Halts thread execution and returns the decoded raw transaction once it arrives
+    BtcRawTransactionRef WaitGetRawTransaction(QString txID, int timerMS = 500, int maxAttempts = 20);
 
     // Creates a raw transaction that sends all inputs of
     QString WithdrawAllFromAddress(QString sourceAddress, QString destinationAddress);
