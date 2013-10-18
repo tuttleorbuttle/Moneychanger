@@ -25,6 +25,10 @@
 #define METHOD_GETTRANSACTION       "gettransaction"
 #define METHOD_GETRAWTRANSACTION    "getrawtransaction"
 #define METHOD_DECODERAWTRANSACTION "decoderawtransaction"
+#define METHOD_GETRAWMEMPOOL        "getrawmempool"
+#define METHOD_GETBLOCKCOUNT        "getblockcount"
+#define METHOD_GETBLOCKHASH         "getblockhash"
+#define METHOD_GETBLOCK             "getblock"
 
 
 using namespace fastdelegate;
@@ -362,6 +366,66 @@ BtcRawTransactionRef BtcJson::DecodeRawTransaction(QString rawTransaction)
     BtcRawTransactionRef decodedRawTransaction;
     decodedRawTransaction.reset(new BtcRawTransaction(result.toObject()));
     return decodedRawTransaction;
+}
+
+QList<QString> BtcJson::GetRawMemPool()
+{
+    QJsonValue result;
+    if(!ProcessRpcString(
+                Modules::btcRpc->SendRpc(
+                    CreateJsonQuery(METHOD_GETRAWMEMPOOL, QJsonArray())), result))
+        return QList<QString>();
+
+    if(!result.isArray())
+        return QList<QString>();
+
+    QJsonArray resultArray = result.toArray();
+    QList<QString> rawMemPool;
+    for(int i = 0; i < resultArray.size(); i++)
+    {
+        rawMemPool += resultArray[i].toString();
+    }
+    return rawMemPool;
+}
+
+int BtcJson::GetBlockCount()
+{
+    QJsonValue result;
+    if(!ProcessRpcString(
+                Modules::btcRpc->SendRpc(
+                    CreateJsonQuery(METHOD_GETBLOCKCOUNT, QJsonArray())), result))
+        return -1;   // we should throw errors instead.
+
+    return (int)result.toDouble(-1);
+}
+
+QString BtcJson::GetBlockHash(int blockNumber)
+{
+    QJsonArray params;
+    params.append(blockNumber);
+
+    QJsonValue result;
+    if(!ProcessRpcString(
+                Modules::btcRpc->SendRpc(
+                    CreateJsonQuery(METHOD_GETBLOCKHASH, params)), result))
+        return NULL;
+
+    return result.toString();
+}
+
+void BtcJson::GetBlock(QString blockHash)
+{
+    QJsonArray params;
+    params.append(blockHash);
+
+    QJsonValue result;
+    if(!ProcessRpcString(
+                Modules::btcRpc->SendRpc(
+                    CreateJsonQuery(METHOD_GETBLOCK, params)), result))
+        return;
+
+    if(!result.isObject())
+        return;
 }
 
 

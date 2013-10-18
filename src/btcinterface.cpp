@@ -318,6 +318,24 @@ bool BtcInterface::TransactionConfirmed(QSharedPointer<BtcTransaction> transacti
     return transaction->Confirmations >= minConfirms;   // check if confirmed often enough
 }
 
+bool BtcInterface::TransactionConfirmed(BtcRawTransactionRef transaction, int MinConfirms)
+{
+    // firstly, see if the transaction is included in a block yet
+    //getrawmempool
+    QList<QString> rawMemPool = Modules::btcJson->GetRawMemPool();
+    if(rawMemPool.contains(transaction->txID))
+        return 0 >= MinConfirms;    // 0 confirmations
+
+    // if it is, we'll need to loop through the latest blocks until we find it
+    // getblockcount --> getblockhash(count) --> getblock(hash) --> getblock(block->previous) -->...
+    int latestBlock = Modules::btcJson->GetBlockCount();
+    QString blockHash = Modules::btcJson->GetBlockHash(latestBlock);
+    Modules::btcJson->GetBlock(blockHash);
+
+    // if we find it in an old enough block, return true, otherwise return false
+    return false;
+}
+
 // returns whether the required amount of btc was received and confirmed often enough
 bool BtcInterface::TransactionSuccessfull(double amount, QSharedPointer<BtcTransaction> transaction, int minConfirms)
 {
@@ -326,13 +344,45 @@ bool BtcInterface::TransactionSuccessfull(double amount, QSharedPointer<BtcTrans
     return TransactionConfirmed(transaction, minConfirms) && transaction->Amount >= amount; // check if confirmed AND enough btc
 }
 
+bool BtcInterface::TransactionSuccessfull(double amountRequested, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms)
+{
+    if(transaction == NULL) // if it hasn't been received yet we will return.
+        return false;       // use WaitForTransaction(txid) to prevent this.
+
+    // check for sufficient confirms...
+    if(!TransactionConfirmed(transaction))
+        return false;
+
+    // check for sufficient amount...
+    double amountReceived = 0.0;
+    for(int i = 0; i < transaction->outputs.size(); i++)
+    {
+        // I don't know what outputs to multiple addresses mean so I'm not gonna trust them for now.
+        if(transaction->outputs[i].addresses.size() > 1)
+        {
+            OTLog::vOutput(0, "Multiple output addresses per output detected.");
+            continue;
+        }
+        if(transaction->outputs[i].addresses.contains(targetAddress))
+            amountReceived += transaction->outputs[i].value;
+    }
+
+    if(amountReceived >= amountRequested)
+        return true;
+
+    return false;
+}
+
 bool BtcInterface::WaitTransactionSuccessfull(double amount, QString txID, int minConfirms, double timeOutSeconds, double timerSeconds)
 {
     // TODO: we'll have to replace this function with a constant background check for all unconfirmed transactions
     // and to store the outstanding transactions in some database.
     // On the same machine it only takes a few ms for a transaction to be sent but in the real world
-    // this can be arbitrarily long and we don't want a thread running in the background for every unconfirmed
+    // this can be arbitrarily long and we don't want a different thread running in the background for every unconfirmed
     // transaction for hours, days, months,...
+
+    if(!WaitForTransaction(txID, timerSeconds * 1000, timeOutSeconds / (timerSeconds * 1000)))
+        return false;
 
     utils::SleepSimulator sleeper;
 

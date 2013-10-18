@@ -24,8 +24,16 @@ public:
     // Checks whether a transaction has been confirmed often enough
     bool TransactionConfirmed(QSharedPointer<BtcTransaction> transaction, int minconfirms = MinConfirms);
 
+    // Checks whether a transaction (can be non-wallet) has been confirmed often enough
+    bool TransactionConfirmed(BtcRawTransactionRef transaction, int MinConfirms = MinConfirms);
+
     // Checks a transaction for correct amount and confirmations.
     bool TransactionSuccessfull(double amount, QSharedPointer<BtcTransaction> transaction, int minConfirms = MinConfirms);
+
+    // Checks a raw transaction for correct amount, confirmations and recipient.
+    // We need this because bitcoin-qt offers no good way to watch multi-sig addresses if we don't own all the keys
+    bool TransactionSuccessfull(double amount, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms = MinConfirms);
+
 
     // Halts thread execution until the transaction has enough confirmations
     // timeOutSeconds is the time in seconds after which the function will fail

@@ -239,6 +239,14 @@ public:
 
     BtcRawTransactionRef DecodeRawTransaction(QString rawTransaction);
 
+    QList<QString> GetRawMemPool();
+
+    int GetBlockCount();
+
+    QString GetBlockHash(int blockNumber);
+
+    void GetBlock(QString blockHash);
+
 private:
      QByteArray CreateJsonQuery(QString command, QJsonArray params = QJsonArray(), QString id = "");
 
