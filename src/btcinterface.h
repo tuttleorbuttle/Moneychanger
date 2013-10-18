@@ -25,7 +25,7 @@ public:
     bool TransactionConfirmed(QSharedPointer<BtcTransaction> transaction, int minconfirms = MinConfirms);
 
     // Checks whether a transaction (can be non-wallet) has been confirmed often enough
-    bool TransactionConfirmed(BtcRawTransactionRef transaction, int MinConfirms = MinConfirms);
+    bool TransactionConfirmed(BtcRawTransactionRef transaction, int minConfirms = MinConfirms);
 
     // Checks a transaction for correct amount and confirmations.
     bool TransactionSuccessfull(double amount, QSharedPointer<BtcTransaction> transaction, int minConfirms = MinConfirms);
@@ -39,7 +39,9 @@ public:
     // timeOutSeconds is the time in seconds after which the function will fail
     // timerMS is the delay between each confirmation check
     // returns true if sufficient confirmations were received before timeout
-    bool WaitTransactionSuccessfull(double amount, QString txID, int minConfirms = MinConfirms, double timeOutSeconds = 7200, double timerSeconds = 1);
+    bool WaitTransactionSuccessfull(double amount, QSharedPointer<BtcTransaction> transaction, int minConfirms = MinConfirms, double timeOutSeconds = 7200, double timerSeconds = 1);
+
+    bool WaitTransactionSuccessfull(double amount, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms = MinConfirms, double timeOutSeconds = 7200, double timerSeconds = 1);
 
     // Halts thread execution until the bitcoin client learns about a new transaction
     bool WaitForTransaction(QString txID, int timerMS = 500, int maxAttempts = 20);

@@ -268,8 +268,8 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
     // vendor: wait for the transaction to be received and confirmed
     Modules::btcRpc->ConnectToBitcoin(vendor);
-    WaitForTransaction(txToEscrow, 500, 3);     // wait for the tx to be received
-    if(!WaitTransactionSuccessfull(amountRequested, txToEscrow, 1))
+    BtcRawTransactionRef transaction = WaitGetRawTransaction(txToEscrow, 500, 3);     // wait for the tx to be received
+    if(!WaitTransactionSuccessfull(amountRequested, transaction, multiSigAddressBuyer, 1))
         return false;   // wrong btc amount or lack of confirmations after timeout period
 
     // vendor: withdraw the funds from the multi-sig address into one he owns
@@ -318,7 +318,7 @@ bool BtcInterface::TransactionConfirmed(QSharedPointer<BtcTransaction> transacti
     return transaction->Confirmations >= minConfirms;   // check if confirmed often enough
 }
 
-bool BtcInterface::TransactionConfirmed(BtcRawTransactionRef transaction, int MinConfirms)
+bool BtcInterface::TransactionConfirmed(BtcRawTransactionRef transaction, int minConfirms)
 {
     // firstly, see if the transaction is included in a block yet
     //getrawmempool
@@ -350,7 +350,7 @@ bool BtcInterface::TransactionSuccessfull(double amountRequested, BtcRawTransact
         return false;       // use WaitForTransaction(txid) to prevent this.
 
     // check for sufficient confirms...
-    if(!TransactionConfirmed(transaction))
+    if(!TransactionConfirmed(transaction, minConfirms))
         return false;
 
     // check for sufficient amount...
@@ -373,7 +373,7 @@ bool BtcInterface::TransactionSuccessfull(double amountRequested, BtcRawTransact
     return false;
 }
 
-bool BtcInterface::WaitTransactionSuccessfull(double amount, QString txID, int minConfirms, double timeOutSeconds, double timerSeconds)
+bool BtcInterface::WaitTransactionSuccessfull(double amount, QSharedPointer<BtcTransaction> transaction, int minConfirms, double timeOutSeconds, double timerSeconds)
 {
     // TODO: we'll have to replace this function with a constant background check for all unconfirmed transactions
     // and to store the outstanding transactions in some database.
@@ -381,27 +381,48 @@ bool BtcInterface::WaitTransactionSuccessfull(double amount, QString txID, int m
     // this can be arbitrarily long and we don't want a different thread running in the background for every unconfirmed
     // transaction for hours, days, months,...
 
-    if(!WaitForTransaction(txID, timerSeconds * 1000, timeOutSeconds / (timerSeconds * 1000)))
-        return false;
-
-    utils::SleepSimulator sleeper;
-
-    QSharedPointer<BtcTransaction> transaction;
-
-    // if the transaction hasn't even be received yet we'll return.
-    // it is therefore a good idea to call WaitForTransaction() before calling this function
-    transaction = Modules::btcJson->GetTransaction(txID);
     if(transaction == NULL)
         return false;
 
     // if the transaction has the wrong amount it will never be successfull so we can return here and not wait for timeout
-    if(transaction->Amount < amount)
+    if(!TransactionSuccessfull(amount, transaction, 0))
         return false;
 
-    while((transaction = Modules::btcJson->GetTransaction(txID)) != NULL && (timeOutSeconds -= timerSeconds) > 0)
+    timerSeconds = timerSeconds > 0.001 ? timerSeconds : 0.001;   // prevent division by zero
+    double timerMS = timerSeconds * 1000;
+    utils::SleepSimulator sleeper;
+    while((transaction = Modules::btcJson->GetTransaction(transaction->TxID)) != NULL && (timeOutSeconds -= timerSeconds) > 0)
     {
         if(TransactionSuccessfull(amount, transaction, minConfirms))
             return true;
+
+        sleeper.sleep(timerMS);
+    }
+
+    return false;
+}
+
+bool BtcInterface::WaitTransactionSuccessfull(double amount, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms, double timeOutSeconds, double timerSeconds)
+{
+    // TODO: See the other WaitTransactionSuccessfull()
+
+    if(transaction == NULL)
+        return false;
+
+    if(!TransactionSuccessfull(amount, transaction, targetAddress, 0))
+        return false;
+
+    timerSeconds = timerSeconds > 0.001 ? timerSeconds : 0.001;   // prevent division by zero
+    double timerMS = timerSeconds * 1000;
+    utils::SleepSimulator sleeper;
+
+    // see if the transaction is successfull...
+    while((timeOutSeconds -= timerSeconds) > 0)
+    {
+        if(TransactionSuccessfull(amount, transaction, targetAddress, minConfirms))
+            return true;
+
+        sleeper.sleep(timerMS);
     }
 
     return false;
