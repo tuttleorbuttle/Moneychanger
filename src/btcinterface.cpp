@@ -269,7 +269,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     // vendor: wait for the transaction to be received and confirmed
     Modules::btcRpc->ConnectToBitcoin(vendor);
     BtcRawTransactionRef transaction = WaitGetRawTransaction(txToEscrow, 500, 3);     // wait for the tx to be received
-    if(!WaitTransactionSuccessfull(amountRequested, transaction, multiSigAddressBuyer, 1))
+    if(!WaitTransactionSuccessfull(amountRequested, transaction, multiSigAddressBuyer, 1))  // see if it has 1 confirmation
         return false;   // wrong btc amount or lack of confirmations after timeout period
 
     // vendor: withdraw the funds from the multi-sig address into one he owns
@@ -330,10 +330,17 @@ bool BtcInterface::TransactionConfirmed(BtcRawTransactionRef transaction, int mi
     // getblockcount --> getblockhash(count) --> getblock(hash) --> getblock(block->previous) -->...
     int latestBlock = Modules::btcJson->GetBlockCount();
     QString blockHash = Modules::btcJson->GetBlockHash(latestBlock);
-    Modules::btcJson->GetBlock(blockHash);
+    BtcBlockRef currentBlock = Modules::btcJson->GetBlock(blockHash);
 
-    // if we find it in an old enough block, return true, otherwise return false
-    return false;
+    while(!currentBlock->transactions.contains(transaction->txID))
+    {
+        currentBlock = Modules::btcJson->GetBlock(currentBlock->previousHash);
+        if(currentBlock == NULL)
+            return false;   // this should never happen I think
+    }
+
+    // if we find it in an old enough block, return true
+    return true;
 }
 
 // returns whether the required amount of btc was received and confirmed often enough

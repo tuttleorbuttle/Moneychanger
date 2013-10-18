@@ -180,11 +180,43 @@ namespace BtcJsonObjects
         QString Address;
         double Amount;
     };
+
+    struct BtcBlock
+    {
+        int confirmations = 0;
+        QList<QString> transactions = QList<QString>();
+        int height = 0;
+        QString hash = "";
+        QString previousHash = "";
+
+        BtcBlock()
+        {}
+
+        BtcBlock(QJsonObject block)
+        {
+            // latest block has 1 confirmations I think so tx->confirms == block->confirms
+            this->confirmations = (int)block["confirmations"].toDouble();
+
+            // block number (count since genesis)
+            this->height = (int)block["height"].toDouble();
+
+            this->hash = block["hash"].toString();
+            this->previousHash = block["previousblockhash"].toString();
+
+            // get list of transactions in the block
+            QJsonArray transacts = block["tx"].toArray();
+            for(int i = 0; i < transacts.size(); i++)
+            {
+                this->transactions += transacts[i].toString();
+            }
+        }
+    };
 }
 
 using namespace BtcJsonObjects;
 
 typedef QSharedPointer<BtcRawTransaction> BtcRawTransactionRef;
+typedef QSharedPointer<BtcBlock> BtcBlockRef;
 
 // This class will create/process json queries and send/receive them with the help of BitcoinRpc
 class BtcJson //: IStringProcessor
@@ -245,7 +277,7 @@ public:
 
     QString GetBlockHash(int blockNumber);
 
-    void GetBlock(QString blockHash);
+    BtcBlockRef GetBlock(QString blockHash);
 
 private:
      QByteArray CreateJsonQuery(QString command, QJsonArray params = QJsonArray(), QString id = "");

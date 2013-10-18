@@ -413,7 +413,7 @@ QString BtcJson::GetBlockHash(int blockNumber)
     return result.toString();
 }
 
-void BtcJson::GetBlock(QString blockHash)
+BtcBlockRef BtcJson::GetBlock(QString blockHash)
 {
     QJsonArray params;
     params.append(blockHash);
@@ -422,10 +422,14 @@ void BtcJson::GetBlock(QString blockHash)
     if(!ProcessRpcString(
                 Modules::btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_GETBLOCK, params)), result))
-        return;
+        return BtcBlockRef();
 
     if(!result.isObject())
-        return;
+        return BtcBlockRef();
+
+    BtcBlockRef block;
+    block.reset(new BtcBlock(result.toObject()));
+    return block;
 }
 
 
