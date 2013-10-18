@@ -324,7 +324,7 @@ bool BtcInterface::TransactionConfirmed(BtcRawTransactionRef transaction, int mi
     //getrawmempool
     QList<QString> rawMemPool = Modules::btcJson->GetRawMemPool();
     if(rawMemPool.contains(transaction->txID))
-        return 0 >= MinConfirms;    // 0 confirmations
+        return 0 >= minConfirms;    // 0 confirmations
 
     // if it is, we'll need to loop through the latest blocks until we find it
     // getblockcount --> getblockhash(count) --> getblock(hash) --> getblock(block->previous) -->...
