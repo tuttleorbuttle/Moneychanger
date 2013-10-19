@@ -367,9 +367,18 @@ bool BtcInterface::TransactionSuccessfull(double amountRequested, BtcRawTransact
         // I don't know what outputs to multiple addresses mean so I'm not gonna trust them for now.
         if(transaction->outputs[i].addresses.size() > 1)
         {
-            OTLog::vOutput(0, "Multiple output addresses per output detected.");
+            OTLog::vOutput(0, "Multiple output addresses per output detected.");    
             continue;
         }
+
+        // TODO: vulnerability fix
+        // I don't know much about scriptPubKey but I think a malicious buyer could create a
+        // transaction that isn't spendable by anyone, see
+        // https://en.bitcoin.it/wiki/Script#Provably_Unspendable.2FPrunable_Outputs
+        // I think the easiest solution would be to check
+        // if scriptPubKey.hex != "76a914<pub key hash>88ac" return false
+        // as this seems to be the hex representation of the most basic standard transaction.
+
         if(transaction->outputs[i].addresses.contains(targetAddress))
             amountReceived += transaction->outputs[i].value;
     }
