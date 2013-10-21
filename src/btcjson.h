@@ -113,12 +113,13 @@ namespace BtcJsonObjects
             int n = 0;              // outputs array index
             int reqSigs = 0;        // signatures required to withdraw from the output addresses
             QList<QString> addresses = QList<QString>();    // an array of addresses receiving the value.
+            QString scriptPubKeyHex = NULL;
 
             VOUT()
             {}
 
-            VOUT(double value, int n, int reqSigs, QList<QString> addresses)
-                :value(value), n(n), reqSigs(reqSigs), addresses(addresses)
+            VOUT(double value, int n, int reqSigs, QList<QString> addresses, QString scriptPubKeyHex)
+                :value(value), n(n), reqSigs(reqSigs), addresses(addresses), scriptPubKeyHex(scriptPubKeyHex)
             {}
 
         };
@@ -151,6 +152,7 @@ namespace BtcJsonObjects
                 {
                     output.addresses += addresses[i].toString();
                 }
+                output.scriptPubKeyHex = scriptPubKey["hex"].toString();
 
                 this->outputs += output;
             }
@@ -211,12 +213,82 @@ namespace BtcJsonObjects
             }
         }
     };
+
+    struct BtcOutput : QJsonObject
+    {
+        BtcOutput(QString txID, int vout)
+        {
+            (*this)["txid"] = txID;
+            (*this)["vout"] = vout;
+        }
+    };
+
+    struct BtcSignedTransaction
+    {
+        QString signedTransaction = "";
+        bool complete = false;              // true if all (enough?) signatures were collected
+
+        BtcSignedTransaction(QJsonObject signedTransactionObj)
+        {
+            this->signedTransaction = signedTransactionObj["hex"].toString();
+            this->complete = signedTransactionObj["complete"].toBool();
+        }
+    };
+
+    // used to sign some raw transactions
+    // to withdraw from p2sh addresses e.g. you need to know those things
+    struct BtcSigningPrequisite : QJsonObject
+    {
+        BtcSigningPrequisite()
+        {}
+
+        BtcSigningPrequisite(QString txId, int vout, QString scriptPubKey, QString redeemScript)
+        {
+            // all of these values must be set or else prequisite is invalid
+            (*this)["txid"] = txId;
+            (*this)["vout"] = vout;
+            (*this)["scriptPubKey"] = scriptPubKey;
+            (*this)["redeemScript"] = redeemScript;
+        }
+
+        // all of these values must be set or else prequisite is invalid
+        void SetTxId(QString txId)
+        {
+            // we can get this value from the transaction used to send funds to the p2sh
+            (*this)["txid"] = txId;
+        }
+
+        // all of these values must be set or else prequisite is invalid
+        void SetVout(int vout)
+        {
+            // we can get this value from the transaction used to send funds to the p2sh
+            (*this)["vout"] = vout;
+        }
+
+        // all of these values must be set or else prequisite is invalid
+        void SetScriptPubKey(QString scriptPubKey)
+        {
+            // we can get this value from the transaction used to send funds to the p2sh
+            (*this)["scriptPubKey"] = scriptPubKey;
+        }
+
+        // all of these values must be set or else prequisite is invalid
+        void SetRedeemScript(QString redeemScript)
+        {
+            // we can get this from the createmultisig api function
+            (*this)["redeemScript"] = redeemScript;
+        }
+    };
 }
 
 using namespace BtcJsonObjects;
 
+typedef QSharedPointer<BtcTransaction> BtcTransactionRef;
 typedef QSharedPointer<BtcRawTransaction> BtcRawTransactionRef;
 typedef QSharedPointer<BtcBlock> BtcBlockRef;
+typedef QSharedPointer<BtcOutput> BtcOutputRef;
+typedef QSharedPointer<BtcSignedTransaction> BtcSignedTransactionRef;
+typedef QSharedPointer<BtcSigningPrequisite> BtcSigningPrequisiteRef;
 
 // This class will create/process json queries and send/receive them with the help of BitcoinRpc
 class BtcJson //: IStringProcessor
@@ -247,9 +319,19 @@ public:
     // Validate an address
     QSharedPointer<BtcAddressInfo> ValidateAddress(QString address);
 
+    // Get private key for address (calls DumpPrivKey())
+    QString GetPrivateKey(QString address);
+
+    // Get private key for address
+    QString DumpPrivKey(QString address);
+
     // Adds an address requiring n keys to sign before it can spend its inputs
     // Returns the multi-sig address
-    QString AddMultiSigAddress(int nRequired, QJsonArray keys, QString account = NULL);    // gonna continue here at home, remove this line and it should compile.
+    QString AddMultiSigAddress(int nRequired, QStringList keys, QString account = NULL);    // gonna continue here at home, remove this line and it should compile.
+
+    // Creates a multi-sig address and returns its redeemScript
+    // the address will not be added to your address list, use AddMultiSigAddress for that
+    QString GetRedeemScript(int nRequired, QStringList keys);
 
     // Returns list of account names
     // Could also return the balance of each account but I find that confusing
@@ -258,18 +340,26 @@ public:
     QString SendToAddress(QString btcAddress, double amount);
     
     // Send to multiple addresses at once
-    // txOutput maps amounts (double) to addresses (QString)
-    QString SendMany(QVariantMap txOutputs, QString fromAccount = NULL);
+    // txTargets maps amounts (double) to addresses (QString)
+    QString SendMany(QVariantMap txTargets, QString fromAccount = NULL);
 
     bool SetTxFee(double fee);
 
-    QSharedPointer<BtcJsonObjects::BtcTransaction> GetTransaction(QString txID);
+    BtcTransactionRef GetTransaction(QString txID);
 
     QString GetRawTransaction(QString txID);
 
     BtcRawTransactionRef GetDecodedRawTransaction(QString txID);
 
     BtcRawTransactionRef DecodeRawTransaction(QString rawTransaction);
+
+    QString CreateRawTransaction(QList<BtcOutput> unspentOutputs, QVariantMap txTargets);
+
+    BtcSignedTransactionRef SignRawTransaction(QString rawTransaction, QList<BtcSigningPrequisite> previousTransactions = QList<BtcSigningPrequisite>(), QStringList privateKeys = QStringList());
+
+    BtcSignedTransactionRef CombineSignedTransactions(QString rawTransaction);
+
+    QString SendRawTransaction(QString rawTransaction);
 
     QList<QString> GetRawMemPool();
 
