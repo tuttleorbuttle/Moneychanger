@@ -9,6 +9,7 @@
 #include "moneychanger.h"
 #include "modules.h"
 #include "unityindicator.h"
+#include "utils.h"
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
@@ -133,6 +134,10 @@ int main(int argc, char *argv[])
         systray.bootTray();
         GUI::ShowUnityIndicator();  // QT can't currently create tray menus on unity desktop.
 
+        // on LXDE sometimes the icon doesn't appear in my systray,
+        // triggering a breakpoint here or adding a delay solves this.
+        utils::SleepSimulator sleeper;
+        sleeper.sleep(100);
     }
     // ----------------------------------------------------------------
     // Leave this here for now, it will help debugging.
