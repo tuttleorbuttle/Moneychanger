@@ -215,7 +215,7 @@ mac:{
 }
 
 linux:{
-	LIBS += -ldl
+        LIBS += -ldl -lboost_thread -lboost_system
 }
 
 
@@ -253,7 +253,7 @@ unix: PKGCONFIG += opentxs
 
 unix: PKGCONFIG += chaiscript
 
-CONFIG += debug_and_release
+CONFIG += debug
 
 #OTHER_FILES +=
 
