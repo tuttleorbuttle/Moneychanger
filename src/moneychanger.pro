@@ -71,13 +71,25 @@ HEADERS += moneychanger.h \
     Widgets/marketdetails.h \
     Widgets/offerdetails.h \
     Widgets/agreementdetails.h \
-    Widgets/corporationdetails.h
+    Widgets/corporationdetails.h \
+    FastDelegate.h \
+    FastDelegateBind.h \
+    modules.h \
+    btcjson.h \
+    btcrpc.h \
+    btcinterface.h \
+    utils.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
            ot_worker.cpp \
            MTRecordList.cpp \
            MTRecord.cpp \
+          modules.cpp \
+          btcjson.cpp \
+          btcinterface.cpp \
+          btcrpc.cpp \
+    utils.cpp \
     Handlers/FileHandler.cpp \
     Handlers/DBHandler.cpp \
     Handlers/contacthandler.cpp \
