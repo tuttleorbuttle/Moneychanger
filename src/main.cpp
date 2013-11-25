@@ -8,7 +8,6 @@
 
 #include "moneychanger.h"
 #include "modules.h"
-#include "unityindicator.h"
 #include "utils.h"
 
 #include <opentxs/OTAPI.h>
@@ -132,7 +131,6 @@ int main(int argc, char *argv[])
          *Start the Moneychanger systray app
          */
         systray.bootTray();
-        GUI::ShowUnityIndicator();  // QT can't currently create tray menus on unity desktop.
 
         // on LXDE sometimes the icon doesn't appear in my systray,
         // triggering a breakpoint here or adding a delay solves this.

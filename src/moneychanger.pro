@@ -22,7 +22,6 @@ SOURCES += main.cpp\
           btcjson.cpp \
           btcinterface.cpp \
           btcrpc.cpp \
-    unityindicator.cpp \
     utils.cpp \
     Widgets/MarketWindow.cpp \
     Widgets/overviewwindow.cpp \
@@ -58,7 +57,6 @@ HEADERS += moneychanger.h \
     btcrpc.h \
     btcinterface.h \
     utils.h \
-    unityindicator.h \
     Widgets/MarketWindow.h \
     Widgets/overviewwindow.h \
     Handlers/FileHandler.h \
@@ -109,25 +107,10 @@ CHAI_INCLUDE_PATH      += $$HOME/.local/include
 OPENSSL_INCLUDE_PATH   += /usr/lib/x86_64-linux-gnu
 OPENSSL_LIB_PATH       += /usr/include
 
-# I think all of the following includes are for unityindicator.h so they can easily be removed later.
-LIBAPPINDICATOR_INCLUDE_PATH += /usr/include/libappindicator-0.1
-GTK_INCLUDE_PATH        += /usr/include/gtk-2.0
-GDKCONFIG_INCLUDE_PATH  += /usr/lib/x86_64-linux-gnu/gtk-2.0/include
-GLIB_INCLUDE_PATH       += /usr/include/glib-2.0
-GLIBCONFIG_INCLUDE_PATH += /usr/lib/x86_64-linux-gnu/glib-2.0/include
-PANGO_INCLUDE_PATH      += /usr/include/pango-1.0
-CAIRO_INCLUDE_PATH      += /usr/include/cairo
-GDK_PIXBUF_INCLUDE_PATH += /usr/include/gdk-pixbuf-2.0
-ATK_INCLUDE_PATH        += /usr/include/atk-1.0
-
 INCLUDEPATH    += $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH
-INCLUDEPATH     += $$LIBAPPINDICATOR_INCLUDE_PATH $$GTK_INCLUDE_PATH
-INCLUDEPATH     += $$GLIB_INCLUDE_PATH $$GLIBCONFIG_INCLUDE_PATH
-INCLUDEPATH     += $$PANGO_INCLUDE_PATH $$CAIRO_INCLUDE_PATH
-INCLUDEPATH     += $$GDK_PIXBUF_INCLUDE_PATH $$ATK_INCLUDE_PATH $$GDKCONFIG_INCLUDE_PATH
 DEPENDPATH     += $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH
 LIBS           += $$join(OPENTXS_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,)
-LIBS           += -lotapi -lssl -lcrypto -lot -lboost_thread -lgobject-2.0 -lappindicator -lgtk-x11-2.0
+LIBS           += -lotapi -lssl -lcrypto
 
 INCLUDEPATH     += include/otapi
 INCLUDEPATH     += include/otlib
