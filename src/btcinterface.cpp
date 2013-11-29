@@ -4,20 +4,10 @@
 #include "modules.h"
 #include "utils.h"
 
-using namespace BtcJsonObjects;
-
 
 BtcInterface::BtcInterface(QObject *parent) :
     QObject(parent)
 {
-}
-
-// order of keys doesn't really matter
-QString BtcInterface::CreateTwoOfTwoEscrowAddress(QString myKey, QString hisKey)
-{
-    QStringList keys;
-    keys.append(myKey); keys.append(hisKey);
-    return Modules::btcJson->AddMultiSigAddress(2, keys, "moneychanger-twooftwo");
 }
 
 bool BtcInterface::TestBtcJson()
@@ -58,10 +48,10 @@ bool BtcInterface::TestBtcJson()
     keys.append(Modules::btcJson->GetNewAddress("testmultisig"));
     keys.append(Modules::btcJson->GetNewAddress("testmultisig"));
     // add new multisig address to account "testmultisig"
-    QString multiSigAddr = Modules::btcJson->AddMultiSigAddress(2, keys, "testmultisig");
+    BtcMultiSigAddressRef multiSigAddr = Modules::btcJson->AddMultiSigAddress(2, keys, "testmultisig");
 
-    if(multiSigAddr != NULL && multiSigAddr != "")
-        OTLog::vOutput(0, "Multisig address created: \"%s\"\n", multiSigAddr.toStdString().c_str());
+    if(multiSigAddr != NULL && !multiSigAddr->address.isEmpty())
+        OTLog::vOutput(0, "Multisig address created: \"%s\"\n", multiSigAddr->address.toStdString().c_str());
     else
         return false;
 
@@ -69,8 +59,8 @@ bool BtcInterface::TestBtcJson()
     keys += "3invalidkey";
     keys += "3invalidkey2";
     // attempt to create an address with invalid keys
-    QString multiSigAddrInvalid = Modules::btcJson->AddMultiSigAddress(2, keys, "testmultisig");
-    if(multiSigAddrInvalid != NULL && multiSigAddrInvalid != "")
+    BtcMultiSigAddressRef multiSigAddrInvalid = Modules::btcJson->AddMultiSigAddress(2, keys, "testmultisig");
+    if(multiSigAddrInvalid != NULL && !multiSigAddrInvalid->address.isNull())
         return false;   // if that's the case we'll have to check the keys for validity
 
     //--------------
@@ -254,15 +244,15 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     publicKeys.append(pubKeyVendor);
 
     // vendor: create multi-sig address
-   QString multiSigAddressVendor = Modules::btcJson->AddMultiSigAddress(2, publicKeys, "testescrow");
+   BtcMultiSigAddressRef multiSigAddressVendor = Modules::btcJson->AddMultiSigAddress(2, publicKeys, "testescrow");
 
     // buyer: create multi-sig-address
     Modules::btcRpc->ConnectToBitcoin(buyer);
-    QString multiSigAddressBuyer = Modules::btcJson->AddMultiSigAddress(2, publicKeys, "testescrow");
+    BtcMultiSigAddressRef multiSigAddressBuyer = Modules::btcJson->AddMultiSigAddress(2, publicKeys, "testescrow");
 
     // buyer: pay the requested amount into the multi-sig address
     double amountRequested = 1.22;  // .22 because two of two escrow...
-    QString txToEscrow = Modules::btcJson->SendToAddress(multiSigAddressBuyer, amountRequested);
+    QString txToEscrow = Modules::btcJson->SendToAddress(multiSigAddressBuyer->address, amountRequested);
 
 
     // now the client needs to tell the vendor what the transaction ID is
@@ -273,7 +263,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     // vendor: wait for the transaction to be received and confirmed
     Modules::btcRpc->ConnectToBitcoin(vendor);
     BtcRawTransactionRef transaction = WaitGetRawTransaction(txToEscrow, 500, 3);     // wait for the tx to be received
-    if(!WaitTransactionSuccessfull(amountRequested, transaction, multiSigAddressVendor, 1))  // see if it has 1 confirmation
+    if(!WaitTransactionSuccessfull(amountRequested, transaction, multiSigAddressVendor->address, 1))  // see if it has 1 confirmation
         return false;   // wrong btc amount or lack of confirmations after timeout period
 
      // vendor: create address to withdraw the funds from the p2sh
@@ -281,26 +271,11 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
     // vendor: create raw withdrawal transaction
     BtcSignedTransactionRef withdrawTransactionVendor =
-            WithdrawAllFromAddress(txToEscrow, multiSigAddressVendor, withdrawAddr, addressVendor,
-                                   Modules::btcJson->GetRedeemScript(2, publicKeys));
+            WithdrawAllFromAddress(txToEscrow, multiSigAddressVendor->address, withdrawAddr, addressVendor,
+                                   multiSigAddressVendor->redeemScript);
 
     if(withdrawTransactionVendor == NULL)
         return false;
-
-    // vendor: if we own all the keys, we are done (this isn't supposed to happen)
-    if(withdrawTransactionVendor->complete)
-    {
-        // send to network
-        QString txWithdrawId = Modules::btcJson->SendRawTransaction(withdrawTransactionVendor->signedTransaction);
-
-        // check if it was sent
-        if(txWithdrawId == NULL || txWithdrawId == "")
-            return false;
-
-        // wait for confirmations
-        BtcTransactionRef withdrawTrans = WaitGetTransaction(txWithdrawId);
-        return WaitTransactionSuccessfull(amountRequested, withdrawTrans, 1);
-    }
 
 
     // vendor then tells the client which address he would like to withdraw funds to
@@ -311,8 +286,8 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     //      partially signed transaction sending them to the vendor withdrawal address
     Modules::btcRpc->ConnectToBitcoin(buyer);
     BtcSignedTransactionRef withdrawTransactionBuyer =
-            WithdrawAllFromAddress(txToEscrow, multiSigAddressBuyer, withdrawAddr, addressBuyer,
-                                   Modules::btcJson->GetRedeemScript(2, publicKeys));
+            WithdrawAllFromAddress(txToEscrow, multiSigAddressBuyer->address, withdrawAddr, addressBuyer,
+                                   multiSigAddressBuyer->redeemScript);
 
     if(withdrawTransactionBuyer == NULL)
         return false;
@@ -358,6 +333,40 @@ QString BtcInterface::GetPublicKey(QString address)
         return NULL;
 
     return addressInfo->pubkey;
+}
+
+double BtcInterface::GetTotalOutput(QString transactionId, QString targetAddress)
+{
+    // Wait for the transaction to be received
+    return GetTotalOutput(WaitGetRawTransaction(transactionId), targetAddress);
+}
+
+double BtcInterface::GetTotalOutput(BtcRawTransactionRef transaction, QString targetAddress)
+{
+    double amountReceived = 0.0;
+    for(int i = 0; i < transaction->outputs.size(); i++)
+    {
+        // I don't know what outputs to multiple addresses mean so I'm not gonna trust them for now.
+        if(transaction->outputs[i].addresses.size() > 1)
+        {
+            OTLog::vOutput(0, "Multiple output addresses per output detected.");
+            continue;
+        }
+
+        // TODO: vulnerability fix
+        // I don't know much about scriptPubKey but I think a malicious buyer could create a
+        // transaction that isn't spendable by anyone, see
+        // https://en.bitcoin.it/wiki/Script#Provably_Unspendable.2FPrunable_Outputs
+        // I think the easiest solution would be to check
+        // if scriptPubKey.hex != "76a914<pub key hash>88ac" return false
+        // as this seems to be the hex representation of the most basic standard transaction.
+
+
+        if(transaction->outputs[i].addresses.contains(targetAddress))   // check if the output leads to our address
+            amountReceived += transaction->outputs[i].value;            // if it does, add output to total received bitcoins
+    }
+
+    return amountReceived;
 }
 
 bool BtcInterface::TransactionConfirmed(BtcTransactionRef transaction, int minConfirms)
@@ -408,30 +417,8 @@ bool BtcInterface::TransactionSuccessfull(double amountRequested, BtcRawTransact
         return false;
 
     // check for sufficient amount...
-    double amountReceived = 0.0;
-    for(int i = 0; i < transaction->outputs.size(); i++)
-    {
-        // I don't know what outputs to multiple addresses mean so I'm not gonna trust them for now.
-        if(transaction->outputs[i].addresses.size() > 1)
-        {
-            OTLog::vOutput(0, "Multiple output addresses per output detected.");    
-            continue;
-        }
-
-        // TODO: vulnerability fix
-        // I don't know much about scriptPubKey but I think a malicious buyer could create a
-        // transaction that isn't spendable by anyone, see
-        // https://en.bitcoin.it/wiki/Script#Provably_Unspendable.2FPrunable_Outputs
-        // I think the easiest solution would be to check
-        // if scriptPubKey.hex != "76a914<pub key hash>88ac" return false
-        // as this seems to be the hex representation of the most basic standard transaction.
-
-        if(transaction->outputs[i].addresses.contains(targetAddress))
-            amountReceived += transaction->outputs[i].value;
-    }
-
-    if(amountReceived >= amountRequested)
-        return true;
+    if(GetTotalOutput(transaction, targetAddress) >= amountRequested)
+        return true;    // if we were sent at least as much money as requested, return true
 
     return false;
 }

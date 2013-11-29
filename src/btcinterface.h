@@ -5,7 +5,6 @@
 #include <QSharedPointer>
 #include "btcjson.h"
 
-using namespace BtcJsonObjects;
 
 class BtcInterface : public QObject
 {
@@ -19,7 +18,15 @@ public:
     // Or maybe I will remove it again and replace it with something more dynamic.
     QString CreateTwoOfTwoEscrowAddress(QString myKey, QString hisKey);
 
+    // Returns the public key of an address (addresses are just hashes)
+    // Pub keys need to be shared to create multi signature addresses
     QString GetPublicKey(QString address);
+
+    // Counts how many coins are sent to targetAddress through this transaction
+    double GetTotalOutput(QString transactionId, QString targetAddress);
+
+    // Counts how many coins are sent to targetAddress through this transaction
+    double GetTotalOutput(BtcRawTransactionRef transaction, QString targetAddress);
 
     // Checks whether a transaction has been confirmed often enough
     bool TransactionConfirmed(BtcTransactionRef transaction, int minconfirms = MinConfirms);

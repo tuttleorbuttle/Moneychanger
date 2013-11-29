@@ -37,7 +37,6 @@
 
 
 using namespace fastdelegate;
-using namespace BtcJsonObjects;
 
 BtcJson::BtcJson()
 {
@@ -52,6 +51,17 @@ void BtcJson::Initialize()
 
 BtcJson::~BtcJson()
 {
+}
+
+int64_t BtcJson::DoubleToInt(double value)
+{
+    // copied from the wiki
+    return (int64_t)(value * 1e8 + (value < 0.0 ? -.5 : .5));
+}
+
+double BtcJson::IntToDouble(int64_t value)
+{
+    return (double)value / 1e8;
 }
 
 bool BtcJson::ProcessRpcString(QSharedPointer<QByteArray> jsonString, QJsonValue& result)
@@ -119,7 +129,7 @@ void BtcJson::GetInfo() // if we ever need this for anything we can return a str
     double balance = resultObj["balance"].toDouble();
 }
 
-double BtcJson::GetBalance(QString account/*=NULL*/)
+int64_t BtcJson::GetBalance(QString account/*=NULL*/)
 {
     QJsonArray params;
     params.append(account);      // account
@@ -175,7 +185,7 @@ QString BtcJson::GetNewAddress(QString account/*=NULL*/)
     return result.toString();
 }
 
-QSharedPointer<BtcAddressInfo> BtcJson::ValidateAddress(QString address)
+BtcAddressInfoRef BtcJson::ValidateAddress(const QString& address)
 {
     // this function hasn't been tested yet and might not work.
 
@@ -184,24 +194,14 @@ QSharedPointer<BtcAddressInfo> BtcJson::ValidateAddress(QString address)
 
     QJsonValue result;
     if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_VALIDATEADDRESS, params)), result))
-        return QSharedPointer<BtcAddressInfo>();
+        return BtcAddressInfoRef();
 
     if(!result.isObject())
-        return QSharedPointer<BtcAddressInfo>();   // shouldn't happen unless protocol is changed
+        return BtcAddressInfoRef();   // shouldn't happen unless protocol is changed
 
-    QSharedPointer<BtcAddressInfo> addressInfo;
+    BtcAddressInfoRef addressInfo;
     addressInfo.reset(new BtcAddressInfo(result.toObject()));
-
-    if(!addressInfo->isvalid)
-        return QSharedPointer<BtcAddressInfo>();    // return NULL
-
     return addressInfo;
-
-    //QsonObject resultObj = result.toObject();
-    //if(!resultObj["isvalid"].isBool())
-    //    return false;   // shouldn't happen unless protocol is changed
-
-    //return resultObj["isvalid"].toBool();
 }
 
 QString BtcJson::GetPrivateKey(QString address)
@@ -224,7 +224,7 @@ QString BtcJson::DumpPrivKey(QString address)
     return result.toString();
 }
 
-QString BtcJson::AddMultiSigAddress(int nRequired, QStringList keys, QString account)
+BtcMultiSigAddressRef BtcJson::AddMultiSigAddress(int nRequired, QStringList keys, QString account)
 {
     QJsonArray params;
     params.append(nRequired);
@@ -233,15 +233,19 @@ QString BtcJson::AddMultiSigAddress(int nRequired, QStringList keys, QString acc
 
     QJsonValue result;
     if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_ADDMULTISIGADDRESS, params)), result))
-        return NULL;      // error
+        return BtcMultiSigAddressRef();      // error
 
     if(!result.isString())
-        return NULL;      // shouldn't happen unless protocol is changed
+        return BtcMultiSigAddressRef();      // shouldn't happen unless protocol is changed
 
-    return result.toString();
+    if(result.toString().isEmpty())
+        return BtcMultiSigAddressRef();     // error, shouldn't happen at all
+
+    // re-create the address so we get more information and return that
+    return CreateMultiSigAddress(nRequired, keys);
 }
 
-QString BtcJson::GetRedeemScript(int nRequired, QStringList keys)
+BtcMultiSigAddressRef BtcJson::CreateMultiSigAddress(int nRequired, QStringList keys)
 {
     QJsonArray params;
     params.append(nRequired);
@@ -250,10 +254,19 @@ QString BtcJson::GetRedeemScript(int nRequired, QStringList keys)
     QJsonValue result;
     if(!ProcessRpcString(
                 Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_CREATEMULTISIG, params)),result))
-        return NULL;   // error
+        return BtcMultiSigAddressRef();     // error
 
-    QJsonObject resultObj = result.toObject();
-    return resultObj["redeemScript"].toString();
+    if(!result.isObject())
+        return BtcMultiSigAddressRef();     // error
+
+    BtcMultiSigAddressRef multiSigAddr;
+    multiSigAddr.reset(new BtcMultiSigAddress(result.toObject(), keys));
+    return multiSigAddr;
+}
+
+QString BtcJson::GetRedeemScript(int nRequired, QStringList keys)
+{
+    return CreateMultiSigAddress(nRequired, keys)->redeemScript;
 }
 
 QStringList BtcJson::ListAccounts()
@@ -270,13 +283,13 @@ QStringList BtcJson::ListAccounts()
 }
 
 
-QString BtcJson::SendToAddress(QString btcAddress, double amount)
+QString BtcJson::SendToAddress(QString btcAddress, int64_t amount)
 {
     // TODO: handle lack of funds, need of transaction fees and unlocking of the wallet
 
     QJsonArray params;
     params.append(btcAddress);
-    params.append(amount);
+    params.append(IntToDouble(amount));
 
     QJsonValue result;
     if(!ProcessRpcString(
@@ -289,10 +302,10 @@ QString BtcJson::SendToAddress(QString btcAddress, double amount)
     return result.toString();
 }
 
-bool BtcJson::SetTxFee(double fee)
+bool BtcJson::SetTxFee(int64_t fee)
 {
     QJsonArray params;
-    params.append(fee);
+    params.append(IntToDouble(fee));
 
     QJsonValue result;
     if(!ProcessRpcString(

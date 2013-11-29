@@ -78,7 +78,9 @@ HEADERS += moneychanger.h \
     btcjson.h \
     btcrpc.h \
     btcinterface.h \
-    utils.h
+    utils.h \
+    bitcoin/MTBitcoin.h \
+    bitcoin/btcjsonobjects.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -143,7 +145,8 @@ SOURCES += main.cpp\
     Widgets/marketdetails.cpp \
     Widgets/offerdetails.cpp \
     Widgets/agreementdetails.cpp \
-    Widgets/corporationdetails.cpp
+    Widgets/corporationdetails.cpp \
+    bitcoin/MTBitcoin.cpp
 
 RESOURCES += resource.qrc
 
