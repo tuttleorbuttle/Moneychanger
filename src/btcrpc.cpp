@@ -9,6 +9,7 @@
 #include <QPointer>
 #include <QUrl>
 #include <OTLog.h>
+#include <QTimer>
 #include "btcrpc.h"
 #include "utils.h"
 
@@ -67,7 +68,7 @@ void BtcRpc::InitNAM()
     // create new network access manager
     // rpcNAM is a pointer object, hence the .reset() and .data() functions.
     this->rpcNAM.reset(new QNetworkAccessManager());
-    // connect the function to receive replies from bitcoin qt
+    // connect the function to receive replies from bitcoin-qt
     QObject::connect(this->rpcNAM.data(), SIGNAL(finished(QNetworkReply*)), this, SLOT(OnNetReplySlot(QNetworkReply*)));
     // connect the function to authenticate when required
     QObject::connect(this->rpcNAM.data(), SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(OnAuthReqSlot(QNetworkReply*,QAuthenticator*)));
@@ -129,16 +130,33 @@ QSharedPointer<QByteArray> BtcRpc::SendRpc(const QByteArray jsonString)
     if(!this->connected)
         return QSharedPointer<QByteArray>();
 
+    // calculate content length
     QByteArray postDataSize = QByteArray::number(jsonString.size());
+    // set content length
     this->rpcRequest->setRawHeader("Content-Length", postDataSize);
 
-    QEventLoop loop;    // prepare loop
+    // prepare loop
+    QEventLoop loop;
+    // connect <receiving network data> to loop.quit()
     connect(this->rpcNAM.data(), SIGNAL(finished(QNetworkReply*)), &loop, SLOT(quit()));
 
-    QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString);  // send data
+    // prepare timer
+    QTimer timer;
+    timer.setSingleShot(true);
+    // connect timeout to loop.quit()
+    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+
+    // send data
+    QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString);
+
+    // start timer
+    timer.start(2000);  // timeout for waiting for a reply from bitcoin-qt
 
     // stay in loop while updating GUI and everything until bitcoin replied. or something like that.
     loop.exec();    // needs some sort of timeout. I'm sure qt offers a timer that can be linked to the quit() slot :)
+
+    //if(!timer.isActive())           // setting connected to false is already done when processing the network error
+    //    this->connected = false;    // timeout? means bitcoin isn't replying...
 
     return this->rpcReplyContent;
 }
@@ -213,7 +231,7 @@ void BtcRpc::ProcessErrorMessage(const QNetworkReply* reply)
         OTLog::Output(0, "Connection was closed. This also occurs when bitcoin-qt is not running or not accpting a connection on this port.");
         //break;
     case QNetworkReply::ConnectionRefusedError:
-        //break;
+        //break;        // this happens when bitcoin-qt isn't running
     case QNetworkReply::HostNotFoundError:
         //break;
     case QNetworkReply::TimeoutError:

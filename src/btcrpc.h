@@ -71,7 +71,7 @@ private:
     QString password = "";
     bool connected = false;
 
-Q_OBJECT
+    Q_OBJECT
 public slots:
 
     // Called when there's a network reply from bitcoin
