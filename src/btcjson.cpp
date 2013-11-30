@@ -53,17 +53,6 @@ BtcJson::~BtcJson()
 {
 }
 
-int64_t BtcJson::DoubleToInt(double value)
-{
-    // copied from the wiki
-    return (int64_t)(value * 1e8 + (value < 0.0 ? -.5 : .5));
-}
-
-double BtcJson::IntToDouble(int64_t value)
-{
-    return (double)value / 1e8;
-}
-
 bool BtcJson::ProcessRpcString(QSharedPointer<QByteArray> jsonString, QJsonValue& result)
 {
     QString id;
@@ -126,10 +115,10 @@ void BtcJson::GetInfo() // if we ever need this for anything we can return a str
         return;
 
     QJsonObject resultObj = result.toObject();
-    double balance = resultObj["balance"].toDouble();
+    int64_t balance = utils::CoinsToSatoshis(resultObj["balance"].toDouble());
 }
 
-int64_t BtcJson::GetBalance(QString account/*=NULL*/)
+int64_t BtcJson::GetBalance(QString account/*=NULL*/ /*TODO: int minConfirmations*/)
 {
     QJsonArray params;
     params.append(account);      // account
@@ -140,10 +129,10 @@ int64_t BtcJson::GetBalance(QString account/*=NULL*/)
     QJsonValue result;
     if(!ProcessRpcString(reply, result) || !result.isDouble())
     {
-        return -999;  // error, TODO: throw error or return NaN but not -999
+        return 0;  // error, TODO: throw error or return NaN
     }
 
-    return result.toDouble();
+    return utils::CoinsToSatoshis(result.toDouble());
 }
 
 QString BtcJson::GetAccountAddress(QString account/*= NULL*/)
@@ -289,7 +278,7 @@ QString BtcJson::SendToAddress(QString btcAddress, int64_t amount)
 
     QJsonArray params;
     params.append(btcAddress);
-    params.append(IntToDouble(amount));
+    params.append(utils::SatoshisToCoins(amount));
 
     QJsonValue result;
     if(!ProcessRpcString(
@@ -305,7 +294,7 @@ QString BtcJson::SendToAddress(QString btcAddress, int64_t amount)
 bool BtcJson::SetTxFee(int64_t fee)
 {
     QJsonArray params;
-    params.append(IntToDouble(fee));
+    params.append(utils::SatoshisToCoins(fee));
 
     QJsonValue result;
     if(!ProcessRpcString(
@@ -317,11 +306,17 @@ bool BtcJson::SetTxFee(int64_t fee)
     return true;    // todo: check for more errors
 }
 
-QString BtcJson::SendMany(QVariantMap txTargets, QString fromAccount)
+QString BtcJson::SendMany(QMap<QString, int64_t> txTargets, QString fromAccount)
 {
     QJsonArray params;
-    params.append(fromAccount);
-    params.append(QJsonObject::fromVariantMap(txTargets));
+    params.append(fromAccount);     // account to send coins from
+
+    QJsonObject txTargetsObj;       // convert the int satoshis to double BTC
+    for(QMap<QString, int64_t>::Iterator i = txTargets.begin(); i != txTargets.end(); i++)
+    {
+        txTargetsObj[i.key()] = utils::SatoshisToCoins(i.value());
+    }
+    params.append(txTargetsObj);    // append map of addresses and btc amounts
 
     QJsonValue result;
     if(!ProcessRpcString(
@@ -421,7 +416,7 @@ BtcRawTransactionRef BtcJson::DecodeRawTransaction(QString rawTransaction)
     return decodedRawTransaction;
 }
 
-QString BtcJson::CreateRawTransaction(QList<BtcOutput> unspentOutputs, QVariantMap txTargets)
+QString BtcJson::CreateRawTransaction(QList<BtcOutput> unspentOutputs, QMap<QString, int64_t> txTargets)
 {
     QJsonArray params;
     QJsonArray outputsArray;
@@ -430,7 +425,13 @@ QString BtcJson::CreateRawTransaction(QList<BtcOutput> unspentOutputs, QVariantM
         outputsArray.append(unspentOutputs[i]);
     }
     params.append(outputsArray);
-    params.append(QJsonObject::fromVariantMap(txTargets));
+
+    QJsonObject txTargetsObj;
+    for(QMap<QString, int64_t>::Iterator i = txTargets.begin(); i != txTargets.end(); i++)
+    {
+        txTargetsObj[i.key()] = utils::SatoshisToCoins(i.value());
+    }
+    params.append(txTargetsObj);
 
     QJsonValue result;
     if(!ProcessRpcString(

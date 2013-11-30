@@ -23,10 +23,10 @@ public:
     QString GetPublicKey(QString address);
 
     // Counts how many coins are sent to targetAddress through this transaction
-    double GetTotalOutput(QString transactionId, QString targetAddress);
+    int64_t GetTotalOutput(QString transactionId, QString targetAddress);
 
     // Counts how many coins are sent to targetAddress through this transaction
-    double GetTotalOutput(BtcRawTransactionRef transaction, QString targetAddress);
+    int64_t GetTotalOutput(BtcRawTransactionRef transaction, QString targetAddress);
 
     // Checks whether a transaction has been confirmed often enough
     bool TransactionConfirmed(BtcTransactionRef transaction, int minconfirms = MinConfirms);
@@ -35,20 +35,20 @@ public:
     bool TransactionConfirmed(BtcRawTransactionRef transaction, int minConfirms = MinConfirms);
 
     // Checks a transaction for correct amount and confirmations.
-    bool TransactionSuccessfull(double amount, BtcTransactionRef transaction, int minConfirms = MinConfirms);
+    bool TransactionSuccessfull(int64_t amount, BtcTransactionRef transaction, int minConfirms = MinConfirms);
 
     // Checks a raw transaction for correct amount, confirmations and recipient.
     // We need this because bitcoin-qt offers no good way to watch multi-sig addresses if we don't own all the keys
-    bool TransactionSuccessfull(double amount, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms = MinConfirms);
+    bool TransactionSuccessfull(int64_t amount, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms = MinConfirms);
 
 
     // Halts thread execution until the transaction has enough confirmations
     // timeOutSeconds is the time in seconds after which the function will fail
     // timerMS is the delay between each confirmation check
     // returns true if sufficient confirmations were received before timeout
-    bool WaitTransactionSuccessfull(double amount, BtcTransactionRef transaction, int minConfirms = MinConfirms, double timeOutSeconds = 7200, double timerSeconds = 1);
+    bool WaitTransactionSuccessfull(int64_t amount, BtcTransactionRef transaction, int minConfirms = MinConfirms, double timeOutSeconds = 7200, double timerSeconds = 1);
 
-    bool WaitTransactionSuccessfull(double amount, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms = MinConfirms, double timeOutSeconds = 7200, double timerSeconds = 1);
+    bool WaitTransactionSuccessfull(int64_t amount, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms = MinConfirms, double timeOutSeconds = 7200, double timerSeconds = 1);
 
     // Halts thread execution until the bitcoin client learns about a new transaction
     bool WaitForTransaction(QString txID, int timerMS = 500, int maxAttempts = 20);

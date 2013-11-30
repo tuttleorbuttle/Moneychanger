@@ -17,12 +17,6 @@ public:
 
     void Initialize();       // should make this part of all modules
 
-    // converts a double bitcoin (as received through json api) to int64 satoshis
-    int64_t DoubleToInt(double value);
-
-    // converts int64 satoshis to double bitcoin
-    double IntToDouble(int64_t value);
-
     // Checks the reply object received from bitcoin-qt for errors and returns the reply
     bool ProcessRpcString(QSharedPointer<QByteArray> jsonString, QJsonValue &result);
     // Splits the reply object received from bitcoin-qt into error and result objects
@@ -73,8 +67,8 @@ public:
     QString SendToAddress(QString btcAddress, int64_t amount);
     
     // Send to multiple addresses at once
-    // txTargets maps amounts (double) to addresses (QString)
-    QString SendMany(QVariantMap txTargets, QString fromAccount = NULL);
+    // txTargets maps amounts (int64 satoshis) to addresses (QString)
+    QString SendMany(QMap<QString, int64_t> txTargets, QString fromAccount = NULL);
 
     bool SetTxFee(int64_t fee);
 
@@ -86,7 +80,7 @@ public:
 
     BtcRawTransactionRef DecodeRawTransaction(QString rawTransaction);
 
-    QString CreateRawTransaction(QList<BtcOutput> unspentOutputs, QVariantMap txTargets);
+    QString CreateRawTransaction(QList<BtcOutput> unspentOutputs, QMap<QString, int64_t> txTargets);
 
     BtcSignedTransactionRef SignRawTransaction(QString rawTransaction, QList<BtcSigningPrequisite> previousTransactions = QList<BtcSigningPrequisite>(), QStringList privateKeys = QStringList());
 

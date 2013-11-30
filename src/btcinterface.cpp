@@ -27,7 +27,7 @@ bool BtcInterface::TestBtcJson()
     //-----------------------
     Modules::btcRpc->ConnectToBitcoin(server1);
     Modules::btcJson->GetInfo();
-    double balance = Modules::btcJson->GetBalance();
+    int64_t balance = Modules::btcJson->GetBalance();
     QStringList accounts = Modules::btcJson->ListAccounts();
     QString address = Modules::btcJson->GetNewAddress();
     if(address != NULL)
@@ -36,9 +36,9 @@ bool BtcInterface::TestBtcJson()
     OTLog::vOutput(0, "Balance: %f\n", balance);
 
     // validate address
-    if(!Modules::btcJson->ValidateAddress(address))
+    if(!Modules::btcJson->ValidateAddress(address)->isvalid)
         return false;
-    if(Modules::btcJson->ValidateAddress("notanaddress"))
+    if(Modules::btcJson->ValidateAddress("notanaddress")->isvalid)
         return false;
 
     //------------------------
@@ -78,7 +78,7 @@ bool BtcInterface::TestBtcJson()
     Modules::btcJson->SetTxFee(10.1);
 
     // remember how much we send (want) so we can verify the tx later
-    double amountRequested = 1.23456789;
+    int64_t amountRequested = utils::CoinsToSatoshis(1.23456789);
 
     // send the funds
     QString txID = Modules::btcJson->SendToAddress(recvAddr, amountRequested);
@@ -98,8 +98,8 @@ bool BtcInterface::TestBtcJson()
     if(transaction == NULL)
         return false;
 
-    double fee = transaction->Fee;
-    double amountReceived = transaction->Amount;
+    int64_t fee = transaction->Fee;
+    int64_t amountReceived = transaction->Amount;
     int confirms = transaction->Confirmations;
 
     // check for correct amount and confirmations
@@ -121,13 +121,13 @@ bool BtcInterface::TestBtcJson()
     //---------
     // sendmany
     //---------
-    QVariantMap txTargets;  // maps amounts to addresses
+    QMap<QString, int64_t> txTargets;  // maps amounts to addresses
 
-    double amounts[6];      // amounts that will be sent in one tx
+    int64_t amounts[6];      // amounts that will be sent in one tx
     QString addresses[6];   // addresses to which to send those amounts
     for(int i = 0; i < 6; i++)
     {
-        amounts[i] = i + 1;     // generate the amounts (0 is invalid)
+        amounts[i] = utils::CoinsToSatoshis(i + 1);     // generate the amounts (0 is invalid)
     }
 
     // connect to first recipient, who will also be the sender
@@ -165,7 +165,7 @@ bool BtcInterface::TestBtcJson()
     transaction = WaitGetTransaction(txManyID);
 
     // validate transaction for recipient #1
-    double sent;
+    int64_t sent;
     for(int i = 0; i < 6; i++) sent += amounts[i];
     txSuccess = TransactionSuccessfull(amounts[0] + amounts[1] - sent, transaction, MinConfirms);
     if(!txSuccess) return false;
@@ -251,7 +251,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     BtcMultiSigAddressRef multiSigAddressBuyer = Modules::btcJson->AddMultiSigAddress(2, publicKeys, "testescrow");
 
     // buyer: pay the requested amount into the multi-sig address
-    double amountRequested = 1.22;  // .22 because two of two escrow...
+    int64_t amountRequested = utils::CoinsToSatoshis(1.22);  // .22 because two of two escrow...
     QString txToEscrow = Modules::btcJson->SendToAddress(multiSigAddressBuyer->address, amountRequested);
 
 
@@ -335,15 +335,15 @@ QString BtcInterface::GetPublicKey(QString address)
     return addressInfo->pubkey;
 }
 
-double BtcInterface::GetTotalOutput(QString transactionId, QString targetAddress)
+int64_t BtcInterface::GetTotalOutput(QString transactionId, QString targetAddress)
 {
     // Wait for the transaction to be received
     return GetTotalOutput(WaitGetRawTransaction(transactionId), targetAddress);
 }
 
-double BtcInterface::GetTotalOutput(BtcRawTransactionRef transaction, QString targetAddress)
+int64_t BtcInterface::GetTotalOutput(BtcRawTransactionRef transaction, QString targetAddress)
 {
-    double amountReceived = 0.0;
+    int64_t amountReceived = 0.0;
     for(int i = 0; i < transaction->outputs.size(); i++)
     {
         // I don't know what outputs to multiple addresses mean so I'm not gonna trust them for now.
@@ -400,14 +400,14 @@ bool BtcInterface::TransactionConfirmed(BtcRawTransactionRef transaction, int mi
 }
 
 // returns whether the required amount of btc was received and confirmed often enough
-bool BtcInterface::TransactionSuccessfull(double amount, BtcTransactionRef transaction, int minConfirms)
+bool BtcInterface::TransactionSuccessfull(int64_t amount, BtcTransactionRef transaction, int minConfirms)
 {
     // TODO: check for rounding errors when comparing amounts?
 
     return TransactionConfirmed(transaction, minConfirms) && transaction->Amount >= amount; // check if confirmed AND enough btc
 }
 
-bool BtcInterface::TransactionSuccessfull(double amountRequested, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms)
+bool BtcInterface::TransactionSuccessfull(int64_t amountRequested, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms)
 {
     if(transaction == NULL) // if it hasn't been received yet we will return.
         return false;       // use WaitForTransaction(txid) to prevent this.
@@ -423,7 +423,7 @@ bool BtcInterface::TransactionSuccessfull(double amountRequested, BtcRawTransact
     return false;
 }
 
-bool BtcInterface::WaitTransactionSuccessfull(double amount, BtcTransactionRef transaction, int minConfirms, double timeOutSeconds, double timerSeconds)
+bool BtcInterface::WaitTransactionSuccessfull(int64_t amount, BtcTransactionRef transaction, int minConfirms, double timeOutSeconds, double timerSeconds)
 {
     // TODO: we'll have to replace this function with a constant background check for all unconfirmed transactions
     // and to store the outstanding transactions in some database.
@@ -452,7 +452,7 @@ bool BtcInterface::WaitTransactionSuccessfull(double amount, BtcTransactionRef t
     return false;
 }
 
-bool BtcInterface::WaitTransactionSuccessfull(double amount, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms, double timeOutSeconds, double timerSeconds)
+bool BtcInterface::WaitTransactionSuccessfull(int64_t amount, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms, double timeOutSeconds, double timerSeconds)
 {
     // TODO: See the other WaitTransactionSuccessfull()
 
@@ -523,13 +523,13 @@ BtcSignedTransactionRef BtcInterface::WithdrawAllFromAddress(QString txToSourceI
 
     // count funds in source address and list outputs leading to it
     // this will only work when no btc from source tx have been spent from that address yet
-    double funds = 0;
+    int64_t funds = 0;
     QList<BtcOutput> unspentOutputs;
     QList<BtcSigningPrequisite> signingPrequisites;
     foreach(BtcRawTransaction::VOUT output, rawTransaction->outputs)
     {
         // check if output leads to sourceAddess
-        // idk what multiple addresses per output means so we'll ignore those cases
+        // idk what multiple addresses per output means so we'll reject those cases
         if(output.addresses.size() == 1 && output.addresses[0] == sourceAddress)
         {
             funds += output.value;
@@ -539,7 +539,7 @@ BtcSignedTransactionRef BtcInterface::WithdrawAllFromAddress(QString txToSourceI
     }
 
     // create raw transaction to send outputs to target address
-    QVariantMap txTargets;
+    QMap<QString, int64_t> txTargets;
     txTargets[destinationAddress] = funds;  // TODO: calculate fee
     QString withdrawTransaction = Modules::btcJson->CreateRawTransaction(unspentOutputs, txTargets);
 

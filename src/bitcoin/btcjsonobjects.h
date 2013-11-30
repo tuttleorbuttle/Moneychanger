@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QSharedPointer>
+#include "utils.h"
 
 
 // if a query returns a complex object we should convert it to a struct instead of
@@ -17,12 +18,12 @@
 // Does not take into account block rewards.
 struct BtcTransaction
 {
-    //double TotalAmount;   // amount with fee but we don't need that
     int Confirmations;
-    double AmountReceived;  // amount received
-    double AmountSent;      // amount sent
-    double Amount;          // +received -sent
-    double Fee;             // only displayed when sender
+    // all amounts are satoshis
+    int64_t AmountReceived;  // amount received
+    int64_t AmountSent;      // amount sent
+    int64_t Amount;          // +received -sent
+    int64_t Fee;             // only displayed when sender
     QString TxID;
     double Time;
     //QString Account;
@@ -38,9 +39,9 @@ struct BtcTransaction
             return;
 
         this->Confirmations = (int)(reply["confirmations"].toDouble());
-        this->Amount = reply["amount"].toDouble();
+        this->Amount = utils::CoinsToSatoshis(reply["amount"].toDouble());
 
-        this->Fee = reply["fee"].toDouble();
+        this->Fee = utils::CoinsToSatoshis(reply["fee"].toDouble());
         this->TxID = reply["txid"].toString();
         this->Time = reply["time"].toDouble();
 
@@ -56,7 +57,7 @@ struct BtcTransaction
             QJsonObject detail = details[i].toObject();
             QString address = detail["address"].toString();
             QString category = detail["category"].toString();
-            double amount = detail["amount"].toDouble();
+            int64_t amount = utils::CoinsToSatoshis(detail["amount"].toDouble());
             if(category == "send")
             {
                 this->AddressesSent += address;
@@ -69,6 +70,7 @@ struct BtcTransaction
             }
             else if(category == "immature")
             {
+                // that's block reward.
             }
         }
     }
@@ -106,7 +108,7 @@ struct BtcRawTransaction
 
     struct VOUT
     {
-        double value = 0.0;     // amount of btc to be sent
+        int64_t value = 0.0;     // amount of btc to be sent
         int n = 0;              // outputs array index
         int reqSigs = 0;        // signatures required to withdraw from the output addresses
         QList<QString> addresses = QList<QString>();    // an array of addresses receiving the value.
@@ -115,7 +117,7 @@ struct BtcRawTransaction
         VOUT()
         {}
 
-        VOUT(double value, int n, int reqSigs, QList<QString> addresses, QString scriptPubKeyHex)
+        VOUT(int64_t value, int n, int reqSigs, QList<QString> addresses, QString scriptPubKeyHex)
             :value(value), n(n), reqSigs(reqSigs), addresses(addresses), scriptPubKeyHex(scriptPubKeyHex)
         {}
 
@@ -133,13 +135,13 @@ struct BtcRawTransaction
             this->inputs += VIN(inputObj["txid"].toString(), (int)inputObj["vout"].toDouble());
         }
 
-        QJsonArray vout  = rawTx["vout"].toArray();
-        for(int i = 0; i < vout.size(); i++)
+        QJsonArray vouts  = rawTx["vout"].toArray();
+        for(int i = 0; i < vouts.size(); i++)
         {
-            QJsonObject outputObj = vout[i].toObject();
+            QJsonObject outputObj = vouts[i].toObject();
             VOUT output;
 
-            output.value = outputObj["value"].toDouble();
+            output.value = utils::CoinsToSatoshis(outputObj["value"].toDouble());
             output.n = (int)outputObj["n"].toDouble();      // JSON doesn't know integers
 
             QJsonObject scriptPubKey = outputObj["scriptPubKey"].toObject();
