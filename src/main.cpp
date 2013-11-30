@@ -83,18 +83,7 @@ int main(int argc, char *argv[])
     MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)
     theApplication.setQuitOnLastWindowClosed(false);
 
-    { Modules modules; }    // run constructor once, initialize static pointers
-    
-    if(!Modules::btcInterface->TestBtcJson())
-	    OTLog::vOutput(0, "Error testing bitcoin integration. Maybe test environment is not set up.\n");
-    else
-	    OTLog::vOutput(0, "Bitcoin integration successfully tested.\n");
-    
-    if(!Modules::btcInterface->TestBtcJsonEscrowTwoOfTwo())
-	    OTLog::vOutput(0, "Error testing bitcoin escrow functions. Maybe test environment is not set up.\n");
-    else
-	    OTLog::vOutput(0, "Bitcoin escrow integration sucessfully tested.\n");
-    
+    { Modules modules; }    // run constructor once, initialize static pointers  
     
     //Set language
     Translation appTranslation;

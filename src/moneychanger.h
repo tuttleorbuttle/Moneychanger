@@ -48,6 +48,8 @@
 #include "Widgets/detailedit.h"
 #include "Widgets/settings.h"
 
+#include "Widgets/btcguitest.h"
+
 class MTHome;
 class MTDetailEdit;
 
@@ -144,6 +146,8 @@ private:
 
     QPointer<CreateInsuranceCompany> createinsurancecompany_window;
     QPointer<Settings> settingswindow;
+
+    QPointer<btcguitest> bitcoinwindow;
         
 private:
     void SetupMainMenu();
@@ -281,6 +285,10 @@ private:
     // ---------------------------------------------------------
     QPointer<QAction> mc_systrayMenu_bottomblank;
     // ---------------------------------------------------------
+
+    // Bitcoin
+    QPointer<QMenu> mc_systrayMenu_bitcoin;
+    QPointer<QAction> mc_systrayMenu_bitcoin_test;
     
     
 public slots:
@@ -330,6 +338,8 @@ public slots:
     void mc_createinsurancecompany_slot();  // Create Insurance Company Slot
     // ---------------------------------------------------------------------------
     void mc_settings_slot();                //Settings
+    // ---------------------------------------------------------------------------
+    void mc_bitcoin_slot();                 // Bitcoin
 };
 
 #endif // MONEYCHANGER_H

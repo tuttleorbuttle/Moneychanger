@@ -39,7 +39,7 @@ public:
         int64_t GetMultisigBalance(  );
 
         not yet implemented, would be nice if it isn't needed.
-        instead we could/should keep track of transaction Ids and their value.
+        instead we could/should keep track of transaction Ids and their value to know the balance of multi-sig addresses
     */
 
     BtcSignedTransactionRef VoteMultiSigRelease(std::string txToSourceId, BtcMultiSigAddressRef, const std::string & destinationAddress, const std::string & signingAddress);

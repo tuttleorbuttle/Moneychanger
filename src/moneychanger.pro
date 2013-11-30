@@ -80,7 +80,9 @@ HEADERS += moneychanger.h \
     btcinterface.h \
     utils.h \
     bitcoin/MTBitcoin.h \
-    bitcoin/btcjsonobjects.h
+    bitcoin/btcjsonobjects.h \
+    bitcoin/MTBitcoinSample.h \
+    Widgets/btcguitest.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -146,7 +148,8 @@ SOURCES += main.cpp\
     Widgets/offerdetails.cpp \
     Widgets/agreementdetails.cpp \
     Widgets/corporationdetails.cpp \
-    bitcoin/MTBitcoin.cpp
+    bitcoin/MTBitcoin.cpp \
+    Widgets/btcguitest.cpp
 
 RESOURCES += resource.qrc
 
@@ -197,7 +200,8 @@ FORMS += \
     Widgets/marketdetails.ui \
     Widgets/offerdetails.ui \
     Widgets/agreementdetails.ui \
-    Widgets/corporationdetails.ui
+    Widgets/corporationdetails.ui \
+    Widgets/btcguitest.ui
 
 mac:{
 
