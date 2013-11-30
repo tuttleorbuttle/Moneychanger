@@ -25,7 +25,7 @@ bool BtcInterface::TestBtcJson()
     //-----------------------
     // test various simple rpc calls
     //-----------------------
-    Modules::btcRpc->ConnectToBitcoin(server1);
+    Modules::btcRpc->ConnectToBitcoin(bitcoinqt);
     Modules::btcJson->GetInfo();
     int64_t balance = Modules::btcJson->GetBalance();
     QStringList accounts = Modules::btcJson->ListAccounts();
@@ -36,9 +36,10 @@ bool BtcInterface::TestBtcJson()
     OTLog::vOutput(0, "Balance: %f\n", balance);
 
     // validate address
-    if(!Modules::btcJson->ValidateAddress(address)->isvalid)
+    BtcAddressInfoRef addrInfo;
+    if((addrInfo = Modules::btcJson->ValidateAddress(address)) != NULL && addrInfo->isvalid)
         return false;
-    if(Modules::btcJson->ValidateAddress("notanaddress")->isvalid)
+    if((addrInfo = Modules::btcJson->ValidateAddress("notanaddress")) != NULL && addrInfo->isvalid)
         return false;
 
     //------------------------
@@ -163,6 +164,8 @@ bool BtcInterface::TestBtcJson()
     // validate sendmany transaction (the one we just sent)
     //-----------------------------------------------------
     transaction = WaitGetTransaction(txManyID);
+    if(transaction == NULL)
+	    return false;
 
     // validate transaction for recipient #1
     int64_t sent;
@@ -244,11 +247,15 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     publicKeys.append(pubKeyVendor);
 
     // vendor: create multi-sig address
-   BtcMultiSigAddressRef multiSigAddressVendor = Modules::btcJson->AddMultiSigAddress(2, publicKeys, "testescrow");
+    BtcMultiSigAddressRef multiSigAddressVendor = Modules::btcJson->AddMultiSigAddress(2, publicKeys, "testescrow");
+    if(multiSigAddressVendor == NULL)
+	    return false;
 
     // buyer: create multi-sig-address
     Modules::btcRpc->ConnectToBitcoin(buyer);
     BtcMultiSigAddressRef multiSigAddressBuyer = Modules::btcJson->AddMultiSigAddress(2, publicKeys, "testescrow");
+    if(multiSigAddressBuyer == NULL)
+	    return false;
 
     // buyer: pay the requested amount into the multi-sig address
     int64_t amountRequested = utils::CoinsToSatoshis(1.22);  // .22 because two of two escrow...
