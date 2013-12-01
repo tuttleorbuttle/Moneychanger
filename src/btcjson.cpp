@@ -447,9 +447,9 @@ BtcSignedTransactionRef BtcJson::SignRawTransaction(QString rawTransaction, QLis
     QJsonArray params;
     params.append(rawTransaction);
 
-    QJsonArray unspentArray;
     if(previousTransactions.size() > 0)
     {
+        QJsonArray unspentArray;
         for(int i = 0; i < previousTransactions.size(); i++)
         {
             unspentArray.append(previousTransactions[i]);

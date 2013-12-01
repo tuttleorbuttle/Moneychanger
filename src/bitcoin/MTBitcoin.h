@@ -34,10 +34,11 @@ public:
 
 
     /*
-        std::map<std::string, int64_t> GetAddressesAndBalances();
+        std::map<std::string, int64_t> GetAddressesAndBalances();        
         int64_t GetBalanceAtAddress(const std::string & str_address);
-        int64_t GetMultisigBalance(  );
+        not implemented yet, but bitcoin now offers a nice API function to get that, so if we really need it I can add it almost instantly
 
+        int64_t GetMultisigBalance(  );
         not yet implemented, would be nice if it isn't needed.
         instead we could/should keep track of transaction Ids and their value to know the balance of multi-sig addresses
     */
