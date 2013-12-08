@@ -233,6 +233,8 @@ linux:{
 QMAKE_CFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 
+QMAKE_CXXFLAGS += -std=c++11
+
 #QMAKE_CXXFLAGS  -= -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 #QMAKE_CXXFLAGS  += -Wno-unused-parameter -Wno-unused-function -Wno-unneeded-internal-declaration
 
