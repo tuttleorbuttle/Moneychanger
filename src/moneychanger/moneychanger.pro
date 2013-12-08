@@ -71,6 +71,21 @@ HEADERS += moneychanger.h \
     Widgets/marketdetails.h \
     Widgets/offerdetails.h \
     Widgets/agreementdetails.h \
+    FastDelegate.h \
+    FastDelegateBind.h \
+    modules.h \
+    btcjson.h \
+    btcrpc.h \
+    btcinterface.h \
+    utils.h \
+    bitcoin/MTBitcoin.h \
+    bitcoin/btcjsonobjects.h \    
+    bitcoin/sampleescrowserver.h \
+    bitcoin/sampleescrowmanager.h \
+    bitcoin/sampleescrowclient.h \
+    bitcoin/sampleescrowtransaction.h \
+    bitcoin/sampletypedefs.h \
+    Widgets/btcguitest.h \
     Widgets/corporationdetails.h
 
 SOURCES += main.cpp\
@@ -78,6 +93,16 @@ SOURCES += main.cpp\
            ot_worker.cpp \
            MTRecordList.cpp \
            MTRecord.cpp \
+    modules.cpp \
+    btcjson.cpp \
+    btcinterface.cpp \
+    btcrpc.cpp \
+    utils.cpp \
+    bitcoin/MTBitcoin.cpp \
+    bitcoin/sampleescrowserver.cpp \
+    bitcoin/sampleescrowmanager.cpp \
+    bitcoin/sampleescrowclient.cpp \
+    bitcoin/sampleescrowtransaction.cpp \
     Handlers/FileHandler.cpp \
     Handlers/DBHandler.cpp \
     Handlers/contacthandler.cpp \
@@ -131,7 +156,9 @@ SOURCES += main.cpp\
     Widgets/marketdetails.cpp \
     Widgets/offerdetails.cpp \
     Widgets/agreementdetails.cpp \
-    Widgets/corporationdetails.cpp
+    Widgets/corporationdetails.cpp \
+    Widgets/btcguitest.cpp
+
 
 RESOURCES += resource.qrc
 
@@ -182,15 +209,16 @@ FORMS += \
     Widgets/marketdetails.ui \
     Widgets/offerdetails.ui \
     Widgets/agreementdetails.ui \
-    Widgets/corporationdetails.ui
+    Widgets/corporationdetails.ui \
+    Widgets/btcguitest.ui
 
 ## QJsonRpc Library:
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/release/ -lqjsonrpc
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/debug/ -lqjsonrpc
-else:unix: LIBS += -L$$OUT_PWD/../qjsonrpc/src/ -lqjsonrpc
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/release/ -lqjsonrpc
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/debug/ -lqjsonrpc
+#else:unix: LIBS += -L$$OUT_PWD/../qjsonrpc/src/ -lqjsonrpc
 
-INCLUDEPATH += $$PWD/../qjsonrpc/src
-DEPENDPATH += $$PWD/../qjsonrpc/src    
+#INCLUDEPATH += $$PWD/../qjsonrpc/src
+#DEPENDPATH += $$PWD/../qjsonrpc/src
     
 mac:{
 
@@ -234,6 +262,8 @@ QMAKE_CFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-in
 QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 
 QMAKE_CXXFLAGS += -std=c++11
+#QMAKE_CXXFLAGS += -std=c++0x
+#QMAKE_CXXFLAGS += -c++11
 
 #QMAKE_CXXFLAGS  -= -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 #QMAKE_CXXFLAGS  += -Wno-unused-parameter -Wno-unused-function -Wno-unneeded-internal-declaration
@@ -263,7 +293,7 @@ unix: PKGCONFIG += opentxs
 
 unix: PKGCONFIG += chaiscript
 
-CONFIG += debug_and_release
+CONFIG += debug #_and_release
 
 #OTHER_FILES +=
 
