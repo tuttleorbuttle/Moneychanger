@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>713</width>
-    <height>500</height>
+    <height>659</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,20 +17,20 @@
    <property name="geometry">
     <rect>
      <x>220</x>
-     <y>20</y>
+     <y>190</y>
      <width>281</width>
      <height>61</height>
     </rect>
    </property>
    <property name="text">
-    <string>Begin primitive functionality test</string>
+    <string>Begin functionality test</string>
    </property>
   </widget>
   <widget class="QPushButton" name="simulateEscrSrvrsButton">
    <property name="geometry">
     <rect>
      <x>250</x>
-     <y>140</y>
+     <y>300</y>
      <width>191</width>
      <height>27</height>
     </rect>
@@ -43,7 +43,7 @@
    <property name="geometry">
     <rect>
      <x>300</x>
-     <y>180</y>
+     <y>340</y>
      <width>191</width>
      <height>27</height>
     </rect>
@@ -56,7 +56,7 @@
    <property name="geometry">
     <rect>
      <x>50</x>
-     <y>250</y>
+     <y>410</y>
      <width>471</width>
      <height>27</height>
     </rect>
@@ -69,7 +69,7 @@
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>210</y>
+     <y>370</y>
      <width>401</width>
      <height>27</height>
     </rect>
@@ -82,7 +82,7 @@
    <property name="geometry">
     <rect>
      <x>530</x>
-     <y>250</y>
+     <y>410</y>
      <width>101</width>
      <height>21</height>
     </rect>
@@ -95,7 +95,7 @@
    <property name="geometry">
     <rect>
      <x>640</x>
-     <y>250</y>
+     <y>410</y>
      <width>41</width>
      <height>23</height>
     </rect>
@@ -526,7 +526,7 @@
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>360</y>
+     <y>520</y>
      <width>471</width>
      <height>27</height>
     </rect>
@@ -539,7 +539,7 @@
    <property name="geometry">
     <rect>
      <x>250</x>
-     <y>330</y>
+     <y>490</y>
      <width>201</width>
      <height>27</height>
     </rect>
@@ -552,7 +552,7 @@
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>390</y>
+     <y>550</y>
      <width>471</width>
      <height>27</height>
     </rect>
@@ -565,7 +565,7 @@
    <property name="geometry">
     <rect>
      <x>630</x>
-     <y>390</y>
+     <y>550</y>
      <width>41</width>
      <height>23</height>
     </rect>
@@ -990,7 +990,7 @@
    <property name="geometry">
     <rect>
      <x>520</x>
-     <y>390</y>
+     <y>550</y>
      <width>101</width>
      <height>21</height>
     </rect>
@@ -1002,31 +1002,43 @@
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>220</x>
-     <y>110</y>
-     <width>231</width>
+     <x>190</x>
+     <y>270</y>
+     <width>351</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
-    <string>Press these from top to bottom:</string>
+    <string>Press these from top to bottom to run the sample:</string>
    </property>
   </widget>
   <widget class="QDoubleSpinBox" name="amountToEscrSpinBox">
    <property name="geometry">
     <rect>
-     <x>230</x>
-     <y>180</y>
-     <width>62</width>
+     <x>191</x>
+     <y>340</y>
+     <width>101</width>
      <height>27</height>
     </rect>
+   </property>
+   <property name="accelerated">
+    <bool>true</bool>
+   </property>
+   <property name="decimals">
+    <number>4</number>
+   </property>
+   <property name="maximum">
+    <double>20000000.000000000000000</double>
+   </property>
+   <property name="value">
+    <double>1.230000000000000</double>
    </property>
   </widget>
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>190</x>
-     <y>180</y>
+     <x>160</x>
+     <y>340</y>
      <width>31</width>
      <height>21</height>
     </rect>
@@ -1039,8 +1051,8 @@
    <property name="geometry">
     <rect>
      <x>320</x>
-     <y>280</y>
-     <width>81</width>
+     <y>440</y>
+     <width>271</width>
      <height>17</height>
     </rect>
    </property>
@@ -1052,7 +1064,7 @@
    <property name="geometry">
     <rect>
      <x>260</x>
-     <y>280</y>
+     <y>440</y>
      <width>67</width>
      <height>17</height>
     </rect>
@@ -1065,7 +1077,7 @@
    <property name="geometry">
     <rect>
      <x>260</x>
-     <y>420</y>
+     <y>580</y>
      <width>67</width>
      <height>17</height>
     </rect>
@@ -1078,13 +1090,54 @@
    <property name="geometry">
     <rect>
      <x>320</x>
-     <y>420</y>
-     <width>81</width>
+     <y>580</y>
+     <width>241</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
     <string>Not Started</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>160</y>
+     <width>331</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>You can press this button but you don't have to:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>100</y>
+     <width>501</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>https://github.com/tuttleorbuttle/bitcoin-testnet-box.git</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_8">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>20</y>
+     <width>441</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>If you don't want to set up bitcoin-qt yourself,
+get a copy of bitcoin-testnet-box with four bitcoin rpc servers
+and &quot;make start&quot; them.</string>
    </property>
   </widget>
  </widget>
