@@ -4,6 +4,7 @@
 #include <QtNetwork>
 #include <QString>
 #include <QLinkedList>
+#include <QSharedPointer>
 
 // This struct can be used in BtcRpc to pass arguments to the ConnectToBitcoin() function
 struct BitcoinServer
@@ -16,7 +17,7 @@ struct BitcoinServer
     BitcoinServer(QString account, QString password, QString url, int port):
         user(account), password(password), url(url), port(port)
     {}
-};
+}; typedef QSharedPointer<BitcoinServer> BitcoinServerRef;
 
 // This class will handle network communication.
 // It can only connect to one http interface at a time,
@@ -37,7 +38,7 @@ public:
     bool ConnectToBitcoin(QString user, QString password, QString url = "http://127.0.0.1", int port = 8332);
 
     // Overload to make code that switches between bitcoin servers more readable
-    bool ConnectToBitcoin(QSharedPointer<BitcoinServer> server);
+    bool ConnectToBitcoin(BitcoinServerRef server);
 
     // Sends a string over the network
     // This string should be a json-rpc call if we're talking to bitcoin,

@@ -2012,7 +2012,7 @@ void Moneychanger::mc_settings_slot()
 void Moneychanger::mc_bitcoin_slot()
 {
     if(!bitcoinwindow)
-        bitcoinwindow = new btcguitest(this);
+        bitcoinwindow = new BtcGuiTest(this);
     bitcoinwindow->show();
 }
 

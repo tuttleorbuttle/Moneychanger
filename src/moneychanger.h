@@ -147,7 +147,7 @@ private:
     QPointer<CreateInsuranceCompany> createinsurancecompany_window;
     QPointer<Settings> settingswindow;
 
-    QPointer<btcguitest> bitcoinwindow;
+    QPointer<BtcGuiTest> bitcoinwindow;
         
 private:
     void SetupMainMenu();

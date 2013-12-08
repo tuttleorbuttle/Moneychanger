@@ -28,11 +28,13 @@ public:
     // Counts how many coins are sent to targetAddress through this transaction
     int64_t GetTotalOutput(BtcRawTransactionRef transaction, QString targetAddress);
 
+    int64_t GetConfirmations(BtcRawTransactionRef transaction);
+
     // Checks whether a transaction has been confirmed often enough
     bool TransactionConfirmed(BtcTransactionRef transaction, int minconfirms = MinConfirms);
 
     // Checks whether a transaction (can be non-wallet) has been confirmed often enough
-    bool TransactionConfirmed(BtcRawTransactionRef transaction, int minConfirms = MinConfirms);
+    int64_t TransactionConfirmed(BtcRawTransactionRef transaction, int minConfirms = MinConfirms);
 
     // Checks a transaction for correct amount and confirmations.
     bool TransactionSuccessfull(int64_t amount, BtcTransactionRef transaction, int minConfirms = MinConfirms);
@@ -66,7 +68,7 @@ public:
     // destinationAddress: address to which to withdraw
     // signingAddress: only this address's private key will be used to sign the tx
     // redeemScript: the script needed to withdraw btc from p2sh addresses
-    BtcSignedTransactionRef WithdrawAllFromAddress(QString txSourceId, QString sourceAddress, QString destinationAddress, QString signingAddress = NULL, QString redeemScript = NULL);
+    BtcSignedTransactionRef WithdrawAllFromAddress(QString txSourceId, QString sourceAddress, QString destinationAddress, QString redeemScript = "", QString signingAddress = "");
 
     // cba to implement proper unit testing so for now this will have to do
     bool TestBtcJson();

@@ -45,6 +45,7 @@ BtcJson::BtcJson()
 
 void BtcJson::Initialize()
 {
+    // TODO: replace fastdelegate with signals and slots
     FastDelegate4<QSharedPointer<QByteArray>, QString&, QJsonValue&, QJsonValue& > reply;
     reply.bind(this, &BtcJson::ProcessRpcString);
 }
@@ -91,7 +92,7 @@ void BtcJson::ProcessRpcString(QSharedPointer<QByteArray> jsonString, QString& i
 
 QByteArray BtcJson::CreateJsonQuery(QString command, QJsonArray params, QString id)
 {
-    if(id == "")
+    if(id.isEmpty())
         id = command;
     QJsonObject jsonObj;
     jsonObj.insert("jsonrpc", 1.0);
@@ -120,6 +121,8 @@ void BtcJson::GetInfo() // if we ever need this for anything we can return a str
 
 int64_t BtcJson::GetBalance(QString account/*=NULL*/ /*TODO: int minConfirmations*/)
 {
+    // note: json and bitcoin-qt make a difference between NULL-strings and empty strings.
+
     QJsonArray params;
     params.append(account);      // account
     //params.append(1);       // min confirmations, 1 is default, we probably don't need this line.
@@ -176,8 +179,6 @@ QString BtcJson::GetNewAddress(QString account/*=NULL*/)
 
 BtcAddressInfoRef BtcJson::ValidateAddress(const QString& address)
 {
-    // this function hasn't been tested yet and might not work.
-
     QJsonArray params;
     params.append(address);
 
@@ -193,7 +194,16 @@ BtcAddressInfoRef BtcJson::ValidateAddress(const QString& address)
     return addressInfo;
 }
 
-QString BtcJson::GetPrivateKey(QString address)
+QString BtcJson::GetPublicKey(const QString& address)
+{
+    BtcAddressInfoRef addrInfo = ValidateAddress(address);
+    if(addrInfo == NULL)
+        return NULL;
+
+    return addrInfo->pubkey;
+}
+
+QString BtcJson::GetPrivateKey(const QString& address)
 {
     return DumpPrivKey(address);
 }
@@ -447,6 +457,7 @@ BtcSignedTransactionRef BtcJson::SignRawTransaction(QString rawTransaction, QLis
     QJsonArray params;
     params.append(rawTransaction);
 
+    // add array of unspent outputs
     if(previousTransactions.size() > 0)
     {
         QJsonArray unspentArray;
@@ -461,6 +472,7 @@ BtcSignedTransactionRef BtcJson::SignRawTransaction(QString rawTransaction, QLis
         params.append(QJsonValue());            // append null or else it won't work
     }
 
+    // add array of private keys used to sign the transaction
     if(privateKeys.size() > 0)
     {
         QJsonArray privKeysArray;               // TODO: figure out how to properly parse a string list
@@ -494,8 +506,9 @@ BtcSignedTransactionRef BtcJson::CombineSignedTransactions(QString rawTransactio
 {
     QJsonArray params;
     params.append(rawTransaction);  // a concatenation of partially signed tx's
-    params.append(QJsonArray());      // dummy (must not be 'null')
-    params.append(QJsonArray());      // dummy (must not be 'null')
+    params.append(QJsonArray());    // dummy inputs and redeemscripts (must not be 'null')
+    params.append(QJsonArray());    // dummy private keys (must not be 'null')
+    // if dummy inputs are 'null', bitcoin will not just combine the raw transaction but do additional signing(!!!)
 
     QJsonValue result;
     if(!ProcessRpcString(

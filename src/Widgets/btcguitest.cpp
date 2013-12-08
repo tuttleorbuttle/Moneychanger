@@ -3,19 +3,22 @@
 #include "modules.h"
 #include "OTLog.h"
 
-btcguitest::btcguitest(QWidget *parent) :
+BtcGuiTest::BtcGuiTest(QWidget *parent) :
     QWidget(parent, Qt::Window),
-    ui(new Ui::btcguitest)
+    ui(new Ui::BtcGuiTest)
 {
     ui->setupUi(this);
+
+    QObject::connect(this, SIGNAL(SetConfirmationsDeposit(int)), this->ui->confToEscrNumber, SLOT(display(int)));
+    QObject::connect(this, SIGNAL(SetConfirmationsWithdrawal(int)), this->ui->confToWithdrNumber, SLOT(display(int)));
 }
 
-btcguitest::~btcguitest()
+BtcGuiTest::~BtcGuiTest()
 {
     delete ui;
 }
 
-void btcguitest::on_testButton_clicked()
+void BtcGuiTest::on_testButton_clicked()
 {
     if(!Modules::btcInterface->TestBtcJson())
         OTLog::vOutput(0, "Error testing bitcoin integration. Maybe test environment is not set up.\n");
@@ -26,4 +29,96 @@ void btcguitest::on_testButton_clicked()
         OTLog::vOutput(0, "Error testing bitcoin escrow functions. Maybe test environment is not set up.\n");
     else
         OTLog::vOutput(0, "Bitcoin escrow integration sucessfully tested.\n");
+}
+
+void BtcGuiTest::on_simulateEscrSrvrsButton_clicked()
+{
+    Modules::sampleEscrowManager->OnSimulateEscrowServers();
+}
+
+void BtcGuiTest::on_sendToEscrButton_clicked()
+{
+    Modules::sampleEscrowManager->OnInitializeEscrow(this);
+}
+
+void BtcGuiTest::on_reqWithdrButton_clicked()
+{
+    Modules::sampleEscrowManager->OnRequestWithdrawal(this);
+}
+
+double BtcGuiTest::GetAmountToSend()
+{
+    return this->ui->amountToEscrSpinBox->value();
+}
+
+void BtcGuiTest::SetMultiSigAddress(const std::string &address)
+{
+    this->ui->depositAddrEdit->setText(QString::fromStdString(address));
+}
+
+void BtcGuiTest::SetTxIdDeposit(const std::string &txId)
+{
+    this->ui->txidToEscrEdit->setText(QString::fromStdString(txId));
+}
+
+void BtcGuiTest::OnSetConfirmationsDeposit(int confirms)
+{
+    this->SetConfirmationsDeposit(confirms);
+}
+
+void BtcGuiTest::SetStatusDeposit(SampleEscrowTransaction::SUCCESS status)
+{
+    QString statusText;
+    switch(status)
+    {
+    case SampleEscrowTransaction::NotStarted:
+        statusText = "Not started";
+        break;
+    case SampleEscrowTransaction::Pending:
+        statusText = "Transaction pending";
+        break;
+    case SampleEscrowTransaction::Successfull:
+        statusText = "Success";
+        break;
+    case SampleEscrowTransaction::Failed:
+        statusText = "Failed";
+        break;
+    }
+    this->ui->depositStatusLabel->setText(statusText);
+}
+
+void BtcGuiTest::SetWithdrawalAddress(const std::string &address)
+{
+    this->ui->withdrawAddrEdit->setText(QString::fromStdString(address));
+}
+
+void BtcGuiTest::SetTxIdWithdrawal(const std::string &txId)
+{
+    this->ui->txidWithdrEdit->setText(QString::fromStdString(txId));
+}
+
+void BtcGuiTest::OnSetConfirmationsWithdrawal(int confirms)
+{
+    this->SetConfirmationsWithdrawal(confirms);
+}
+
+void BtcGuiTest::SetStatusWithdrawal(SampleEscrowTransaction::SUCCESS status)
+{
+    QString statusText;
+    switch(status)
+    {
+        case SampleEscrowTransaction::NotStarted:
+            statusText = "Not started";
+            break;
+        case SampleEscrowTransaction::Pending:
+            statusText = "Transaction pending";
+            break;
+        case SampleEscrowTransaction::Successfull:
+            statusText = "Success";
+            break;
+        case SampleEscrowTransaction::Failed:
+            statusText = "Failed";
+            break;
+    }
+    this->ui->withdrawStatusLabel->setText(statusText);
 }

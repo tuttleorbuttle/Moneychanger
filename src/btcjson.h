@@ -38,8 +38,10 @@ public:
     // Validate an address
     BtcAddressInfoRef ValidateAddress(const QString& address);
 
+    QString GetPublicKey(const QString& address);
+
     // Get private key for address (calls DumpPrivKey())
-    QString GetPrivateKey(QString address);
+    QString GetPrivateKey(const QString &address);
 
     // Get private key for address
     QString DumpPrivKey(QString address);

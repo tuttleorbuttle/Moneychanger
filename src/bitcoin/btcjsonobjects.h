@@ -193,8 +193,8 @@ struct BtcAddressAmount
 
 struct BtcMultiSigAddress
 {
-    QString address = "";
-    QString redeemScript = "";
+    QString address = NULL;
+    QString redeemScript = NULL;
     QStringList publicKeys;     // this will make everything so much more convenient
 
     BtcMultiSigAddress(QJsonObject result, const QStringList& publicKeys)
@@ -259,9 +259,14 @@ struct BtcSignedTransaction
 };
 
 // used to sign some raw transactions
-// to withdraw from p2sh addresses e.g. you need to know those things
 struct BtcSigningPrequisite : QJsonObject
 {
+    // an array of BtcSigningPrequisites can be passed to bitcoin-qt as an optional argument to signrawtransaction
+    // [{"txid":txid,"vout":n,"scriptPubKey":hex,"redeemScript":hex},...]
+    // this is required if we
+    //      a) didn't add the address to our wallet (createmultisig instead of addmultisigaddress)
+    //      b) want to sign a raw tx only with a particular address's private key (the privkey is passed in another argument)
+
     BtcSigningPrequisite()
     {}
 
