@@ -14,6 +14,7 @@
 
 *.pro.user
 *.pro.user.*
+*.moc
 moc_*.cpp
 qrc_*.cpp
 Makefile
@@ -34,10 +35,17 @@ mc_db
 ui_*
 *plugin_import.cpp
 
+#qjsonrpc
+*.so.*
+*.prl
+src/qjsonrpc/src/pkgconfig
+src/qjsonrpc/tests
+
 #text editor backup files
 *~
 
 # KDevelop files
 *.kdev4
 src/moneychanger-qt
+src/moneychanger/moneychanger-qt
 
