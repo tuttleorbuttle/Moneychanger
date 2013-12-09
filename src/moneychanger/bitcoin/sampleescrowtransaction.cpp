@@ -73,7 +73,7 @@ bool SampleEscrowTransaction::SendWithdrawalTransaction()
     return true;
 }
 
-void SampleEscrowTransaction::CheckTransaction()
+void SampleEscrowTransaction::CheckTransaction(int minConfirms)
 {
     if(this->status != Pending)
         return;
@@ -89,7 +89,7 @@ void SampleEscrowTransaction::CheckTransaction()
     }
 
     // check if transaction has enough confirmations
-    if(Modules::mtBitcoin->TransactionSuccessfull(this->amountToSend, rawTx, this->targetAddr))
+    if(Modules::mtBitcoin->TransactionSuccessfull(this->amountToSend, rawTx, this->targetAddr, minConfirms))
     {
         // yay
         this->status = Successfull;

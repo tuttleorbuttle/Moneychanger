@@ -11,11 +11,13 @@ SampleEscrowClient::SampleEscrowClient(QObject* parent)
 
     this->minSignatures = 0;    // will be set later by server pool
 
+    this->minConfirms = 1;      // wait for one confirmation
+
     this->escrowServers = std::list<SampleEscrowServerRef>();
     this->pubKeyList = std::list<std::string>();
 
     this->transactionDeposit = SampleEscrowTransactionRef(NULL);
-    this->transactionWithdrawal = SampleEscrowTransactionRef(NULL);
+    this->transactionWithdrawal = SampleEscrowTransactionRef(NULL);   
 }
 
 SampleEscrowClient::~SampleEscrowClient()
@@ -148,7 +150,7 @@ bool SampleEscrowClient::CheckTransactionFinished(SampleEscrowTransactionRef tra
 {
     Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
 
-    transaction->CheckTransaction();
+    transaction->CheckTransaction(this->minConfirms);
 
     if(transaction->status == SampleEscrowTransaction::Pending)
         return false;   // if transaction is pending, return false

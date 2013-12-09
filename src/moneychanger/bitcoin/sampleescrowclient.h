@@ -47,6 +47,8 @@ public:
     std::list<std::string> pubKeyList;
     int minSignatures;
 
+    int minConfirms;  // minimum number of confirmations before tx is considered successfull
+
     SampleEscrowTransactionRef transactionDeposit;      // holds info about the transaction to the pool
     SampleEscrowTransactionRef transactionWithdrawal;   // holds info about the transaction from the pool
 

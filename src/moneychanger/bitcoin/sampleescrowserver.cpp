@@ -84,7 +84,7 @@ bool SampleEscrowServer::CheckIncomingTransaction()
     Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
 
     // check transaction for correct amount and number of confirmations
-    this->transactionDeposit->CheckTransaction();
+    this->transactionDeposit->CheckTransaction(this->minConfirms);
 
     if(this->transactionDeposit->status != SampleEscrowTransaction::Pending)
         return true;    // if transaction isn't pending anymore, we're finished

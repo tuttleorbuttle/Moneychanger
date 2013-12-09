@@ -42,9 +42,11 @@ public:
 
 
 private:
-    BitcoinServerRef rpcServer; // login info for bitcoin-qt rpc
+    BitcoinServerRef rpcServer;     // login info for bitcoin-qt rpc
 
-    const int minSignatures = 2;          // minimum required signatures
+    int minSignatures = 2;          // minimum required signatures
+
+    int minConfirms = 2;            // minimum required confirmations
 };
 
 

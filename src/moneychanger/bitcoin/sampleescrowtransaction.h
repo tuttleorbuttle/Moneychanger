@@ -29,12 +29,12 @@ public:
     bool SendWithdrawalTransaction();
 
     // checks if transaction is confirmed and sends the correct value to the correct address
-    void CheckTransaction();
+    void CheckTransaction(int minConfirms);
 
     int64_t amountToSend;
     std::string targetAddr;             // address to which funds are sent
     std::string txId;                   // id of the pending transaction
-    int64_t confirmations;          // confirmations of pending transaction
+    int64_t confirmations;              // confirmations of pending transaction
 
     std::string sourceTxId;             // transaction id from which to withdraw the outputs
     std::string withdrawalTransaction;  // a (partially) signed raw transaction to withdraw funds from sourceTxId to targetAddr

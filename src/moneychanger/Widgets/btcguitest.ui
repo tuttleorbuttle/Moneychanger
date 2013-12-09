@@ -23,7 +23,8 @@
     </rect>
    </property>
    <property name="text">
-    <string>Begin functionality test</string>
+    <string>Begin functionality test
+(OTLog output will tell you if it succeeds)</string>
    </property>
   </widget>
   <widget class="QPushButton" name="simulateEscrSrvrsButton">
@@ -1128,16 +1129,17 @@
   <widget class="QLabel" name="label_8">
    <property name="geometry">
     <rect>
-     <x>160</x>
+     <x>120</x>
      <y>20</y>
-     <width>441</width>
+     <width>481</width>
      <height>71</height>
     </rect>
    </property>
    <property name="text">
     <string>If you don't want to set up bitcoin-qt yourself,
 get a copy of bitcoin-testnet-box with four bitcoin rpc servers
-and &quot;make start&quot; them.</string>
+and &quot;make start&quot; them.
+You'll also have to mine a few blocks during the test and the sample.</string>
    </property>
   </widget>
  </widget>
