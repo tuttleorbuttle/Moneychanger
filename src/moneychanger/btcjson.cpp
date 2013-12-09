@@ -95,21 +95,8 @@ QByteArray BtcJson::CreateJsonQuery(QString command, QJsonArray params, QString 
 {
     if(id.isEmpty())
         id = command;
-    QJsonObject jsonObj;
-    jsonObj = QJsonObject();
-    QString teststr3;
-    teststr3 = "";
-    QString teststr = "asdf";
-    QString teststr2 = command;
-    int test1 = jsonObj.length();
-    QStringList test2 = jsonObj.keys();
-    QString jsonrpc = QString::fromStdString("jsonrpc");
-    QString test4 = teststr.toUtf8();
-    test4 = teststr.toLatin1();
-    test4 = QString::fromStdString(teststr.toStdString());
-    test4 = QString::fromStdWString(teststr.toStdWString());
-    jsonObj[QString(u8"test")] = QString(u8"testtest");
-    jsonObj.insert(jsonrpc.toLocal8Bit(), QJsonValue(1.0));
+    QJsonObject jsonObj = QJsonObject();
+    jsonObj["jsonrpc"] = 1.0;
     jsonObj["id"] = id;
     jsonObj["method"] = command;
     jsonObj["params"] = params;
