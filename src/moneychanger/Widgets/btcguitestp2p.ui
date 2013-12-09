@@ -1,7 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <author/>
+ <comment/>
+ <exportmacro/>
+ <class>BtcGuiTestp2p</class>
+ <widget name="BtcGuiTestp2p" class="QWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -109,6 +111,6 @@ Will be generated if left empty.</string>
    </property>
   </widget>
  </widget>
- <resources/>
+ <pixmapfunction/>
  <connections/>
 </ui>

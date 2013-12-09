@@ -88,7 +88,8 @@ HEADERS += moneychanger.h \
     bitcoin/sampleescrowtransaction.h \
     bitcoin/sampletypedefs.h \
     Widgets/btcguitest.h \
-    Widgets/corporationdetails.h
+    Widgets/corporationdetails.h \
+    Widgets/btcguitestp2p.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -159,7 +160,8 @@ SOURCES += main.cpp\
     Widgets/offerdetails.cpp \
     Widgets/agreementdetails.cpp \
     Widgets/corporationdetails.cpp \
-    Widgets/btcguitest.cpp
+    Widgets/btcguitest.cpp \
+    Widgets/btcguitestp2p.cpp
 
 
 RESOURCES += resource.qrc
