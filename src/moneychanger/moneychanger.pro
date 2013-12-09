@@ -214,13 +214,13 @@ FORMS += \
     Widgets/corporationdetails.ui \
     Widgets/btcguitest.ui
 
-## QJsonRpc Library:
-#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/release/ -lqjsonrpc
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/debug/ -lqjsonrpc
+# QJsonRpc Library:
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/release/ -lqjsonrpc
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/debug/ -lqjsonrpc
 #else:unix: LIBS += -L$$OUT_PWD/../qjsonrpc/src/ -lqjsonrpc
 
-#INCLUDEPATH += $$PWD/../qjsonrpc/src
-#DEPENDPATH += $$PWD/../qjsonrpc/src
+INCLUDEPATH += $$PWD/../qjsonrpc/src
+DEPENDPATH += $$PWD/../qjsonrpc/src
     
 mac:{
 
@@ -253,7 +253,7 @@ mac:{
 }
 
 linux:{
-        LIBS += -ldl
+        LIBS += -ldl -lboost_thread -lboost_system
 }
 
 
@@ -263,9 +263,6 @@ linux:{
 QMAKE_CFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 
-QMAKE_CXXFLAGS += -std=c++11
-#QMAKE_CXXFLAGS += -std=c++0x
-#QMAKE_CXXFLAGS += -c++11
 
 #QMAKE_CXXFLAGS  -= -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 #QMAKE_CXXFLAGS  += -Wno-unused-parameter -Wno-unused-function -Wno-unneeded-internal-declaration
