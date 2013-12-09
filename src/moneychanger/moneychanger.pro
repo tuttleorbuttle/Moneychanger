@@ -212,7 +212,8 @@ FORMS += \
     Widgets/offerdetails.ui \
     Widgets/agreementdetails.ui \
     Widgets/corporationdetails.ui \
-    Widgets/btcguitest.ui
+    Widgets/btcguitest.ui \
+    Widgets/btcguitestp2p.ui
 
 # QJsonRpc Library:
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/release/ -lqjsonrpc
