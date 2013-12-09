@@ -4,8 +4,8 @@
 #include <QByteArray>
 #include <QString>
 #include <QSharedPointer>
-#include "bitcoin/btcrpc.h"
-#include "bitcoin/btcjsonobjects.h"
+#include "btcrpc.h"
+#include "btcjsonobjects.h"
 
 
 // This class will create/process json queries and send/receive them with the help of BitcoinRpc

@@ -4,9 +4,9 @@
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <string>
-#include "bitcoin/btcjsonobjects.h"
-//#include "bitcoin/sampleescrowclient.h"
-//#include "bitcoin/sampleescrowserver.h"
+#include "btcjsonobjects.h"
+//#include "sampleescrowclient.h"
+//#include "sampleescrowserver.h"
 
 
 // this class holds some information about pending transactions

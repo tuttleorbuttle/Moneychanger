@@ -1,4 +1,4 @@
-#include "bitcoin/MTBitcoin.h"
+#include "MTBitcoin.h"
 #include "modules.h"
 
 

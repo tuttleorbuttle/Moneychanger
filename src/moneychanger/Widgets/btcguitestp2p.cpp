@@ -12,3 +12,8 @@ BtcGuiTestp2p::~BtcGuiTestp2p()
 {
     delete ui;
 }
+
+void BtcGuiTestp2p::on_simulatePoolButton_clicked()
+{
+
+}

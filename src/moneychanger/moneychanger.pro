@@ -4,18 +4,18 @@
 #
 #-------------------------------------------------
 
-TEMPLATE    = app
+TEMPLATE    = app subdirs
 
 TARGET      = ../moneychanger-qt
 VERSION     = 0.0.1
 
-INCLUDEPATH+= Handlers UI Widgets
+INCLUDEPATH+= Handlers UI Widgets bitcoin
 QT         += core gui sql network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 DEFINES    += "OT_ZMQ_MODE=1"
 
-DEPENDPATH += Handlers UI Widgets
+DEPENDPATH += Handlers UI Widgets bitcoin
 HEADERS += moneychanger.h \
            ot_worker.h \
     MTRecord.hpp \

@@ -15,6 +15,9 @@ public:
     explicit BtcGuiTestp2p(QWidget *parent = 0);
     ~BtcGuiTestp2p();
 
+private slots:
+    void on_simulatePoolButton_clicked();
+
 private:
     Ui::BtcGuiTestp2p *ui;
 };

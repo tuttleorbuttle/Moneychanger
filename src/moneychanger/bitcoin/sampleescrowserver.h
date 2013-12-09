@@ -2,9 +2,9 @@
 #define SAMPLEESCROWSERVER_H
 
 #include <QSharedPointer>
-#include "bitcoin/btcrpc.h"
-#include "bitcoin/sampleescrowclient.h"
-#include "bitcoin/btcjsonobjects.h"
+#include "btcrpc.h"
+#include "sampleescrowclient.h"
+#include "btcjsonobjects.h"
 
 
 class SampleEscrowServer

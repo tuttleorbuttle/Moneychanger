@@ -3,7 +3,7 @@
 
 
 #include <QWidget>
-#include "bitcoin/sampleescrowtransaction.h"
+#include "sampleescrowtransaction.h"
 
 namespace Ui
 {
