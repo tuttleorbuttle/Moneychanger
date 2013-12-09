@@ -2,9 +2,9 @@
 #define MODULES_H
 
 #include <QScopedPointer>
-#include "btcjson.h"
-#include "btcrpc.h"
-#include "btcinterface.h"
+#include "bitcoin/btcjson.h"
+#include "bitcoin/btcrpc.h"
+#include "bitcoin/btcinterface.h"
 #include "bitcoin/sampleescrowmanager.h"
 #include "bitcoin/MTBitcoin.h"
 

@@ -76,12 +76,12 @@ HEADERS += moneychanger.h \
     FastDelegate.h \
     FastDelegateBind.h \
     modules.h \
-    btcjson.h \
-    btcrpc.h \
-    btcinterface.h \
     utils.h \
     bitcoin/MTBitcoin.h \
     bitcoin/btcjsonobjects.h \    
+    bitcoin/btcjson.h \
+    bitcoin/btcrpc.h \
+    bitcoin/btcinterface.h \
     bitcoin/sampleescrowserver.h \
     bitcoin/sampleescrowmanager.h \
     bitcoin/sampleescrowclient.h \
@@ -96,11 +96,11 @@ SOURCES += main.cpp\
            MTRecordList.cpp \
            MTRecord.cpp \
     modules.cpp \
-    btcjson.cpp \
-    btcinterface.cpp \
-    btcrpc.cpp \
     utils.cpp \
     bitcoin/MTBitcoin.cpp \
+    bitcoin/btcjson.cpp \
+    bitcoin/btcinterface.cpp \
+    bitcoin/btcrpc.cpp \
     bitcoin/sampleescrowserver.cpp \
     bitcoin/sampleescrowmanager.cpp \
     bitcoin/sampleescrowclient.cpp \

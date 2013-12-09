@@ -1,5 +1,5 @@
 #include<QObject>
-#include "btcguitest.h"
+#include "Widgets/btcguitest.h"
 #include "sampleescrowmanager.h"
 #include "sampleescrowclient.h"
 #include "sampleescrowserver.h"
@@ -22,7 +22,7 @@ void SampleEscrowManager::OnSimulateEscrowServers()
     this->servers.push_back(SampleEscrowServerRef(new SampleEscrowServer(rpcServer)));
 
     rpcServer = BitcoinServerRef(new BitcoinServer("admin3", "123", "http://127.0.0.1", 19021));
-    this->servers.push_back(SampleEscrowServerRef(new SampleEscrowServer(rpcServer)));
+    this->servers.push_back(SampleEscrowServerRef(new SampleEscrowServer(rpcSthuerver)));
 
     rpcServer = BitcoinServerRef(new BitcoinServer("admin4", "123", "http://127.0.0.1", 19031));
     this->servers.push_back(SampleEscrowServerRef(new SampleEscrowServer(rpcServer)));

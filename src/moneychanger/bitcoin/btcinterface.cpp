@@ -1,6 +1,6 @@
 #include <OTLog.h>
-#include "btcinterface.h"
-#include "btcjson.h"
+#include "bitcoin/btcinterface.h"
+#include "bitcoin/btcjson.h"
 #include "modules.h"
 #include "utils.h"
 

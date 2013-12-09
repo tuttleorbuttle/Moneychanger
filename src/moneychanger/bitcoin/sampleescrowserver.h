@@ -2,7 +2,7 @@
 #define SAMPLEESCROWSERVER_H
 
 #include <QSharedPointer>
-#include "btcrpc.h"
+#include "bitcoin/btcrpc.h"
 #include "bitcoin/sampleescrowclient.h"
 #include "bitcoin/btcjsonobjects.h"
 

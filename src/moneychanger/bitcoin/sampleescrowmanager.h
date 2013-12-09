@@ -4,9 +4,9 @@
 #include <QObject>
 #include <QList>
 #include <QSharedPointer>
-#include "btcrpc.h"
+#include "bitcoin/btcrpc.h"
 #include "sampletypedefs.h"
-#include "btcguitest.h"
+#include "Widgets/btcguitest.h"
 
 class SampleEscrowManager : public QObject
 {

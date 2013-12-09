@@ -5,9 +5,9 @@
 #include <QString>
 #include <QSharedPointer>
 #include <QList>
-#include "btcrpc.h"
+#include "bitcoin/btcrpc.h"
+#include "Widgets/btcguitest.h"
 #include "sampletypedefs.h"
-#include "btcguitest.h"
 #include "sampleescrowserver.h"
 #include "sampleescrowtransaction.h"
 

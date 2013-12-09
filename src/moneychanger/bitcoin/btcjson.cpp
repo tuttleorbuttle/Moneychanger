@@ -2,7 +2,7 @@
 #include <QJsonDocument>
 //#include <QJsonValue>
 #include <QJsonObject>
-#include "btcjson.h"
+#include "bitcoin/btcjson.h"
 #include "OTLog.h"
 #include <QVariant>
 #include <boost/concept_check.hpp>
