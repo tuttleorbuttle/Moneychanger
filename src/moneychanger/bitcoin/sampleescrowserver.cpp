@@ -12,7 +12,7 @@ SampleEscrowServer::SampleEscrowServer(BitcoinServerRef rpcServer)
     this->pubKeyForMultiSig = "";
     this->multiSigAddress = "";
 
-    this->serverPool = std::list<SampleEscrowServerRef>();
+    this->serverPool = EscrowPoolRef(NULL);
     this->publicKeys = std::list<std::string>();
 
     this->transactionDeposit = SampleEscrowTransactionRef(NULL);
@@ -31,7 +31,7 @@ void SampleEscrowServer::OnRequestEscrowDeposit(SampleEscrowClient* client)
     std::string pubKey = GetMultiSigPubKey();
 
     // also ask the other servers for their public keys
-    foreach(SampleEscrowServerRef server, this->serverPool)
+    foreach(SampleEscrowServerRef server, this->serverPool->escrowServers)
     {
         if(server == this)
             continue;

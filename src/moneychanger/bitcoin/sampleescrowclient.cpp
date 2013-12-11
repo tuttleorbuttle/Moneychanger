@@ -13,7 +13,7 @@ SampleEscrowClient::SampleEscrowClient(QObject* parent)
 
     this->minConfirms = 1;      // wait for one confirmation
 
-    this->escrowServers = std::list<SampleEscrowServerRef>();
+    this->targetPool = EscrowPoolRef(NULL);
     this->pubKeyList = std::list<std::string>();
 
     this->transactionDeposit = SampleEscrowTransactionRef(NULL);
@@ -23,24 +23,24 @@ SampleEscrowClient::SampleEscrowClient(QObject* parent)
 SampleEscrowClient::~SampleEscrowClient()
 {
     this->rpcServer.clear();
-    this->escrowServers.clear();
+    this->targetPool.clear();
     this->pubKeyList.clear();
     this->transactionDeposit.clear();
     this->transactionWithdrawal.clear();
 }
 
-void SampleEscrowClient::StartDeposit(int64_t amountToSend, std::list<SampleEscrowServerRef> escrowServerPool)
+void SampleEscrowClient::StartDeposit(int64_t amountToSend, EscrowPoolRef targetPool)
 {
     Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
 
-    this->escrowServers = escrowServerPool;
+    this->targetPool = targetPool;
 
     this->transactionDeposit.reset(new SampleEscrowTransaction(amountToSend));
 
     // ask the servers for an address to send money to
     // assuming no BIP32 and assuming servers don't constantly monitor the blockchain for incoming transactions
     // in reality this call would have to be forwarded through the net
-    foreach(SampleEscrowServerRef server, this->escrowServers)
+    foreach(SampleEscrowServerRef server, this->targetPool->escrowServers)
     {
         server->OnRequestEscrowDeposit(this);
     }
@@ -60,7 +60,7 @@ void SampleEscrowClient::OnReceivePubKey(const std::string &publicKey, int minSi
         return;     // OMG HACKS!!!11
 
     // if we received all public keys we can start sending the bitcoins
-    if(this->pubKeyList.size() == this->escrowServers.size())
+    if(this->pubKeyList.size() == this->targetPool->escrowServers.size())
         SendToEscrow();
 }
 
@@ -80,7 +80,7 @@ void SampleEscrowClient::SendToEscrow()
     emit SetTxIdDeposit(this->transactionDeposit->txId);
 
     // notify server of incoming transaction
-    foreach(SampleEscrowServerRef server, this->escrowServers)
+    foreach(SampleEscrowServerRef server, this->targetPool->escrowServers)
     {
         server->OnIncomingDeposit(this->transactionDeposit->txId);
     }
@@ -113,7 +113,7 @@ void SampleEscrowClient::StartWithdrawal()
     // set address in GUI
     emit SetWithdrawalAddress(this->transactionWithdrawal->targetAddr);
 
-    foreach(SampleEscrowServerRef server, this->escrowServers)
+    foreach(SampleEscrowServerRef server, this->targetPool->escrowServers)
     {
         server->OnRequestEscrowWithdrawal(this);
     }

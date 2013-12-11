@@ -17,4 +17,6 @@ private:
     QList<EscrowPoolRef> escrowPools;   // available pools
 };
 
+typedef QSharedPointer<PoolManager> PoolManagerRef;
+
 #endif // POOLMANAGER_H

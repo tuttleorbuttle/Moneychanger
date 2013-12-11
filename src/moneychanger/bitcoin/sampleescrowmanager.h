@@ -21,7 +21,7 @@ public:
 
 private:    
     SampleEscrowClientRef client;
-    std::list<SampleEscrowServerRef> servers;
+    EscrowPoolRef escrowPool;
 
 //    Q_OBJECT
 //public slots:

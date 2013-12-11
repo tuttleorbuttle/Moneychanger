@@ -8,29 +8,23 @@
 
 SampleEscrowManager::SampleEscrowManager()
 {
-    this->servers = std::list<SampleEscrowServerRef>();
-    this->client.reset(NULL);
+    this->escrowPool = EscrowPoolRef(NULL);
+    this->client = SampleEscrowClientRef(NULL);
 }
 
 void SampleEscrowManager::OnSimulateEscrowServers()
-{    
+{
+    // simulate a new pool
+    EscrowPoolRef escrowPool = EscrowPoolRef(new EscrowPool());
+    Modules::poolManager->AddPool(escrowPool);
+
+    // simulate servers in pool, each using its own instance of bitcoind/bitcoin-qt
     BitcoinServerRef rpcServer;
-
-    // create simulated servers.
-    // because they run on the same machine each has to know know which bitcoin server to connect to
-    rpcServer = BitcoinServerRef(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
-    this->servers.push_back(SampleEscrowServerRef(new SampleEscrowServer(rpcServer)));
-
-    rpcServer = BitcoinServerRef(new BitcoinServer("admin3", "123", "http://127.0.0.1", 19021));
-    this->servers.push_back(SampleEscrowServerRef(new SampleEscrowServer(rpcServer)));
-
-    rpcServer = BitcoinServerRef(new BitcoinServer("admin4", "123", "http://127.0.0.1", 19031));
-    this->servers.push_back(SampleEscrowServerRef(new SampleEscrowServer(rpcServer)));
-
-    // give each server a list of pool members
-    foreach(SampleEscrowServerRef server, this->servers)
+    for(int i = 1; i < 3; i++)
     {
-        server->serverPool = this->servers;
+        // admin1..3, port 19011, 19021, 19031
+        rpcServer = BitcoinServerRef(new BitcoinServer("admin"+QString(i), "123", "http://127.0.0.1", 19001 + i * 10));
+        escrowPool->AddEscrowServer(SampleEscrowServerRef(new SampleEscrowServer(rpcServer)));
     }
 }
 
@@ -53,7 +47,7 @@ void SampleEscrowManager::OnInitializeEscrow(BtcGuiTest* btcGuiTest)
     int64_t amountSatoshis = utils::CoinsToSatoshis(amountToSend);
 
     // instruct client to start sending bitcoin to pool
-    client->StartDeposit(amountSatoshis, this->servers);
+    client->StartDeposit(amountSatoshis, this->escrowPool);
 
     // update client until transaction is confirmed
     utils::SleepSimulator sleeper;
@@ -64,7 +58,7 @@ void SampleEscrowManager::OnInitializeEscrow(BtcGuiTest* btcGuiTest)
 
     // update servers until transaction is confirmed
     // in this example we already waited for the client so this should complete instantly
-    foreach(SampleEscrowServerRef server, this->servers)
+    foreach(SampleEscrowServerRef server, this->escrowPool->escrowServers)
     {
         while(!server->CheckIncomingTransaction())
         {

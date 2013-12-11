@@ -15,8 +15,10 @@ public:
 
     void RemoveEscrowServer(SampleEscrowServerRef server);
 
-private:
     QList<SampleEscrowServerRef> escrowServers;     // servers that are part of this pool
+
+private:
+
 };
 
 typedef QSharedPointer<EscrowPool> EscrowPoolRef;

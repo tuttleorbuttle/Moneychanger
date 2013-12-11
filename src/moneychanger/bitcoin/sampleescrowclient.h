@@ -24,7 +24,7 @@ public:
     /** Deposit **/
     // client asks servers for public keys
     // amountToSend: amount in satoshis
-    void StartDeposit(int64_t amountToSend, std::list<SampleEscrowServerRef> escrowServerPool);
+    void StartDeposit(int64_t amountToSend, EscrowPoolRef targetPool);
 
     // client receives public keys
     void OnReceivePubKey(const std::string& publicKey, int minSignatures);
@@ -54,7 +54,7 @@ public:
 
 private:
     BitcoinServerRef rpcServer;
-    std::list<SampleEscrowServerRef> escrowServers;
+    EscrowPoolRef targetPool;
 
     // client sends bitcoin to escrow
     void SendToEscrow();

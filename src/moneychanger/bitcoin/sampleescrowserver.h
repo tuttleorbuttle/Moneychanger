@@ -5,6 +5,8 @@
 #include "btcrpc.h"
 #include "sampleescrowclient.h"
 #include "btcjsonobjects.h"
+#include "escrowpool.h"
+#include "sampletypedefs.h"
 
 
 class SampleEscrowServer
@@ -25,13 +27,13 @@ public:
 
     void OnRequestEscrowWithdrawal(SampleEscrowClient* client);
 
-    std::list<SampleEscrowServerRef> serverPool;
+    EscrowPoolRef serverPool;           // the pool that this server is part of
 
     std::string addressForMultiSig;     // this server's address used to create the multi-sig
 
     std::string pubKeyForMultiSig;      // public key of the address used to create the multi-sig
 
-    std::list<std::string> publicKeys;         // public keys of this and all servers to create multi-sig
+    std::list<std::string> publicKeys;  // public keys of this and all servers to create multi-sig
 
     std::string multiSigAddress;        // the actual multisig address
 

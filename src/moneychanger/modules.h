@@ -6,6 +6,8 @@
 #include "btcrpc.h"
 #include "btcinterface.h"
 #include "sampleescrowmanager.h"
+#include "poolmanager.h"            // has a list of all available pools
+#include "transactionmanager.h"     // has a list of pending and finished transactions
 #include "MTBitcoin.h"
 
 // This class will hold pointers to various modules so they can access eachother.
@@ -22,6 +24,8 @@ public:
     static QScopedPointer<BtcRpc> btcRpc;
     static QScopedPointer<BtcInterface> btcInterface;
     static QScopedPointer<SampleEscrowManager> sampleEscrowManager;
+    static QScopedPointer<PoolManager> poolManager;
+    static QScopedPointer<TransactionManager> transactionManager;
     static QScopedPointer<MTBitcoin> mtBitcoin;
 };
 

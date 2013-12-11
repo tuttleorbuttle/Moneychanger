@@ -3,7 +3,7 @@
 
 PoolManager::PoolManager()
 {
-
+    this->escrowPools = QList<EscrowPoolRef>();
 }
 
 void PoolManager::AddPool(EscrowPoolRef pool)
