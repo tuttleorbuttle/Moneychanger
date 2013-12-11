@@ -3,6 +3,8 @@
 EscrowPool::EscrowPool()
 {
     this->escrowServers = QList<SampleEscrowServerRef>();
+
+    this->poolName = "unnamed";
 }
 
 void EscrowPool::AddEscrowServer(SampleEscrowServerRef server)

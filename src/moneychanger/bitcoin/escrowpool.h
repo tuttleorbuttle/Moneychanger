@@ -17,6 +17,8 @@ public:
 
     QList<SampleEscrowServerRef> escrowServers;     // servers that are part of this pool
 
+    QString poolName;
+
 private:
 
 };

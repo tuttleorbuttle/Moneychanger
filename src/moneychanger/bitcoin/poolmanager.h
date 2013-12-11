@@ -1,10 +1,11 @@
 #ifndef POOLMANAGER_H
 #define POOLMANAGER_H
 
-#include "escrowpool.h"
+#include <QObject>
 #include<QList>
+#include "escrowpool.h"
 
-class PoolManager
+class PoolManager : QObject
 {
 public:
     PoolManager();
@@ -13,8 +14,9 @@ public:
 
     void RemovePool(EscrowPoolRef poolToRemove);
 
-private:
     QList<EscrowPoolRef> escrowPools;   // available pools
+
+private:
 };
 
 typedef QSharedPointer<PoolManager> PoolManagerRef;
