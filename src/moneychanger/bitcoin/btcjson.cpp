@@ -1,11 +1,14 @@
-#include <QJsonArray>
-#include <QJsonDocument>
+//#include <QJsonArray>
+#include "../qjsonrpc/src/json/qjsonarray.h"
+//#include <QJsonDocument>
+#include "../qjsonrpc/src/json/qjsondocument.h"
 //#include <QJsonValue>
-#include <QJsonObject>
+//#include <QJsonObject>
+#include "../qjsonrpc/src/json/qjsonobject.h"
 #include "btcjson.h"
 #include "OTLog.h"
 #include <QVariant>
-#include <boost/concept_check.hpp>
+//#include <boost/concept_check.hpp>    // i can't remember adding this line
 #include "modules.h"
 #include "FastDelegate.h"   // I think we don't need these anymore because of Qt's Signals
 #include "utils.h"

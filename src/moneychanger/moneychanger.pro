@@ -92,7 +92,8 @@ HEADERS += moneychanger.h \
     Widgets/btcguitest.h \
     Widgets/corporationdetails.h \
     Widgets/btcguitestp2p.h \
-    bitcoin/transactionmanager.h
+    bitcoin/transactionmanager.h \
+    Widgets/btcsenddlg.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -167,7 +168,8 @@ SOURCES += main.cpp\
     Widgets/corporationdetails.cpp \
     Widgets/btcguitest.cpp \
     Widgets/btcguitestp2p.cpp \
-    bitcoin/transactionmanager.cpp
+    bitcoin/transactionmanager.cpp \
+    Widgets/btcsenddlg.cpp
 
 
 RESOURCES += resource.qrc
@@ -221,15 +223,16 @@ FORMS += \
     Widgets/agreementdetails.ui \
     Widgets/corporationdetails.ui \
     Widgets/btcguitest.ui \
-    Widgets/btcguitestp2p.ui
+    Widgets/btcguitestp2p.ui \
+    Widgets/btcsenddlg.ui
 
 # QJsonRpc Library:
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/release/ -lqjsonrpc
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/debug/ -lqjsonrpc
-#else:unix: LIBS += -L$$OUT_PWD/../qjsonrpc/src/ -lqjsonrpc
+else:unix: LIBS += -L$$OUT_PWD/../qjsonrpc/src/ -lqjsonrpc
 
-INCLUDEPATH += $$PWD/../qjsonrpc/src
-DEPENDPATH += $$PWD/../qjsonrpc/src
+INCLUDEPATH += $$PWD/../qjsonrpc/src $$PWD/../qjsonrpc/src/json
+DEPENDPATH += $$PWD/../qjsonrpc/src $$PWD/../qjsonrpc/src/json
     
 mac:{
 

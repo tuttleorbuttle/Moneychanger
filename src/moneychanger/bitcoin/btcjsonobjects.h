@@ -93,39 +93,48 @@ private:
 
 struct BtcRawTransaction
 {
-    QString txID = NULL;
+    QString txID;
 
     struct VIN
     {
-        QString txInID = NULL;
-        int vout = 0;   // number of txInID's output to be used as input
+        QString txInID;
+        int vout;   // number of txInID's output to be used as input
 
         VIN(QString txInID, int vout)
             :txInID(txInID), vout(vout)
         {}
     };
-    QList<VIN> inputs = QList<VIN>();
+    QList<VIN> inputs;
 
     struct VOUT
     {
-        int64_t value = 0.0;     // amount of btc to be sent
-        int n = 0;              // outputs array index
-        int reqSigs = 0;        // signatures required to withdraw from the output addresses
-        QList<QString> addresses = QList<QString>();    // an array of addresses receiving the value.
-        QString scriptPubKeyHex = NULL;
+        int64_t value;     // amount of btc to be sent
+        int n ;              // outputs array index
+        int reqSigs;        // signatures required to withdraw from the output addresses
+        QList<QString> addresses;    // an array of addresses receiving the value.
+        QString scriptPubKeyHex;
 
         VOUT()
-        {}
+        {
+            this->value = 0;
+            this->n = -1;
+            this->reqSigs = 0;
+            this->addresses = QList<QString>();
+            this->scriptPubKeyHex = "";
+        }
 
         VOUT(int64_t value, int n, int reqSigs, QList<QString> addresses, QString scriptPubKeyHex)
             :value(value), n(n), reqSigs(reqSigs), addresses(addresses), scriptPubKeyHex(scriptPubKeyHex)
         {}
 
     };
-    QList<VOUT> outputs = QList<VOUT>();
+    QList<VOUT> outputs;
 
     BtcRawTransaction(QJsonObject rawTx)
     {
+        this->inputs = QList<VIN>();
+        this->outputs = QList<VOUT>();
+
         this->txID = rawTx["txid"].toString();
 
         QJsonArray vin = rawTx["vin"].toArray();
@@ -164,9 +173,9 @@ struct BtcAddressInfo
     QString address;
     QString pubkey;
     QString account;
-    bool ismine = false;
-    bool isvalid = false;
-    bool isScript = false;
+    bool ismine;
+    bool isvalid;
+    bool isScript;
     QJsonArray addresses;       // shows addresses which a multi-sig is composed of
     int sigsRequired = 0;
 
@@ -193,8 +202,8 @@ struct BtcAddressAmount
 
 struct BtcMultiSigAddress
 {
-    QString address = NULL;
-    QString redeemScript = NULL;
+    QString address;
+    QString redeemScript;
     QStringList publicKeys;     // this will make everything so much more convenient
 
     BtcMultiSigAddress(QJsonObject result, const QStringList& publicKeys)
@@ -208,14 +217,20 @@ struct BtcMultiSigAddress
 
 struct BtcBlock
 {
-    int confirmations = 0;
-    QList<QString> transactions = QList<QString>();
-    int height = 0;
-    QString hash = "";
-    QString previousHash = "";
+    int confirmations;
+    QList<QString> transactions;
+    int height;
+    QString hash;
+    QString previousHash;
 
     BtcBlock()
-    {}
+    {
+        this->confirmations = 0;
+        this->transactions = QList<QString>();
+        this->height = 0;
+        this->hash = QString();
+        this->previousHash = QString();
+    }
 
     BtcBlock(QJsonObject block)
     {
@@ -248,8 +263,8 @@ struct BtcOutput : QJsonObject
 
 struct BtcSignedTransaction
 {
-    QString signedTransaction = "";
-    bool complete = false;              // true if all (enough?) signatures were collected
+    QString signedTransaction;
+    bool complete;              // true if all (enough?) signatures were collected
 
     BtcSignedTransaction(QJsonObject signedTransactionObj)
     {
