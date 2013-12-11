@@ -15,21 +15,21 @@ SampleEscrowManager::SampleEscrowManager()
 void SampleEscrowManager::OnSimulateEscrowServers()
 {
     // simulate a new pool
-    EscrowPoolRef escrowPool = EscrowPoolRef(new EscrowPool());
+    this->escrowPool = EscrowPoolRef(new EscrowPool());
 
     // give pool a name
-    escrowPool->poolName = "pool #" + QString(Modules::poolManager->escrowPools.size());
+    this->escrowPool->poolName = "pool #" + QString(Modules::poolManager->escrowPools.size());
 
-    // add pool to pool list
-    Modules::poolManager->AddPool(escrowPool);
+    // add pool to global pool list
+    Modules::poolManager->AddPool(this->escrowPool);
 
     // simulate servers in pool, each using its own instance of bitcoind/bitcoin-qt
     BitcoinServerRef rpcServer;
-    for(int i = 1; i < 3; i++)
+    for(int i = 1; i < 4; i++)
     {
-        // admin1..3, rpc port 19011, 19021, 19031
-        rpcServer = BitcoinServerRef(new BitcoinServer("admin"+QString(i), "123", "http://127.0.0.1", 19001 + i * 10));
-        escrowPool->AddEscrowServer(SampleEscrowServerRef(new SampleEscrowServer(rpcServer)));
+        // admin2..4, rpc port 19011, 19021, 19031
+        rpcServer = BitcoinServerRef(new BitcoinServer("admin"+QString::number(i+1), "123", "http://127.0.0.1", 19001 + i * 10));
+        this->escrowPool->AddEscrowServer(SampleEscrowServerRef(new SampleEscrowServer(rpcServer)));
     }
 }
 
