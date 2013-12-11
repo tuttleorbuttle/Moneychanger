@@ -9,12 +9,12 @@ class PoolManager
 public:
     PoolManager();
 
-    EscrowPoolRef AddPool();
+    void AddPool(EscrowPoolRef pool);
 
     void RemovePool(EscrowPoolRef poolToRemove);
 
 private:
-    QList<EscrowPoolRef> escrowPools;
+    QList<EscrowPoolRef> escrowPools;   // available pools
 };
 
 #endif // POOLMANAGER_H

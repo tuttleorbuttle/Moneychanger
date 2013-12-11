@@ -87,9 +87,12 @@ HEADERS += moneychanger.h \
     bitcoin/sampleescrowclient.h \
     bitcoin/sampleescrowtransaction.h \
     bitcoin/sampletypedefs.h \
+    bitcoin/escrowpool.h \
+    bitcoin/poolmanager.h \
     Widgets/btcguitest.h \
     Widgets/corporationdetails.h \
-    Widgets/btcguitestp2p.h
+    Widgets/btcguitestp2p.h \
+    bitcoin/transactionmanager.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -106,6 +109,8 @@ SOURCES += main.cpp\
     bitcoin/sampleescrowmanager.cpp \
     bitcoin/sampleescrowclient.cpp \
     bitcoin/sampleescrowtransaction.cpp \
+    bitcoin/escrowpool.cpp \
+    bitcoin/poolmanager.cpp \
     Handlers/FileHandler.cpp \
     Handlers/DBHandler.cpp \
     Handlers/contacthandler.cpp \
@@ -161,7 +166,8 @@ SOURCES += main.cpp\
     Widgets/agreementdetails.cpp \
     Widgets/corporationdetails.cpp \
     Widgets/btcguitest.cpp \
-    Widgets/btcguitestp2p.cpp
+    Widgets/btcguitestp2p.cpp \
+    bitcoin/transactionmanager.cpp
 
 
 RESOURCES += resource.qrc
@@ -256,7 +262,7 @@ mac:{
 }
 
 linux:{
-        LIBS += -ldl -lboost_thread -lboost_system
+        LIBS += -ldl
 }
 
 
@@ -269,6 +275,8 @@ QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-
 
 #QMAKE_CXXFLAGS  -= -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 #QMAKE_CXXFLAGS  += -Wno-unused-parameter -Wno-unused-function -Wno-unneeded-internal-declaration
+
+QMAKE_CXXFLAGS += -std=c++11
 
 
 # Set libraries and includes at end, to use platform-defined defaults if not overridden
