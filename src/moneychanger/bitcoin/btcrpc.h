@@ -68,15 +68,17 @@ private:
     QScopedPointer<QNetworkRequest> rpcRequest;
     QSharedPointer<QByteArray> rpcReplyContent;
 
-    QString username = "";
-    QString password = "";
-    bool connected = false;
+    QString username;
+    QString password;
+    bool connected;  
+    bool waitingForReply;
 
     Q_OBJECT
 public slots:
 
     // Called when there's a network reply from bitcoin
     void OnNetReplySlot(QNetworkReply* reply);
+    void OnNetReplySlot();
 
     // Called if bitcoin requires authentication (user/pw)
     void OnAuthReqSlot(QNetworkReply* reply, QAuthenticator* authenticator);

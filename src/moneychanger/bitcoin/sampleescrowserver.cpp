@@ -24,7 +24,7 @@ void SampleEscrowServer::OnRequestEscrowDeposit(SampleEscrowClient* client)
     Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
 
     // create a new object containing information about this deposit
-    this->transactionDeposit.reset(new SampleEscrowTransaction(client->transactionDeposit->amountToSend));
+    this->transactionDeposit = SampleEscrowTransactionRef(new SampleEscrowTransaction(client->transactionDeposit->amountToSend));
 
     // create new address to be used as base for the multi-sig address
     // and get its public key:
@@ -101,7 +101,7 @@ void SampleEscrowServer::OnRequestEscrowWithdrawal(SampleEscrowClient *client)
         return;     // nope
 
     // create new transaction object
-    this->transactionWithdrawal.reset(new SampleEscrowTransaction(this->transactionDeposit->amountToSend));
+    this->transactionWithdrawal = SampleEscrowTransactionRef(new SampleEscrowTransaction(this->transactionDeposit->amountToSend));
 
     // create partially signed raw transaction
     this->transactionWithdrawal->CreateWithdrawalTransaction(this->transactionDeposit->txId, this->multiSigAddress, client->transactionWithdrawal->targetAddr);

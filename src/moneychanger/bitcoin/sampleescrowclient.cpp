@@ -35,7 +35,7 @@ void SampleEscrowClient::StartDeposit(int64_t amountToSend, EscrowPoolRef target
 
     this->targetPool = targetPool;
 
-    this->transactionDeposit.reset(new SampleEscrowTransaction(amountToSend));
+    this->transactionDeposit = SampleEscrowTransactionRef(new SampleEscrowTransaction(amountToSend));
 
     // ask the servers for an address to send money to
     // assuming no BIP32 and assuming servers don't constantly monitor the blockchain for incoming transactions
@@ -102,7 +102,7 @@ void SampleEscrowClient::StartWithdrawal()
     Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
 
     // create new transaction object
-    this->transactionWithdrawal.reset(new SampleEscrowTransaction(this->transactionDeposit->amountToSend));
+    this->transactionWithdrawal = SampleEscrowTransactionRef(new SampleEscrowTransaction(this->transactionDeposit->amountToSend));
 
     // set the txId from which the funds should be released
     this->transactionWithdrawal->sourceTxId = this->transactionDeposit->txId;

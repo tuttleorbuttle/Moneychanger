@@ -16,11 +16,11 @@ bool BtcInterface::TestBtcJson()
     // on my computer I use the two bitcoin-testnet-box servers
     // with a slightly modified config so my regular testnet bitcoin-qt client can connect to them.
     // the GUI and debug console is sometimes easier to read than the terminal output of bitcoind
-    QSharedPointer<BitcoinServer> server1, server2, bitcoinqt;
+    BitcoinServerRef server1, server2, bitcoinqt;
 
-    server1.reset(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
-    server2.reset(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
-    bitcoinqt.reset(new BitcoinServer("admin3", "123", "http://127.0.0.1", 19021));
+    server1 = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
+    server2 = BitcoinServerRef(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
+    bitcoinqt = BitcoinServerRef(new BitcoinServer("admin3", "123", "http://127.0.0.1", 19021));
 
     //-----------------------
     // test various simple rpc calls
@@ -221,8 +221,8 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     */
 
     QSharedPointer<BitcoinServer> buyer, vendor;
-    buyer.reset(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
-    vendor.reset(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
+    buyer = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
+    vendor = BitcoinServerRef(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
 
 
     // connect to buyer (carbide81):

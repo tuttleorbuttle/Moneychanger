@@ -194,8 +194,7 @@ BtcAddressInfoRef BtcJson::ValidateAddress(const QString& address)
     if(!result.isObject())
         return BtcAddressInfoRef();   // shouldn't happen unless protocol is changed
 
-    BtcAddressInfoRef addressInfo = BtcAddressInfoRef();
-    addressInfo.reset(new BtcAddressInfo(result.toObject()));
+    BtcAddressInfoRef addressInfo = BtcAddressInfoRef(new BtcAddressInfo(result.toObject()));
     return addressInfo;
 }
 
@@ -263,8 +262,7 @@ BtcMultiSigAddressRef BtcJson::CreateMultiSigAddress(int nRequired, QStringList 
     if(!result.isObject())
         return BtcMultiSigAddressRef();     // error
 
-    BtcMultiSigAddressRef multiSigAddr = BtcMultiSigAddressRef();
-    multiSigAddr.reset(new BtcMultiSigAddress(result.toObject(), keys));
+    BtcMultiSigAddressRef multiSigAddr = BtcMultiSigAddressRef(new BtcMultiSigAddress(result.toObject(), keys));
     return multiSigAddr;
 }
 
@@ -363,8 +361,7 @@ BtcTransactionRef BtcJson::GetTransaction(QString txID)
     if(!result.isObject())
         return BtcTransactionRef();
 
-    BtcTransactionRef transaction = BtcTransactionRef();
-    transaction.reset(new BtcTransaction(result.toObject()));
+    BtcTransactionRef transaction = BtcTransactionRef(new BtcTransaction(result.toObject()));
     return transaction;
 
     // TODO:
@@ -405,8 +402,7 @@ BtcRawTransactionRef BtcJson::GetDecodedRawTransaction(QString txID)
     if(!result.isObject())
         return BtcRawTransactionRef();  // return NULL
 
-    BtcRawTransactionRef decodedRawTransaction = BtcRawTransactionRef();
-    decodedRawTransaction.reset(new BtcRawTransaction(result.toObject()));
+    BtcRawTransactionRef decodedRawTransaction = BtcRawTransactionRef(new BtcRawTransaction(result.toObject()));
     return decodedRawTransaction;
 
 
@@ -426,8 +422,7 @@ BtcRawTransactionRef BtcJson::DecodeRawTransaction(QString rawTransaction)
     if(!result.isObject())
         return BtcRawTransactionRef();  // return NULL
 
-    BtcRawTransactionRef decodedRawTransaction = BtcRawTransactionRef();
-    decodedRawTransaction.reset(new BtcRawTransaction(result.toObject()));
+    BtcRawTransactionRef decodedRawTransaction = BtcRawTransactionRef(new BtcRawTransaction(result.toObject()));
     return decodedRawTransaction;
 }
 
@@ -502,8 +497,7 @@ BtcSignedTransactionRef BtcJson::SignRawTransaction(QString rawTransaction, QLis
     if(!result.isObject())
         return BtcSignedTransactionRef();   // error
 
-    BtcSignedTransactionRef signedTransaction = BtcSignedTransactionRef();
-    signedTransaction.reset(new BtcSignedTransaction(result.toObject()));
+    BtcSignedTransactionRef signedTransaction = BtcSignedTransactionRef(new BtcSignedTransaction(result.toObject()));
     return signedTransaction;
 }
 
@@ -521,8 +515,7 @@ BtcSignedTransactionRef BtcJson::CombineSignedTransactions(QString rawTransactio
                     CreateJsonQuery(METHOD_SIGNRAWTRANSACTION, params)), result))
         return BtcSignedTransactionRef();   // error
 
-    BtcSignedTransactionRef signedTransaction = BtcSignedTransactionRef();
-    signedTransaction.reset(new BtcSignedTransaction(result.toObject()));
+    BtcSignedTransactionRef signedTransaction = BtcSignedTransactionRef(new BtcSignedTransaction(result.toObject()));
     return signedTransaction;
 }
 
@@ -599,8 +592,7 @@ BtcBlockRef BtcJson::GetBlock(QString blockHash)
     if(!result.isObject())
         return BtcBlockRef();
 
-    BtcBlockRef block = BtcBlockRef();
-    block.reset(new BtcBlock(result.toObject()));
+    BtcBlockRef block = BtcBlockRef(new BtcBlock(result.toObject()));
     return block;
 }
 

@@ -4,8 +4,10 @@
 #include <QString>
 #include <QList>
 #include <QStringList>
-#include <QJsonObject>
-#include <QJsonArray>
+//#include <QJsonObject>
+#include "../qjsonrpc/src/json/qjsonobject.h"
+//#include <QJsonArray>
+#include "../qjsonrpc/src/json/qjsonarray.h"
 #include <QSharedPointer>
 #include "utils.h"
 

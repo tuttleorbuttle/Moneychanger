@@ -15,6 +15,12 @@
 
 BtcRpc::BtcRpc()
 {
+    this->username = QString();
+    this->password = QString();
+    this->connected = false;  
+    this->waitingForReply = false;
+    this->rpcReplyContent = QSharedPointer<QByteArray>();
+
     // opens network interface (step is not necessary on my computer but it was in the tutorial or something so I guess it has uses...
     InitSession();
 
@@ -69,9 +75,11 @@ void BtcRpc::InitNAM()
     // rpcNAM is a pointer object, hence the .reset() and .data() functions.
     this->rpcNAM.reset(new QNetworkAccessManager());
     // connect the function to receive replies from bitcoin-qt
-    QObject::connect(this->rpcNAM.data(), SIGNAL(finished(QNetworkReply*)), this, SLOT(OnNetReplySlot(QNetworkReply*)));
+    bool connect = QObject::connect(this->rpcNAM.data(), SIGNAL(finished(QNetworkReply*)), this, SLOT(OnNetReplySlot(QNetworkReply*)));
+    connect = QObject::connect(this->rpcNAM.data(), SIGNAL(finished()), this, SLOT(OnNetReplySlot()));
     // connect the function to authenticate when required
-    QObject::connect(this->rpcNAM.data(), SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(OnAuthReqSlot(QNetworkReply*,QAuthenticator*)));
+    connect = QObject::connect(this->rpcNAM.data(), SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(OnAuthReqSlot(QNetworkReply*,QAuthenticator*)));
+    int a = 0;
 }
 
 void BtcRpc::SetHeaderInformation()
@@ -127,37 +135,24 @@ QSharedPointer<QByteArray> BtcRpc::SendRpc(const QString jsonString)
 
 QSharedPointer<QByteArray> BtcRpc::SendRpc(const QByteArray jsonString)
 {
-    if(!this->connected)
+    if(!this->connected || this->waitingForReply)
         return QSharedPointer<QByteArray>();
-
+    
+    this->waitingForReply = true;
+    
     // calculate content length
     QByteArray postDataSize = QByteArray::number(jsonString.size());
     // set content length
     this->rpcRequest->setRawHeader("Content-Length", postDataSize);
 
-    // prepare loop
-    QEventLoop loop;
-    // connect <receiving network data> to loop.quit()
-    connect(this->rpcNAM.data(), SIGNAL(finished(QNetworkReply*)), &loop, SLOT(quit()));
-
-    // prepare timer
-    QTimer timer;
-    timer.setSingleShot(true);
-    // connect timeout to loop.quit()
-    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-
     // send data
     QPointer<QNetworkReply> reply = this->rpcNAM->post(*this->rpcRequest, jsonString);
-
-    // start timer
-    timer.start(2000);  // timeout for waiting for a reply from bitcoin-qt
-
-    // stay in loop while updating GUI and everything until bitcoin replied. or something like that.
-    loop.exec();    // needs some sort of timeout. I'm sure qt offers a timer that can be linked to the quit() slot :)
-
-    //if(!timer.isActive())           // setting connected to false is already done when processing the network error
-    //    this->connected = false;    // timeout? means bitcoin isn't replying...
-
+    
+    // wait for reply from bitcoin
+    utils::SleepSimulator sleeper;
+    while(this->waitingForReply)
+        sleeper.sleep(50);
+    
     return this->rpcReplyContent;
 }
 
@@ -197,6 +192,8 @@ void BtcRpc::OnNetReplySlot(QNetworkReply *reply)
     {
         // will set this->connected false depending on error
         ProcessErrorMessage(reply);
+	
+	this->rpcReplyContent = QSharedPointer<QByteArray>();
     }
     else
     {
@@ -212,6 +209,15 @@ void BtcRpc::OnNetReplySlot(QNetworkReply *reply)
     // We receive ownership of the reply object
     // and therefore need to handle deletion
     delete reply;
+    
+    // no longer waiting
+    this->waitingForReply = false;
+}
+
+void BtcRpc::OnNetReplySlot()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
+    OnNetReplySlot(reply);
 }
 
 void BtcRpc::ProcessErrorMessage(const QNetworkReply* reply)
@@ -242,9 +248,9 @@ void BtcRpc::ProcessErrorMessage(const QNetworkReply* reply)
         //break;
     case QNetworkReply::TemporaryNetworkFailureError:
         //break;
-    case QNetworkReply::NetworkSessionFailedError:
+    //case QNetworkReply::NetworkSessionFailedError:            // doesn't exist in qt4
         //break;
-    case QNetworkReply::BackgroundRequestNotAllowedError:
+    //case QNetworkReply::BackgroundRequestNotAllowedError:     // doesn't exist in qt4
         //break;
     case QNetworkReply::UnknownNetworkError:
         this->connected = false;
