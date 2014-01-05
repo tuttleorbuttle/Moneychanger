@@ -50,7 +50,7 @@ BtcJson::BtcJson()
 void BtcJson::Initialize()
 {
     // TODO: replace fastdelegate with signals and slots
-	FastDelegate4<QSharedPointer<QByteArray>, QString&, QJsonValue&, QJsonValue& > reply;
+    FastDelegate4<QSharedPointer<QByteArray>, QString&, QJsonValue&, QJsonValue& > reply;
     reply.bind(this, &BtcJson::ProcessRpcString);
 }
 
@@ -110,7 +110,7 @@ QByteArray BtcJson::CreateJsonQuery(QString command, QJsonArray params, QString 
 
 void BtcJson::GetInfo() // if we ever need this for anything we can return a struct holding all the information
 {
-    QSharedPointer<QByteArray> reply = Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_GETINFO));
+    QSharedPointer<QByteArray> reply = Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_GETINFO));
     QString id;
     QJsonValue error;
     QJsonValue result;
@@ -131,7 +131,7 @@ int64_t BtcJson::GetBalance(QString account/*=NULL*/ /*TODO: int minConfirmation
     params.append(account);      // account
     //params.append(1);       // min confirmations, 1 is default, we probably don't need this line.
 
-    QSharedPointer<QByteArray> reply = Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
+    QSharedPointer<QByteArray> reply = Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
 
     QJsonValue result;
     if(!ProcessRpcString(reply, result) || !result.isDouble())
@@ -148,7 +148,7 @@ QString BtcJson::GetAccountAddress(QString account/*= NULL*/)
     params.append(account);
 
     QJsonValue result = QJsonValue();
-    if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_GETACCOUNTADDRESS, params)), result))
+    if(!ProcessRpcString(Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_GETACCOUNTADDRESS, params)), result))
     {
         return NULL;     // error
     }
@@ -171,7 +171,7 @@ QString BtcJson::GetNewAddress(QString account/*=NULL*/)
     params.append(account);
 
     QJsonValue result = QJsonValue();
-    if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_GETNEWADDRESS, params)), result))
+    if(!ProcessRpcString(Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_GETNEWADDRESS, params)), result))
     {
         return NULL;
     }
@@ -188,7 +188,7 @@ BtcAddressInfoRef BtcJson::ValidateAddress(const QString& address)
     params.append(address);
 
     QJsonValue result = QJsonValue();
-    if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_VALIDATEADDRESS, params)), result))
+    if(!ProcessRpcString(Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_VALIDATEADDRESS, params)), result))
         return BtcAddressInfoRef();
 
     if(!result.isObject())
@@ -219,7 +219,7 @@ QString BtcJson::DumpPrivKey(QString address)
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_DUMPPRIVKEY, params)),
                 result))
         return NULL;
@@ -235,7 +235,7 @@ BtcMultiSigAddressRef BtcJson::AddMultiSigAddress(int nRequired, QStringList key
     params.append(account);
 
     QJsonValue result = QJsonValue();
-    if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_ADDMULTISIGADDRESS, params)), result))
+    if(!ProcessRpcString(Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_ADDMULTISIGADDRESS, params)), result))
         return BtcMultiSigAddressRef();      // error
 
     if(!result.isString())
@@ -256,7 +256,7 @@ BtcMultiSigAddressRef BtcJson::CreateMultiSigAddress(int nRequired, QStringList 
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_CREATEMULTISIG, params)),result))
+                Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_CREATEMULTISIG, params)),result))
         return BtcMultiSigAddressRef();     // error
 
     if(!result.isObject())
@@ -274,7 +274,7 @@ QString BtcJson::GetRedeemScript(int nRequired, QStringList keys)
 QStringList BtcJson::ListAccounts()
 {
     QJsonValue result = QJsonValue();
-    if(!ProcessRpcString(Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_LISTACCOUNTS)), result))
+    if(!ProcessRpcString(Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_LISTACCOUNTS)), result))
         return QStringList();     // error
 
     if(!result.isObject())
@@ -295,7 +295,7 @@ QString BtcJson::SendToAddress(QString btcAddress, int64_t amount)
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(CreateJsonQuery(METHOD_SENDTOADDRESS, params)),result))
+                Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_SENDTOADDRESS, params)),result))
         return NULL;   // error
 
     if(!result.isString())
@@ -311,7 +311,7 @@ bool BtcJson::SetTxFee(int64_t fee)
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_SETTXFEE, params)),
                 result))
         return false;
@@ -333,7 +333,7 @@ QString BtcJson::SendMany(QMap<QString, int64_t> txTargets, QString fromAccount)
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_SENDMANY, params)),
                 result))
         return NULL;
@@ -354,7 +354,7 @@ BtcTransactionRef BtcJson::GetTransaction(QString txID)
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_GETTRANSACTION, params)), result))
         return BtcTransactionRef();    // error
 
@@ -377,7 +377,7 @@ QString BtcJson::GetRawTransaction(QString txID)
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_GETRAWTRANSACTION, params)), result))
         return NULL;    // error
 
@@ -395,7 +395,7 @@ BtcRawTransactionRef BtcJson::GetDecodedRawTransaction(QString txID)
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_GETRAWTRANSACTION, params)), result))
         return BtcRawTransactionRef();  // return NULL
 
@@ -415,7 +415,7 @@ BtcRawTransactionRef BtcJson::DecodeRawTransaction(QString rawTransaction)
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_DECODERAWTRANSACTION, params)), result))
         return BtcRawTransactionRef();  // return NULL
 
@@ -445,7 +445,7 @@ QString BtcJson::CreateRawTransaction(QList<BtcOutput> unspentOutputs, QMap<QStr
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_CREATERAWTRANSACTION, params)), result))
         return NULL;  // error
 
@@ -490,7 +490,7 @@ BtcSignedTransactionRef BtcJson::SignRawTransaction(QString rawTransaction, QLis
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_SIGNRAWTRANSACTION, params)), result))
         return BtcSignedTransactionRef();   // error
 
@@ -511,7 +511,7 @@ BtcSignedTransactionRef BtcJson::CombineSignedTransactions(QString rawTransactio
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_SIGNRAWTRANSACTION, params)), result))
         return BtcSignedTransactionRef();   // error
 
@@ -526,7 +526,7 @@ QString BtcJson::SendRawTransaction(QString rawTransaction)
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_SENDRAWTRANSACTION, params)), result))
         return NULL;  // error
 
@@ -537,7 +537,7 @@ QList<QString> BtcJson::GetRawMemPool()
 {
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_GETRAWMEMPOOL, QJsonArray())), result))
         return QList<QString>();
 
@@ -557,7 +557,7 @@ int BtcJson::GetBlockCount()
 {
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_GETBLOCKCOUNT, QJsonArray())), result))
         return -1;   // we should throw errors instead.
 
@@ -571,7 +571,7 @@ QString BtcJson::GetBlockHash(int blockNumber)
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_GETBLOCKHASH, params)), result))
         return NULL;
 
@@ -585,7 +585,7 @@ BtcBlockRef BtcJson::GetBlock(QString blockHash)
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
-                Modules::btcRpc->SendRpc(
+                Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_GETBLOCK, params)), result))
         return BtcBlockRef();
 

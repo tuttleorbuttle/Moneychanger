@@ -123,7 +123,7 @@ bool BtcRpc::ConnectToBitcoin(QString user, QString password, QString url /*= ht
     return true;
 }
 
-bool BtcRpc::ConnectToBitcoin(BitcoinServerRef server)
+bool BtcRpc::ConnectToBitcoin(BitcoinServerQtRef server)
 {
     ConnectToBitcoin(server->user, server->password, server->url, server->port);
 }

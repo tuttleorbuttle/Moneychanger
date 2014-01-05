@@ -94,7 +94,8 @@ HEADERS += moneychanger.h \
     Widgets/btcguitestp2p.h \
     bitcoin/transactionmanager.h \
     Widgets/btcsenddlg.h \
-    bitcoin/btcrpccurl.h
+    bitcoin/btcrpccurl.h \
+    bitcoin/ibtcrpc.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \

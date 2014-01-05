@@ -45,7 +45,6 @@ static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *userp)
 
 bool BtcRpcCurl::ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url, int port)
 {
-    CURL *curl;
     CURLcode res;
 
     struct WriteThis pooh;
@@ -143,12 +142,29 @@ bool BtcRpcCurl::ConnectToBitcoin(const std::string &user, const std::string &pa
 }
 
 
-void BtcRpcCurl::SendRpc(const std::string &jsonString)
+BitcoinReplyRef BtcRpcCurl::SendRpc(const std::string &jsonString)
 {
+    struct curl_slist *headers=NULL;  headers = curl_slist_append(headers, "Content-Type: text/xml");
 
+    ///* post binary data */  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, binaryptr);
+
+    /* set the size of the postfields data */  curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 23L);
+
+    /* pass our list of custom made headers */  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+    curl_easy_perform(curl); /* post away! */
+
+    curl_slist_free_all(headers); /* free the header list */
+
+    return BitcoinReplyRef(NULL);
 }
 
-void BtcRpcCurl::SendRpc(const char *jsonString)
+BitcoinReplyRef BtcRpcCurl::SendRpc(const char *jsonString)
 {
+    return BitcoinReplyRef(NULL);
+}
 
+bool BtcRpcCurl::IsConnected()
+{
+    return false;
 }

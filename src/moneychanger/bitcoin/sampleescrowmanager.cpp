@@ -28,7 +28,7 @@ void SampleEscrowManager::OnSimulateEscrowServers()
     for(int i = 1; i < 4; i++)
     {
         // admin2..4, rpc port 19011, 19021, 19031
-        rpcServer = BitcoinServerRef(new BitcoinServer("admin"+QString::number(i+1), "123", "http://127.0.0.1", 19001 + i * 10));
+        rpcServer = BitcoinServerRef(new BitcoinServer(QString("admin"+QString::number(i+1)).toStdString(), "123", "http://127.0.0.1", 19001 + i * 10));
         this->escrowPool->AddEscrowServer(SampleEscrowServerRef(new SampleEscrowServer(rpcServer)));
     }
 }

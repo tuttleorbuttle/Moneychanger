@@ -22,7 +22,7 @@ SampleEscrowClient::SampleEscrowClient(QObject* parent)
 
 SampleEscrowClient::~SampleEscrowClient()
 {
-    this->rpcServer.clear();
+    this->rpcServer.reset();
     this->targetPool.clear();
     this->pubKeyList.clear();
     this->transactionDeposit.clear();

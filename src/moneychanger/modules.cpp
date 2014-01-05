@@ -1,7 +1,8 @@
 #include "modules.h"
 
 
-QScopedPointer<BtcRpc> Modules::btcRpc;
+QScopedPointer<BtcRpc> Modules::btcRpcQt;
+QScopedPointer<IBtcRpc> Modules::btcRpc;
 QScopedPointer<BtcJson> Modules::btcJson;
 QScopedPointer<BtcInterface> Modules::btcInterface;
 QScopedPointer<SampleEscrowManager> Modules::sampleEscrowManager;
@@ -12,7 +13,8 @@ QScopedPointer<MTBitcoin> Modules::mtBitcoin;
 
 Modules::Modules()
 {
-    Modules::btcRpc.reset(new BtcRpc());
+    Modules::btcRpcQt.reset(new BtcRpc());
+    Modules::btcRpc.reset(new BtcRpcCurl());
     Modules::btcJson.reset(new BtcJson());
     Modules::btcInterface.reset(new BtcInterface());
     Modules::sampleEscrowManager.reset(new SampleEscrowManager());

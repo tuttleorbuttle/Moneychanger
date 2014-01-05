@@ -2,7 +2,7 @@
 #define SAMPLEESCROWSERVER_H
 
 #include <QSharedPointer>
-#include "btcrpc.h"
+#include "ibtcrpc.h"
 #include "sampleescrowclient.h"
 #include "btcjsonobjects.h"
 #include "escrowpool.h"

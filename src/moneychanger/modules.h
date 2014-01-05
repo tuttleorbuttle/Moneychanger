@@ -4,6 +4,8 @@
 #include <QScopedPointer>
 #include "btcjson.h"
 #include "btcrpc.h"
+#include "btcrpccurl.h"
+#include "ibtcrpc.h"
 #include "btcinterface.h"
 #include "sampleescrowmanager.h"
 #include "poolmanager.h"            // has a list of all available pools
@@ -21,7 +23,8 @@ public:
     // TODO: _maybe_ overload the :: operator to check if the pointer isn't NULL
     // and maybe use QSharedPointer?
     static QScopedPointer<BtcJson> btcJson;
-    static QScopedPointer<BtcRpc> btcRpc;
+    static QScopedPointer<BtcRpc> btcRpcQt;
+    static QScopedPointer<IBtcRpc> btcRpc;
     static QScopedPointer<BtcInterface> btcInterface;
     static QScopedPointer<SampleEscrowManager> sampleEscrowManager;
     static QScopedPointer<PoolManager> poolManager;

@@ -18,9 +18,9 @@ bool BtcInterface::TestBtcJson()
     // the GUI and debug console is sometimes easier to read than the terminal output of bitcoind
     BitcoinServerRef server1, server2, bitcoinqt;
 
-    server1 = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
-    server2 = BitcoinServerRef(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
-    bitcoinqt = BitcoinServerRef(new BitcoinServer("admin3", "123", "http://127.0.0.1", 19021));
+    server1 = BitcoinServerRef(new BitcoinServer(std::string("admin1"), std::string("123"), std::string("http://127.0.0.1"), 19001));
+    server2 = BitcoinServerRef(new BitcoinServer(std::string("admin2"), std::string("123"), std::string("http://127.0.0.1"), 19011));
+    bitcoinqt = BitcoinServerRef(new BitcoinServer(std::string("admin3"), std::string("123"), std::string("http://127.0.0.1"), 19021));
 
     //-----------------------
     // test various simple rpc calls
@@ -220,7 +220,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     three would be provided.
     */
 
-    QSharedPointer<BitcoinServer> buyer, vendor;
+    BitcoinServerRef buyer, vendor;
     buyer = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
     vendor = BitcoinServerRef(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
 

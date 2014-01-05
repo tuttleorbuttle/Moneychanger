@@ -1,26 +1,13 @@
 #ifndef BTCRPCZMQ_H
 #define BTCRPCZMQ_H
 
-#include <string>
-#include <tr1/memory>   // in tr1, otherwise mac users might not find it i heard
+
+#include "ibtcrpc.h"
+#include "curl/curl.h"
 
 
 
-// This struct can be used in BtcRpc to pass arguments to the ConnectToBitcoin() function
-struct BitcoinServer
-{
-    std::string user;
-    std::string password;
-    std::string url;
-    int port;
-
-    BitcoinServer(const std::string &account, std::string &password, std::string &url, int port):
-        user(account), password(password), url(url), port(port)
-    {}
-}; typedef std::shared_ptr<BitcoinServer> BitcoinServerRef;
-
-
-class BtcRpcCurl
+class BtcRpcCurl : public IBtcRpc
 {
 public:
     BtcRpcCurl();
@@ -28,24 +15,24 @@ public:
 
     // Returns whether we're connected to bitcoin's http interface
     // Not implemented properly! And probably not necessary. Will have to check to be sure.
-    bool IsConnected();
+    virtual bool IsConnected();
 
     // Connects to bitcoin, sets some http header information and sends a test query (getinfo)
     // The whole connected/disconnected implementation is poorly done (my fault) but it works.
     // This function can be called again and again and nothing will crash if it fails.
-    bool ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url = "http://127.0.0.1", int port = 8332);
+    virtual bool ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url = "http://127.0.0.1", int port = 8332);
 
     // Overload to make code that switches between bitcoin servers more readable
-    bool ConnectToBitcoin(BitcoinServerRef server);
+    virtual bool ConnectToBitcoin(BitcoinServerRef server);
 
     // Sends a string over the network
     // This string should be a json-rpc call if we're talking to bitcoin,
     // but we could send anything and expand this class to also connect to other http(s) interfaces.
-    void SendRpc(const std::string &jsonString);
+    virtual BitcoinReplyRef SendRpc(const std::string &jsonString);
 
     // Sends a byte array over the network
     // Should be json-rpc if talking to bitcoin
-    void SendRpc(const char* jsonString);
+    virtual BitcoinReplyRef SendRpc(const char* jsonString);
 
 private:
     void InitSession();         // Called in constructor, makes sure we have a network interface or something
@@ -69,6 +56,8 @@ private:
     BitcoinServerRef currentServer;
     bool connected;
     bool waitingForReply;
+
+    CURL* curl;
 
     /*
     Q_OBJECT
