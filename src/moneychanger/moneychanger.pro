@@ -93,7 +93,8 @@ HEADERS += moneychanger.h \
     Widgets/corporationdetails.h \
     Widgets/btcguitestp2p.h \
     bitcoin/transactionmanager.h \
-    Widgets/btcsenddlg.h
+    Widgets/btcsenddlg.h \
+    bitcoin/btcrpccurl.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -169,7 +170,8 @@ SOURCES += main.cpp\
     Widgets/btcguitest.cpp \
     Widgets/btcguitestp2p.cpp \
     bitcoin/transactionmanager.cpp \
-    Widgets/btcsenddlg.cpp
+    Widgets/btcsenddlg.cpp \
+    bitcoin/btcrpccurl.cpp
 
 
 RESOURCES += resource.qrc
@@ -267,6 +269,8 @@ mac:{
 linux:{
         LIBS += -ldl
 }
+
+LIBS += -lcurl  # cross-platform communication with bitcoind
 
 
 #QMAKE_CXXFLAGS_WARN_ON  = ""
