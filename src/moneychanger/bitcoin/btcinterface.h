@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QSharedPointer>
-#include "bitcoin/btcjson.h"
+#include "btcjsonqt.h"
 
 
 class BtcInterface : public QObject

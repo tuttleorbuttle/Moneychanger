@@ -2,7 +2,7 @@
 #define MODULES_H
 
 #include <QScopedPointer>
-#include "btcjson.h"
+#include "btcjsonqt.h"
 #include "btcrpc.h"
 #include "btcrpccurl.h"
 #include "ibtcrpc.h"
@@ -22,7 +22,7 @@ public:
 
     // TODO: _maybe_ overload the :: operator to check if the pointer isn't NULL
     // and maybe use QSharedPointer?
-    static QScopedPointer<BtcJson> btcJson;
+    static QScopedPointer<BtcJsonQt> btcJsonQt;
     static QScopedPointer<BtcRpc> btcRpcQt;
     static QScopedPointer<IBtcRpc> btcRpc;
     static QScopedPointer<BtcInterface> btcInterface;

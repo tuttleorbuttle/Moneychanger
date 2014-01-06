@@ -9,11 +9,11 @@
 
 
 // This class will create/process json queries and send/receive them with the help of BitcoinRpc
-class BtcJson
+class BtcJsonQt
 {    
 public:
-    BtcJson();
-    ~BtcJson();
+    BtcJsonQt();
+    ~BtcJsonQt();
 
     void Initialize();       // should make this part of all modules
 
