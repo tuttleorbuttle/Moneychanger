@@ -6,7 +6,7 @@
 #include <string>
 #include <list>
 
-#include "btcjsonobjects.h"
+#include "btcjsonobjectsqt.h"
 
 class MTBitcoin
 {
@@ -31,15 +31,15 @@ public:
 
     // Creates a multi-sig address from public keys
     // returns an object containing info required to withdraw from that address
-    BtcMultiSigAddressRef GetMultiSigAddressInfo(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = true, const char* account = NULL);
+    BtcMultiSigAddressQtRef GetMultiSigAddressInfo(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = true, const char* account = NULL);
 
     // Returns an object containing information about a raw transaction
-    BtcRawTransactionRef GetRawTransaction(const std::string &txId);
+    BtcRawTransactionQtRef GetRawTransaction(const std::string &txId);
 
     // Returns the number of confirmations of a raw transaction
-    int GetConfirmations(BtcRawTransactionRef rawTransaction);
+    int GetConfirmations(BtcRawTransactionQtRef rawTransaction);
 
-    bool TransactionSuccessfull(int64_t amount, BtcRawTransactionRef rawTransaction, const std::string &targetAddress, int64_t confirmations = 1);
+    bool TransactionSuccessfull(int64_t amount, BtcRawTransactionQtRef rawTransaction, const std::string &targetAddress, int64_t confirmations = 1);
 
     // sends funds from your wallet to targetAddress
     // returns the transaction id string or NULL
@@ -57,11 +57,11 @@ public:
     // sourceAddress: used to know which outputs of the tx we can spend (in case it came from a SendMany() tx)
     // redeemScript [optional]: is passed to the API to do some bitcoin magic. required if unknown or if passing a signingAddress
     // signingAddress [optional]: only this address's private key will be used to sign the transaction (kinda pointless in our case)
-    BtcSignedTransactionRef VoteMultiSigRelease(const std::string &txToSourceId, const std::string &sourceAddress, const std::string &destinationAddress, const std::string &redeemScript = "", const std::string &signingAddress = "");
+    BtcSignedTransactionQtRef VoteMultiSigRelease(const std::string &txToSourceId, const std::string &sourceAddress, const std::string &destinationAddress, const std::string &redeemScript = "", const std::string &signingAddress = "");
 
     // combines concatenated raw transactions to one raw transaction
     // used to combine the partially signed raw tx's when releasing multi-sig
-    BtcSignedTransactionRef CombineTransactions(const std::string &concatenatedRawTransactions);
+    BtcSignedTransactionQtRef CombineTransactions(const std::string &concatenatedRawTransactions);
 
     std::string SendRawTransaction(const std::string &rawTransaction);
 

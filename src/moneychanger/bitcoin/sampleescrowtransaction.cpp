@@ -34,7 +34,7 @@ bool SampleEscrowTransaction::CreateWithdrawalTransaction(const std::string& sou
     this->targetAddr = targetAddr;
 
     // create a partially signed transaction releasing funds that were sent to multiSigAddress in transaction sourceTxId to targetAddr
-    BtcSignedTransactionRef signedTx = Modules::mtBitcoin->VoteMultiSigRelease(sourceTxId, multiSigSourceAddress, targetAddr);
+    BtcSignedTransactionQtRef signedTx = Modules::mtBitcoin->VoteMultiSigRelease(sourceTxId, multiSigSourceAddress, targetAddr);
     if(signedTx == NULL)
     {
         this->status = Failed;
@@ -49,7 +49,7 @@ bool SampleEscrowTransaction::CreateWithdrawalTransaction(const std::string& sou
 bool SampleEscrowTransaction::AddWithdrawalTransaction(const std::string &partiallySignedTx)
 {
     // concatenate raw transactions and let bitcoin-qt merge them to one
-    BtcSignedTransactionRef signedTx = Modules::mtBitcoin->CombineTransactions(this->withdrawalTransaction + partiallySignedTx);
+    BtcSignedTransactionQtRef signedTx = Modules::mtBitcoin->CombineTransactions(this->withdrawalTransaction + partiallySignedTx);
     if(signedTx == NULL)
         return false;
 
@@ -81,7 +81,7 @@ void SampleEscrowTransaction::CheckTransaction(int minConfirms)
     // wait for the transaction to be broadcasted over the network
     // and get an object containing info
     // we have to use raw transactions here because bitcoin-qt doesn't properly support multi-sig yet
-    BtcRawTransactionRef rawTx = Modules::mtBitcoin->GetRawTransaction(this->txId);
+    BtcRawTransactionQtRef rawTx = Modules::mtBitcoin->GetRawTransaction(this->txId);
 
     if(rawTx == NULL)
     {

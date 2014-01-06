@@ -5,7 +5,7 @@
 #include <QString>
 #include <QSharedPointer>
 #include "btcrpc.h"
-#include "btcjsonobjects.h"
+#include "btcjsonobjectsqt.h"
 
 
 // This class will create/process json queries and send/receive them with the help of BitcoinRpc
@@ -36,7 +36,7 @@ public:
     QString GetNewAddress(QString account = NULL);
 
     // Validate an address
-    BtcAddressInfoRef ValidateAddress(const QString& address);
+    BtcAddressInfoQtRef ValidateAddress(const QString& address);
 
     QString GetPublicKey(const QString& address);
 
@@ -51,12 +51,12 @@ public:
     // keys: list of public keys (addresses work too, if the public key is known)
     // account [optional]: account to add the address to
     // Returns the multi-sig address
-    BtcMultiSigAddressRef AddMultiSigAddress(int nRequired, QStringList keys, QString account = NULL);
+    BtcMultiSigAddressQtRef AddMultiSigAddress(int nRequired, QStringList keys, QString account = NULL);
 
     // Creates a multi-sig address without adding it to the wallet
     // nRequired: signatures required
     // keys: list of public keys (addresses work too, if the public key is known)
-    BtcMultiSigAddressRef CreateMultiSigAddress(int nRequired, QStringList keys);
+    BtcMultiSigAddressQtRef CreateMultiSigAddress(int nRequired, QStringList keys);
 
     // Creates a multi-sig address and returns its redeemScript
     // the address will not be added to your address list, use AddMultiSigAddress for that
@@ -74,19 +74,19 @@ public:
 
     bool SetTxFee(int64_t fee);
 
-    BtcTransactionRef GetTransaction(QString txID);
+    BtcTransactionQtRef GetTransaction(QString txID);
 
     QString GetRawTransaction(QString txID);
 
-    BtcRawTransactionRef GetDecodedRawTransaction(QString txID);
+    BtcRawTransactionQtRef GetDecodedRawTransaction(QString txID);
 
-    BtcRawTransactionRef DecodeRawTransaction(QString rawTransaction);
+    BtcRawTransactionQtRef DecodeRawTransaction(QString rawTransaction);
 
-    QString CreateRawTransaction(QList<BtcOutput> unspentOutputs, QMap<QString, int64_t> txTargets);
+    QString CreateRawTransaction(QList<BtcOutputQt> unspentOutputs, QMap<QString, int64_t> txTargets);
 
-    BtcSignedTransactionRef SignRawTransaction(QString rawTransaction, QList<BtcSigningPrequisite> previousTransactions = QList<BtcSigningPrequisite>(), QStringList privateKeys = QStringList());
+    BtcSignedTransactionQtRef SignRawTransaction(QString rawTransaction, QList<BtcSigningPrequisiteQt> previousTransactions = QList<BtcSigningPrequisiteQt>(), QStringList privateKeys = QStringList());
 
-    BtcSignedTransactionRef CombineSignedTransactions(QString rawTransaction);
+    BtcSignedTransactionQtRef CombineSignedTransactions(QString rawTransaction);
 
     QString SendRawTransaction(QString rawTransaction);
 
@@ -96,7 +96,7 @@ public:
 
     QString GetBlockHash(int blockNumber);
 
-    BtcBlockRef GetBlock(QString blockHash);
+    BtcBlockQtRef GetBlock(QString blockHash);
 
 private:
      QByteArray CreateJsonQuery(QString command, QJsonArray params = QJsonArray(), QString id = "");

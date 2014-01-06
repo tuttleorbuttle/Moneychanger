@@ -4,7 +4,7 @@
 #include <QSharedPointer>
 #include "ibtcrpc.h"
 #include "sampleescrowclient.h"
-#include "btcjsonobjects.h"
+#include "btcjsonobjectsqt.h"
 #include "escrowpool.h"
 #include "sampletypedefs.h"
 
@@ -37,7 +37,7 @@ public:
 
     std::string multiSigAddress;        // the actual multisig address
 
-    BtcMultiSigAddressRef multiSigAddrInfo; // info required to withdraw from the address
+    BtcMultiSigAddressQtRef multiSigAddrInfo; // info required to withdraw from the address
 
     SampleEscrowTransactionRef transactionDeposit;      // info about deposit
     SampleEscrowTransactionRef transactionWithdrawal;   // info about withdrawal

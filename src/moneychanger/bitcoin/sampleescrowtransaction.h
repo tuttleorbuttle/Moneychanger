@@ -4,7 +4,7 @@
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <string>
-#include "btcjsonobjects.h"
+#include "btcjsonobjectsqt.h"
 //#include "sampleescrowclient.h"
 //#include "sampleescrowserver.h"
 

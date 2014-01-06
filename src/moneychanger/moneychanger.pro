@@ -78,7 +78,6 @@ HEADERS += moneychanger.h \
     modules.h \
     utils.h \
     bitcoin/MTBitcoin.h \
-    bitcoin/btcjsonobjects.h \    
     bitcoin/btcrpc.h \
     bitcoin/btcinterface.h \
     bitcoin/sampleescrowserver.h \
@@ -95,7 +94,9 @@ HEADERS += moneychanger.h \
     Widgets/btcsenddlg.h \
     bitcoin/btcrpccurl.h \
     bitcoin/ibtcrpc.h \
-    bitcoin/btcjsonqt.h
+    bitcoin/btcjsonqt.h \
+    bitcoin/ibtcjson.h \
+    bitcoin/btcjsonobjectsqt.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \

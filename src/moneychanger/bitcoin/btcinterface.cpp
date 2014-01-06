@@ -36,7 +36,7 @@ bool BtcInterface::TestBtcJson()
     OTLog::vOutput(0, "Balance: %f\n", balance);
 
     // validate address
-    BtcAddressInfoRef addrInfo;
+    BtcAddressInfoQtRef addrInfo;
     if((addrInfo = Modules::btcJsonQt->ValidateAddress(address)) != NULL && !addrInfo->isvalid)
         return false;
     if((addrInfo = Modules::btcJsonQt->ValidateAddress("notanaddress")) != NULL && addrInfo->isvalid)
@@ -49,7 +49,7 @@ bool BtcInterface::TestBtcJson()
     keys.append(Modules::btcJsonQt->GetNewAddress("testmultisig"));
     keys.append(Modules::btcJsonQt->GetNewAddress("testmultisig"));
     // add new multisig address to account "testmultisig"
-    BtcMultiSigAddressRef multiSigAddr = Modules::btcJsonQt->AddMultiSigAddress(2, keys, "testmultisig");
+    BtcMultiSigAddressQtRef multiSigAddr = Modules::btcJsonQt->AddMultiSigAddress(2, keys, "testmultisig");
 
     if(multiSigAddr != NULL && !multiSigAddr->address.isEmpty())
         OTLog::vOutput(0, "Multisig address created: \"%s\"\n", multiSigAddr->address.toStdString().c_str());
@@ -60,7 +60,7 @@ bool BtcInterface::TestBtcJson()
     keys += "3invalidkey";
     keys += "3invalidkey2";
     // attempt to create an address with invalid keys
-    BtcMultiSigAddressRef multiSigAddrInvalid = Modules::btcJsonQt->AddMultiSigAddress(2, keys, "testmultisig");
+    BtcMultiSigAddressQtRef multiSigAddrInvalid = Modules::btcJsonQt->AddMultiSigAddress(2, keys, "testmultisig");
     if(multiSigAddrInvalid != NULL && !multiSigAddrInvalid->address.isNull())
         return false;   // if that's the case we'll have to check the keys for validity
 
@@ -96,7 +96,7 @@ bool BtcInterface::TestBtcJson()
     // if we call GetTransaction before this client knows about the transaction,
     // it will return error "Invalid or non-wallet transaction id".
     // so we wait for it:
-    BtcTransactionRef transaction = WaitGetTransaction(txID);
+    BtcTransactionQtRef transaction = WaitGetTransaction(txID);
     if(transaction == NULL)
         return false;
 
@@ -190,7 +190,7 @@ bool BtcInterface::TestBtcJson()
     // test raw transactions
     //----------------------
     QString rawTx = Modules::btcJsonQt->GetRawTransaction(txManyID);
-    BtcRawTransactionRef decodedTx = Modules::btcJsonQt->DecodeRawTransaction(rawTx);
+    BtcRawTransactionQtRef decodedTx = Modules::btcJsonQt->DecodeRawTransaction(rawTx);
     if(!decodedTx)
         return false;
 
@@ -248,13 +248,13 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     publicKeys.append(pubKeyVendor);
 
     // vendor: create multi-sig address
-    BtcMultiSigAddressRef multiSigAddressVendor = Modules::btcJsonQt->AddMultiSigAddress(2, publicKeys, "testescrow");
+    BtcMultiSigAddressQtRef multiSigAddressVendor = Modules::btcJsonQt->AddMultiSigAddress(2, publicKeys, "testescrow");
     if(multiSigAddressVendor == NULL)
 	    return false;
 
     // buyer: create multi-sig-address
     Modules::btcRpc->ConnectToBitcoin(buyer);
-    BtcMultiSigAddressRef multiSigAddressBuyer = Modules::btcJsonQt->AddMultiSigAddress(2, publicKeys, "testescrow");
+    BtcMultiSigAddressQtRef multiSigAddressBuyer = Modules::btcJsonQt->AddMultiSigAddress(2, publicKeys, "testescrow");
     if(multiSigAddressBuyer == NULL)
 	    return false;
 
@@ -270,7 +270,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
     // vendor: wait for the transaction to be received and confirmed
     Modules::btcRpc->ConnectToBitcoin(vendor);
-    BtcRawTransactionRef transaction = WaitGetRawTransaction(txToEscrow, 500, 3);     // wait for the tx to be received
+    BtcRawTransactionQtRef transaction = WaitGetRawTransaction(txToEscrow, 500, 3);     // wait for the tx to be received
     if(!WaitTransactionSuccessfull(amountRequested, transaction, multiSigAddressVendor->address, 1))  // see if it has 1 confirmation
         return false;   // wrong btc amount or lack of confirmations after timeout period
 
@@ -279,7 +279,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
     // vendor: create raw withdrawal transaction
     // we don't have to pass redeemScript and addressVendor but we can.
-    BtcSignedTransactionRef withdrawTransactionVendor =
+    BtcSignedTransactionQtRef withdrawTransactionVendor =
             WithdrawAllFromAddress(txToEscrow, multiSigAddressVendor->address, withdrawAddr, multiSigAddressVendor->redeemScript, addressVendor);
 
     if(withdrawTransactionVendor == NULL)
@@ -293,7 +293,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     // buyer: if everything is alright, allow vendor to withdraw funds by creating a
     //      partially signed transaction sending them to the vendor withdrawal address
     Modules::btcRpc->ConnectToBitcoin(buyer);
-    BtcSignedTransactionRef withdrawTransactionBuyer =
+    BtcSignedTransactionQtRef withdrawTransactionBuyer =
             WithdrawAllFromAddress(txToEscrow, multiSigAddressBuyer->address, withdrawAddr, multiSigAddressBuyer->redeemScript, addressBuyer);
 
     if(withdrawTransactionBuyer == NULL)
@@ -310,7 +310,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     QString signedTransactions =
             withdrawTransactionVendor->signedTransaction +
             withdrawTransactionBuyer->signedTransaction;
-    BtcSignedTransactionRef signedWithdrawalFinal = Modules::btcJsonQt->CombineSignedTransactions(signedTransactions);
+    BtcSignedTransactionQtRef signedWithdrawalFinal = Modules::btcJsonQt->CombineSignedTransactions(signedTransactions);
 
     if(signedWithdrawalFinal == NULL)
         return false;
@@ -320,7 +320,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
     // vendor: see if the transaction was broadcasted
     Modules::btcRpc->ConnectToBitcoin(vendor);
-    BtcTransactionRef transactionToWithdrawAddr = WaitGetTransaction(txFinalizedId);
+    BtcTransactionQtRef transactionToWithdrawAddr = WaitGetTransaction(txFinalizedId);
     if(transactionToWithdrawAddr == NULL)
         return false;
 
@@ -335,7 +335,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
 QString BtcInterface::GetPublicKey(QString address)
 {
-    QSharedPointer<BtcAddressInfo> addressInfo = Modules::btcJsonQt->ValidateAddress(address);
+    QSharedPointer<BtcAddressInfoQt> addressInfo = Modules::btcJsonQt->ValidateAddress(address);
     if(addressInfo == NULL)
         return NULL;
 
@@ -348,7 +348,7 @@ int64_t BtcInterface::GetTotalOutput(QString transactionId, QString targetAddres
     return GetTotalOutput(WaitGetRawTransaction(transactionId), targetAddress);
 }
 
-int64_t BtcInterface::GetTotalOutput(BtcRawTransactionRef transaction, QString targetAddress)
+int64_t BtcInterface::GetTotalOutput(BtcRawTransactionQtRef transaction, QString targetAddress)
 {
     int64_t amountReceived = 0.0;
     for(int i = 0; i < transaction->outputs.size(); i++)
@@ -376,12 +376,12 @@ int64_t BtcInterface::GetTotalOutput(BtcRawTransactionRef transaction, QString t
     return amountReceived;
 }
 
-bool BtcInterface::TransactionConfirmed(BtcTransactionRef transaction, int minConfirms)
+bool BtcInterface::TransactionConfirmed(BtcTransactionQtRef transaction, int minConfirms)
 {
     return transaction->Confirmations >= minConfirms;   // check if confirmed often enough
 }
 
-int64_t BtcInterface::GetConfirmations(BtcRawTransactionRef transaction)
+int64_t BtcInterface::GetConfirmations(BtcRawTransactionQtRef transaction)
 {
     // firstly, see if the transaction isn't included in a block yet
     QList<QString> rawMemPool = Modules::btcJsonQt->GetRawMemPool();
@@ -395,7 +395,7 @@ int64_t BtcInterface::GetConfirmations(BtcRawTransactionRef transaction)
     // get hash of latest block
     QString blockHash = Modules::btcJsonQt->GetBlockHash(latestBlock);
     // get the actual block block
-    BtcBlockRef currentBlock = Modules::btcJsonQt->GetBlock(blockHash);
+    BtcBlockQtRef currentBlock = Modules::btcJsonQt->GetBlock(blockHash);
     // the block might not be downloaded yet, in that case return
     if(currentBlock == NULL)
         return 0;
@@ -415,18 +415,18 @@ int64_t BtcInterface::GetConfirmations(BtcRawTransactionRef transaction)
     return confirmations;
 }
 
-int64_t BtcInterface::TransactionConfirmed(BtcRawTransactionRef transaction, int minConfirms)
+int64_t BtcInterface::TransactionConfirmed(BtcRawTransactionQtRef transaction, int minConfirms)
 {
     return GetConfirmations(transaction) >= minConfirms;
 }
 
 // returns whether the required amount of btc was received and confirmed often enough
-bool BtcInterface::TransactionSuccessfull(int64_t amount, BtcTransactionRef transaction, int minConfirms)
+bool BtcInterface::TransactionSuccessfull(int64_t amount, BtcTransactionQtRef transaction, int minConfirms)
 {
     return TransactionConfirmed(transaction, minConfirms) && transaction->Amount >= amount; // check if confirmed AND enough btc
 }
 
-bool BtcInterface::TransactionSuccessfull(int64_t amountRequested, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms)
+bool BtcInterface::TransactionSuccessfull(int64_t amountRequested, BtcRawTransactionQtRef transaction, QString targetAddress, int minConfirms)
 {
     if(transaction == NULL) // if it hasn't been received yet we will return.
         return false;       // use WaitForTransaction(txid) to prevent this.
@@ -442,7 +442,7 @@ bool BtcInterface::TransactionSuccessfull(int64_t amountRequested, BtcRawTransac
     return false;
 }
 
-bool BtcInterface::WaitTransactionSuccessfull(int64_t amount, BtcTransactionRef transaction, int minConfirms, double timeOutSeconds, double timerSeconds)
+bool BtcInterface::WaitTransactionSuccessfull(int64_t amount, BtcTransactionQtRef transaction, int minConfirms, double timeOutSeconds, double timerSeconds)
 {
     // TODO: we'll have to replace this function with a constant background check for all unconfirmed transactions
     // and to store the outstanding transactions in some database.
@@ -471,7 +471,7 @@ bool BtcInterface::WaitTransactionSuccessfull(int64_t amount, BtcTransactionRef 
     return false;
 }
 
-bool BtcInterface::WaitTransactionSuccessfull(int64_t amount, BtcRawTransactionRef transaction, QString targetAddress, int minConfirms, double timeOutSeconds, double timerSeconds)
+bool BtcInterface::WaitTransactionSuccessfull(int64_t amount, BtcRawTransactionQtRef transaction, QString targetAddress, int minConfirms, double timeOutSeconds, double timerSeconds)
 {
     // TODO: See the other WaitTransactionSuccessfull()
 
@@ -502,11 +502,11 @@ bool BtcInterface::WaitForTransaction(QString txID, int timerMS, int maxAttempts
     return WaitGetRawTransaction(txID, timerMS, maxAttempts) != NULL;
 }
 
-BtcTransactionRef BtcInterface::WaitGetTransaction(QString txID, int timerMS, int maxAttempts)
+BtcTransactionQtRef BtcInterface::WaitGetTransaction(QString txID, int timerMS, int maxAttempts)
 {
     utils::SleepSimulator sleeper;
 
-    BtcTransactionRef transaction;
+    BtcTransactionQtRef transaction;
 
     // TODO: if this blocks the GUI then we should multithread or async it through callbacks
     // or let the user press a refresh button until he gets a result
@@ -518,11 +518,11 @@ BtcTransactionRef BtcInterface::WaitGetTransaction(QString txID, int timerMS, in
     return transaction;
 }
 
-BtcRawTransactionRef BtcInterface::WaitGetRawTransaction(QString txID, int timerMS, int maxAttempts)
+BtcRawTransactionQtRef BtcInterface::WaitGetRawTransaction(QString txID, int timerMS, int maxAttempts)
 {
     utils::SleepSimulator sleeper;
 
-    BtcRawTransactionRef transaction;
+    BtcRawTransactionQtRef transaction;
 
     // TODO: see WaitGetTransaction()
     while((transaction = Modules::btcJsonQt->GetDecodedRawTransaction(txID)) == NULL && maxAttempts--)
@@ -533,30 +533,30 @@ BtcRawTransactionRef BtcInterface::WaitGetRawTransaction(QString txID, int timer
     return transaction;
 }
 
-BtcSignedTransactionRef BtcInterface::WithdrawAllFromAddress(QString txToSourceId, QString sourceAddress, QString destinationAddress, QString redeemScript, QString signingAddress)
+BtcSignedTransactionQtRef BtcInterface::WithdrawAllFromAddress(QString txToSourceId, QString sourceAddress, QString destinationAddress, QString redeemScript, QString signingAddress)
 {
     // retrieve decoded raw transaction sending funds to our sourceAddress
-    BtcRawTransactionRef rawTransaction = Modules::btcJsonQt->GetDecodedRawTransaction(txToSourceId);
+    BtcRawTransactionQtRef rawTransaction = Modules::btcJsonQt->GetDecodedRawTransaction(txToSourceId);
     if(rawTransaction == NULL)
-        return BtcSignedTransactionRef();   // return NULL
+        return BtcSignedTransactionQtRef();   // return NULL
 
     // count funds in source address and list outputs leading to it
     // this will only work when no btc from source tx have been spent from sourceAddress (the multi-sig address) yet
     int64_t funds = 0;
-    QList<BtcOutput> unspentOutputs;
-    QList<BtcSigningPrequisite> signingPrequisites;
-    foreach(BtcRawTransaction::VOUT output, rawTransaction->outputs)
+    QList<BtcOutputQt> unspentOutputs;
+    QList<BtcSigningPrequisiteQt> signingPrequisites;
+    foreach(BtcRawTransactionQt::VOUT output, rawTransaction->outputs)
     {
         // check if output leads to sourceAddess
         // idk what multiple addresses per output means so we'll skip those cases
         if(output.addresses.size() == 1 && output.addresses[0] == sourceAddress)
         {
             funds += output.value;
-            unspentOutputs += BtcOutput(txToSourceId, output.n);
+            unspentOutputs += BtcOutputQt(txToSourceId, output.n);
 
             // create signing prequisite (optional)
             if(!signingAddress.isEmpty() && !redeemScript.isEmpty())
-                signingPrequisites += BtcSigningPrequisite(txToSourceId, output.n, output.scriptPubKeyHex, redeemScript);
+                signingPrequisites += BtcSigningPrequisiteQt(txToSourceId, output.n, output.scriptPubKeyHex, redeemScript);
         }
     }
 
@@ -580,7 +580,7 @@ BtcSignedTransactionRef BtcInterface::WithdrawAllFromAddress(QString txToSourceI
 
     // sign raw transaction
     // as we just created this tx ourselves, we can assume that it is safe to sign
-    BtcSignedTransactionRef signedTransact = Modules::btcJsonQt->SignRawTransaction(withdrawTransaction, signingPrequisites, signingKeys);
+    BtcSignedTransactionQtRef signedTransact = Modules::btcJsonQt->SignRawTransaction(withdrawTransaction, signingPrequisites, signingKeys);
 
     return signedTransact;
 }

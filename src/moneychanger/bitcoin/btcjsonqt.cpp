@@ -182,25 +182,25 @@ QString BtcJsonQt::GetNewAddress(QString account/*=NULL*/)
     return result.toString();
 }
 
-BtcAddressInfoRef BtcJsonQt::ValidateAddress(const QString& address)
+BtcAddressInfoQtRef BtcJsonQt::ValidateAddress(const QString& address)
 {
     QJsonArray params = QJsonArray();
     params.append(address);
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_VALIDATEADDRESS, params)), result))
-        return BtcAddressInfoRef();
+        return BtcAddressInfoQtRef();
 
     if(!result.isObject())
-        return BtcAddressInfoRef();   // shouldn't happen unless protocol is changed
+        return BtcAddressInfoQtRef();   // shouldn't happen unless protocol is changed
 
-    BtcAddressInfoRef addressInfo = BtcAddressInfoRef(new BtcAddressInfo(result.toObject()));
+    BtcAddressInfoQtRef addressInfo = BtcAddressInfoQtRef(new BtcAddressInfoQt(result.toObject()));
     return addressInfo;
 }
 
 QString BtcJsonQt::GetPublicKey(const QString& address)
 {
-    BtcAddressInfoRef addrInfo = ValidateAddress(address);
+    BtcAddressInfoQtRef addrInfo = ValidateAddress(address);
     if(addrInfo == NULL)
         return NULL;
 
@@ -227,7 +227,7 @@ QString BtcJsonQt::DumpPrivKey(QString address)
     return result.toString();
 }
 
-BtcMultiSigAddressRef BtcJsonQt::AddMultiSigAddress(int nRequired, QStringList keys, QString account)
+BtcMultiSigAddressQtRef BtcJsonQt::AddMultiSigAddress(int nRequired, QStringList keys, QString account)
 {
     QJsonArray params = QJsonArray();
     params.append(nRequired);
@@ -236,19 +236,19 @@ BtcMultiSigAddressRef BtcJsonQt::AddMultiSigAddress(int nRequired, QStringList k
 
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_ADDMULTISIGADDRESS, params)), result))
-        return BtcMultiSigAddressRef();      // error
+        return BtcMultiSigAddressQtRef();      // error
 
     if(!result.isString())
-        return BtcMultiSigAddressRef();      // shouldn't happen unless protocol is changed
+        return BtcMultiSigAddressQtRef();      // shouldn't happen unless protocol is changed
 
     if(result.toString().isEmpty())
-        return BtcMultiSigAddressRef();     // error, shouldn't happen at all
+        return BtcMultiSigAddressQtRef();     // error, shouldn't happen at all
 
     // re-create the address so we get more information and return that
     return CreateMultiSigAddress(nRequired, keys);
 }
 
-BtcMultiSigAddressRef BtcJsonQt::CreateMultiSigAddress(int nRequired, QStringList keys)
+BtcMultiSigAddressQtRef BtcJsonQt::CreateMultiSigAddress(int nRequired, QStringList keys)
 {
     QJsonArray params = QJsonArray();
     params.append(nRequired);
@@ -257,12 +257,12 @@ BtcMultiSigAddressRef BtcJsonQt::CreateMultiSigAddress(int nRequired, QStringLis
     QJsonValue result = QJsonValue();
     if(!ProcessRpcString(
                 Modules::btcRpcQt->SendRpc(CreateJsonQuery(METHOD_CREATEMULTISIG, params)),result))
-        return BtcMultiSigAddressRef();     // error
+        return BtcMultiSigAddressQtRef();     // error
 
     if(!result.isObject())
-        return BtcMultiSigAddressRef();     // error
+        return BtcMultiSigAddressQtRef();     // error
 
-    BtcMultiSigAddressRef multiSigAddr = BtcMultiSigAddressRef(new BtcMultiSigAddress(result.toObject(), keys));
+    BtcMultiSigAddressQtRef multiSigAddr = BtcMultiSigAddressQtRef(new BtcMultiSigAddressQt(result.toObject(), keys));
     return multiSigAddr;
 }
 
@@ -344,7 +344,7 @@ QString BtcJsonQt::SendMany(QMap<QString, int64_t> txTargets, QString fromAccoun
     return result.toString();
 }
 
-BtcTransactionRef BtcJsonQt::GetTransaction(QString txID)
+BtcTransactionQtRef BtcJsonQt::GetTransaction(QString txID)
 {
     // TODO: maybe we can automate the process of appending arguments
     //      and calling SendRPC(CreateJsonQuery..) as it's
@@ -356,12 +356,12 @@ BtcTransactionRef BtcJsonQt::GetTransaction(QString txID)
     if(!ProcessRpcString(
                 Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_GETTRANSACTION, params)), result))
-        return BtcTransactionRef();    // error
+        return BtcTransactionQtRef();    // error
 
     if(!result.isObject())
-        return BtcTransactionRef();
+        return BtcTransactionQtRef();
 
-    BtcTransactionRef transaction = BtcTransactionRef(new BtcTransaction(result.toObject()));
+    BtcTransactionQtRef transaction = BtcTransactionQtRef(new BtcTransactionQt(result.toObject()));
     return transaction;
 
     // TODO:
@@ -387,7 +387,7 @@ QString BtcJsonQt::GetRawTransaction(QString txID)
     return result.toString();
 }
 
-BtcRawTransactionRef BtcJsonQt::GetDecodedRawTransaction(QString txID)
+BtcRawTransactionQtRef BtcJsonQt::GetDecodedRawTransaction(QString txID)
 {
     QJsonArray params = QJsonArray();
     params.append(txID);
@@ -397,18 +397,18 @@ BtcRawTransactionRef BtcJsonQt::GetDecodedRawTransaction(QString txID)
     if(!ProcessRpcString(
                 Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_GETRAWTRANSACTION, params)), result))
-        return BtcRawTransactionRef();  // return NULL
+        return BtcRawTransactionQtRef();  // return NULL
 
     if(!result.isObject())
-        return BtcRawTransactionRef();  // return NULL
+        return BtcRawTransactionQtRef();  // return NULL
 
-    BtcRawTransactionRef decodedRawTransaction = BtcRawTransactionRef(new BtcRawTransaction(result.toObject()));
+    BtcRawTransactionQtRef decodedRawTransaction = BtcRawTransactionQtRef(new BtcRawTransactionQt(result.toObject()));
     return decodedRawTransaction;
 
 
 }
 
-BtcRawTransactionRef BtcJsonQt::DecodeRawTransaction(QString rawTransaction)
+BtcRawTransactionQtRef BtcJsonQt::DecodeRawTransaction(QString rawTransaction)
 {
     QJsonArray params = QJsonArray();
     params.append(rawTransaction);
@@ -417,16 +417,16 @@ BtcRawTransactionRef BtcJsonQt::DecodeRawTransaction(QString rawTransaction)
     if(!ProcessRpcString(
                 Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_DECODERAWTRANSACTION, params)), result))
-        return BtcRawTransactionRef();  // return NULL
+        return BtcRawTransactionQtRef();  // return NULL
 
     if(!result.isObject())
-        return BtcRawTransactionRef();  // return NULL
+        return BtcRawTransactionQtRef();  // return NULL
 
-    BtcRawTransactionRef decodedRawTransaction = BtcRawTransactionRef(new BtcRawTransaction(result.toObject()));
+    BtcRawTransactionQtRef decodedRawTransaction = BtcRawTransactionQtRef(new BtcRawTransactionQt(result.toObject()));
     return decodedRawTransaction;
 }
 
-QString BtcJsonQt::CreateRawTransaction(QList<BtcOutput> unspentOutputs, QMap<QString, int64_t> txTargets)
+QString BtcJsonQt::CreateRawTransaction(QList<BtcOutputQt> unspentOutputs, QMap<QString, int64_t> txTargets)
 {
     QJsonArray params = QJsonArray();
     QJsonArray outputsArray = QJsonArray();
@@ -452,7 +452,7 @@ QString BtcJsonQt::CreateRawTransaction(QList<BtcOutput> unspentOutputs, QMap<QS
     return result.toString();
 }
 
-BtcSignedTransactionRef BtcJsonQt::SignRawTransaction(QString rawTransaction, QList<BtcSigningPrequisite> previousTransactions,  QStringList privateKeys)
+BtcSignedTransactionQtRef BtcJsonQt::SignRawTransaction(QString rawTransaction, QList<BtcSigningPrequisiteQt> previousTransactions,  QStringList privateKeys)
 {
     QJsonArray params = QJsonArray();
     params.append(rawTransaction);
@@ -492,16 +492,16 @@ BtcSignedTransactionRef BtcJsonQt::SignRawTransaction(QString rawTransaction, QL
     if(!ProcessRpcString(
                 Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_SIGNRAWTRANSACTION, params)), result))
-        return BtcSignedTransactionRef();   // error
+        return BtcSignedTransactionQtRef();   // error
 
     if(!result.isObject())
-        return BtcSignedTransactionRef();   // error
+        return BtcSignedTransactionQtRef();   // error
 
-    BtcSignedTransactionRef signedTransaction = BtcSignedTransactionRef(new BtcSignedTransaction(result.toObject()));
+    BtcSignedTransactionQtRef signedTransaction = BtcSignedTransactionQtRef(new BtcSignedTransactionQt(result.toObject()));
     return signedTransaction;
 }
 
-BtcSignedTransactionRef BtcJsonQt::CombineSignedTransactions(QString rawTransaction)
+BtcSignedTransactionQtRef BtcJsonQt::CombineSignedTransactions(QString rawTransaction)
 {
     QJsonArray params = QJsonArray();
     params.append(rawTransaction);  // a concatenation of partially signed tx's
@@ -513,9 +513,9 @@ BtcSignedTransactionRef BtcJsonQt::CombineSignedTransactions(QString rawTransact
     if(!ProcessRpcString(
                 Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_SIGNRAWTRANSACTION, params)), result))
-        return BtcSignedTransactionRef();   // error
+        return BtcSignedTransactionQtRef();   // error
 
-    BtcSignedTransactionRef signedTransaction = BtcSignedTransactionRef(new BtcSignedTransaction(result.toObject()));
+    BtcSignedTransactionQtRef signedTransaction = BtcSignedTransactionQtRef(new BtcSignedTransactionQt(result.toObject()));
     return signedTransaction;
 }
 
@@ -578,7 +578,7 @@ QString BtcJsonQt::GetBlockHash(int blockNumber)
     return result.toString();
 }
 
-BtcBlockRef BtcJsonQt::GetBlock(QString blockHash)
+BtcBlockQtRef BtcJsonQt::GetBlock(QString blockHash)
 {
     QJsonArray params = QJsonArray();
     params.append(blockHash);
@@ -587,12 +587,12 @@ BtcBlockRef BtcJsonQt::GetBlock(QString blockHash)
     if(!ProcessRpcString(
                 Modules::btcRpcQt->SendRpc(
                     CreateJsonQuery(METHOD_GETBLOCK, params)), result))
-        return BtcBlockRef();
+        return BtcBlockQtRef();
 
     if(!result.isObject())
-        return BtcBlockRef();
+        return BtcBlockQtRef();
 
-    BtcBlockRef block = BtcBlockRef(new BtcBlock(result.toObject()));
+    BtcBlockQtRef block = BtcBlockQtRef(new BtcBlockQt(result.toObject()));
     return block;
 }
 

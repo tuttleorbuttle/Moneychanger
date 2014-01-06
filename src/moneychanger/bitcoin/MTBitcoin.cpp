@@ -25,11 +25,11 @@ std::string MTBitcoin::GetPublicKey(const std::string& address)
 
 std::string MTBitcoin::GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet, const char* account)
 {
-    BtcMultiSigAddressRef multiSigAddr;
+    BtcMultiSigAddressQtRef multiSigAddr;
     return (multiSigAddr = GetMultiSigAddressInfo(minSignatures, publicKeys, addToWallet, account)) == NULL ? "" : multiSigAddr->address.toStdString();
 }
 
-BtcMultiSigAddressRef MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const std::list<std::string> &publicKeys, bool addToWallet, const char* account)
+BtcMultiSigAddressQtRef MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const std::list<std::string> &publicKeys, bool addToWallet, const char* account)
 {
     // convert std string to qstring list
     QStringList publicKeysQt;
@@ -38,7 +38,7 @@ BtcMultiSigAddressRef MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const
         publicKeysQt.append(QString::fromStdString(pubKey));
     }
 
-    BtcMultiSigAddressRef multiSigAddr;
+    BtcMultiSigAddressQtRef multiSigAddr;
     if(addToWallet)
     {
         multiSigAddr = Modules::btcJsonQt->AddMultiSigAddress(minSignatures, publicKeysQt, account);
@@ -51,19 +51,19 @@ BtcMultiSigAddressRef MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const
     return multiSigAddr;
 }
 
-BtcRawTransactionRef MTBitcoin::GetRawTransaction(const std::string &txId)
+BtcRawTransactionQtRef MTBitcoin::GetRawTransaction(const std::string &txId)
 {
     // wait for transaction and return it
     // times out after 10 seconds by default
     return Modules::btcInterface->WaitGetRawTransaction(QString::fromStdString(txId));
 }
 
-int MTBitcoin::GetConfirmations(BtcRawTransactionRef rawTransaction)
+int MTBitcoin::GetConfirmations(BtcRawTransactionQtRef rawTransaction)
 {
     return Modules::btcInterface->GetConfirmations(rawTransaction);
 }
 
-bool MTBitcoin::TransactionSuccessfull(int64_t amount, BtcRawTransactionRef rawTransaction, const std::string &targetAddress, int64_t confirmations)
+bool MTBitcoin::TransactionSuccessfull(int64_t amount, BtcRawTransactionQtRef rawTransaction, const std::string &targetAddress, int64_t confirmations)
 {
     return Modules::btcInterface->TransactionSuccessfull(amount, rawTransaction, QString::fromStdString(targetAddress), confirmations);
 }
@@ -86,13 +86,13 @@ std::string MTBitcoin::SendToMultisig(int64_t lAmount, int nRequired, const std:
     }
 
     // generate the multi-sig address
-    BtcMultiSigAddressRef multiSigAddr = Modules::btcJsonQt->CreateMultiSigAddress(nRequired, to_publicKeysQt);
+    BtcMultiSigAddressQtRef multiSigAddr = Modules::btcJsonQt->CreateMultiSigAddress(nRequired, to_publicKeysQt);
 
     // send to the address
     return Modules::btcJsonQt->SendToAddress(multiSigAddr->address, lAmount).toStdString();
 }
 
-BtcSignedTransactionRef MTBitcoin::VoteMultiSigRelease(const std::string &txToSourceId, const std::string &sourceAddress, const std::string &destinationAddress, const std::string &redeemScript, const std::string &signingAddress)
+BtcSignedTransactionQtRef MTBitcoin::VoteMultiSigRelease(const std::string &txToSourceId, const std::string &sourceAddress, const std::string &destinationAddress, const std::string &redeemScript, const std::string &signingAddress)
 {
     return Modules::btcInterface->WithdrawAllFromAddress(QString::fromStdString(txToSourceId),
                                                          QString::fromStdString(sourceAddress),
@@ -101,7 +101,7 @@ BtcSignedTransactionRef MTBitcoin::VoteMultiSigRelease(const std::string &txToSo
                                                          QString::fromStdString(signingAddress));
 }
 
-BtcSignedTransactionRef MTBitcoin::CombineTransactions(const std::string &concatenatedRawTransactions)
+BtcSignedTransactionQtRef MTBitcoin::CombineTransactions(const std::string &concatenatedRawTransactions)
 {
     return Modules::btcJsonQt->CombineSignedTransactions(QString::fromStdString(concatenatedRawTransactions));
 }

@@ -18,7 +18,7 @@
 // This struct holds various information about a bitcoin transaction.
 // Its constructor accepts the QJsonObject returned by "gettransaction".
 // Does not take into account block rewards.
-struct BtcTransaction
+struct BtcTransactionQt
 {
     int Confirmations;
     // all amounts are satoshis
@@ -33,7 +33,7 @@ struct BtcTransaction
     QList<QString> AddressesSent;   // sent to addresses
     //QString Category;           // "send", "receive", "immature" (unconfirmed block reward), ...?
 
-    BtcTransaction(QJsonObject reply)
+    BtcTransactionQt(QJsonObject reply)
     {
         SetDefaults();
 
@@ -93,7 +93,7 @@ private:
     }
 };
 
-struct BtcRawTransaction
+struct BtcRawTransactionQt
 {
     QString txID;
 
@@ -132,7 +132,7 @@ struct BtcRawTransaction
     };
     QList<VOUT> outputs;
 
-    BtcRawTransaction(QJsonObject rawTx)
+    BtcRawTransactionQt(QJsonObject rawTx)
     {
         this->inputs = QList<VIN>();
         this->outputs = QList<VOUT>();
@@ -170,7 +170,7 @@ struct BtcRawTransaction
     }
 };
 
-struct BtcAddressInfo
+struct BtcAddressInfoQt
 {
     QString address;
     QString pubkey;
@@ -181,7 +181,7 @@ struct BtcAddressInfo
     QJsonArray addresses;       // shows addresses which a multi-sig is composed of
     int sigsRequired = 0;
 
-    BtcAddressInfo(QJsonObject result)
+    BtcAddressInfoQt(QJsonObject result)
     {
         // it seems we don't need to do any error checking. thanks, qt.
         this->address = result["address"].toString();   // if wrong type, default value will be returned
@@ -196,19 +196,19 @@ struct BtcAddressInfo
     }
 };
 
-struct BtcAddressAmount
+struct BtcAddressAmountQt
 {
     QString Address;
     double Amount;
 };
 
-struct BtcMultiSigAddress
+struct BtcMultiSigAddressQt
 {
     QString address;
     QString redeemScript;
     QStringList publicKeys;     // this will make everything so much more convenient
 
-    BtcMultiSigAddress(QJsonObject result, const QStringList& publicKeys)
+    BtcMultiSigAddressQt(QJsonObject result, const QStringList& publicKeys)
     {
         this->address = result["address"].toString();
         this->redeemScript = result["redeemScript"].toString();
@@ -217,7 +217,7 @@ struct BtcMultiSigAddress
     }
 };
 
-struct BtcBlock
+struct BtcBlockQt
 {
     int confirmations;
     QList<QString> transactions;
@@ -225,7 +225,7 @@ struct BtcBlock
     QString hash;
     QString previousHash;
 
-    BtcBlock()
+    BtcBlockQt()
     {
         this->confirmations = 0;
         this->transactions = QList<QString>();
@@ -234,7 +234,7 @@ struct BtcBlock
         this->previousHash = QString();
     }
 
-    BtcBlock(QJsonObject block)
+    BtcBlockQt(QJsonObject block)
     {
         // latest block has 1 confirmations I think so tx->confirms == block->confirms
         this->confirmations = (int)block["confirmations"].toDouble();
@@ -254,21 +254,21 @@ struct BtcBlock
     }
 };
 
-struct BtcOutput : QJsonObject
+struct BtcOutputQt : QJsonObject
 {
-    BtcOutput(QString txID, int vout)
+    BtcOutputQt(QString txID, int vout)
     {
         (*this)["txid"] = txID;
         (*this)["vout"] = vout;
     }
 };
 
-struct BtcSignedTransaction
+struct BtcSignedTransactionQt
 {
     QString signedTransaction;
     bool complete;              // true if all (enough?) signatures were collected
 
-    BtcSignedTransaction(QJsonObject signedTransactionObj)
+    BtcSignedTransactionQt(QJsonObject signedTransactionObj)
     {
         this->signedTransaction = signedTransactionObj["hex"].toString();
         this->complete = signedTransactionObj["complete"].toBool();
@@ -276,7 +276,7 @@ struct BtcSignedTransaction
 };
 
 // used to sign some raw transactions
-struct BtcSigningPrequisite : QJsonObject
+struct BtcSigningPrequisiteQt : QJsonObject
 {
     // an array of BtcSigningPrequisites can be passed to bitcoin-qt as an optional argument to signrawtransaction
     // [{"txid":txid,"vout":n,"scriptPubKey":hex,"redeemScript":hex},...]
@@ -284,10 +284,10 @@ struct BtcSigningPrequisite : QJsonObject
     //      a) didn't add the address to our wallet (createmultisig instead of addmultisigaddress)
     //      b) want to sign a raw tx only with a particular address's private key (the privkey is passed in another argument)
 
-    BtcSigningPrequisite()
+    BtcSigningPrequisiteQt()
     {}
 
-    BtcSigningPrequisite(QString txId, int vout, QString scriptPubKey, QString redeemScript)
+    BtcSigningPrequisiteQt(QString txId, int vout, QString scriptPubKey, QString redeemScript)
     {
         // all of these values must be set or else prequisite is invalid
         (*this)["txid"] = txId;
@@ -325,14 +325,14 @@ struct BtcSigningPrequisite : QJsonObject
     }
 };
 
-typedef QSharedPointer<BtcTransaction> BtcTransactionRef;
-typedef QSharedPointer<BtcRawTransaction> BtcRawTransactionRef;
-typedef QSharedPointer<BtcAddressInfo> BtcAddressInfoRef;
-typedef QSharedPointer<BtcMultiSigAddress> BtcMultiSigAddressRef;
-typedef QSharedPointer<BtcBlock> BtcBlockRef;
-typedef QSharedPointer<BtcOutput> BtcOutputRef;
-typedef QSharedPointer<BtcSignedTransaction> BtcSignedTransactionRef;
-typedef QSharedPointer<BtcSigningPrequisite> BtcSigningPrequisiteRef;
+typedef QSharedPointer<BtcTransactionQt> BtcTransactionQtRef;
+typedef QSharedPointer<BtcRawTransactionQt> BtcRawTransactionQtRef;
+typedef QSharedPointer<BtcAddressInfoQt> BtcAddressInfoQtRef;
+typedef QSharedPointer<BtcMultiSigAddressQt> BtcMultiSigAddressQtRef;
+typedef QSharedPointer<BtcBlockQt> BtcBlockQtRef;
+typedef QSharedPointer<BtcOutputQt> BtcOutputQtRef;
+typedef QSharedPointer<BtcSignedTransactionQt> BtcSignedTransactionQtRef;
+typedef QSharedPointer<BtcSigningPrequisiteQt> BtcSigningPrequisiteQtRef;
 
 
 #endif // BTCJSONOBJECTS_H
