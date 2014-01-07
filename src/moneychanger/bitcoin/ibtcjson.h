@@ -4,95 +4,98 @@
 #include <string>
 #include <list>
 #include <map>
+#include <tr1/memory>
+#include "btcobjects.h"
+#include "jsoncpp/json/value.h"
 
 class IBtcJson
 {
 public:
-    virtual void Initialize();       // should make this part of all modules
+    virtual void Initialize() = 0;       // should make this part of all modules
 
-    virtual void GetInfo();
+    virtual void GetInfo() = 0;
 
-    virtual int64_t GetBalance(QString account = NULL);
+    virtual int64_t GetBalance(std::string account = NULL) = 0;
 
     // Gets the default address for the specified account
-    virtual std::string GetAccountAddress(const std::string &account = NULL);
+    virtual std::string GetAccountAddress(std::string account = NULL) = 0;
 
     // Returns list of all addresses belonging to account
-    virtual std::list<std::string> GetAddressesByAccount(std::string account = "");    // list addresses for account, "" is the default account.
+    virtual std::list<std::string> GetAddressesByAccount(std::string account = "") = 0;    // list addresses for account, "" is the default account.
 
     // Add new address to account
-    virtual std::string GetNewAddress(std::string account = NULL);
+    virtual std::string GetNewAddress(std::string account = NULL) = 0;
 
     // Validate an address
-    virtual BtcAddressInfoRef ValidateAddress(const std::string &address);
+    virtual BtcAddressInfoRef ValidateAddress(const std::string &address) = 0;
 
-    virtual std::string GetPublicKey(const std::string& address);
+    virtual std::string GetPublicKey(const std::string& address) = 0;
 
     // Get private key for address (calls DumpPrivKey())
-    virtual std::string GetPrivateKey(const std::string &address);
+    virtual std::string GetPrivateKey(const std::string &address) = 0;
 
     // Get private key for address
-    virtual std::string DumpPrivKey(std::string address);
+    virtual std::string DumpPrivKey(std::string address) = 0;
 
     // Adds an address requiring n keys to sign before it can spend its inputs
     // nRequired: number of signatures required
     // keys: list of public keys (addresses work too, if the public key is known)
     // account [optional]: account to add the address to
     // Returns the multi-sig address
-    virtual BtcMultiSigAddressRef AddMultiSigAddress(int nRequired, const std::list<std::string> &keys, const std::string &account = NULL);
+    virtual BtcMultiSigAddressRef AddMultiSigAddress(int nRequired, const std::list<std::string> &keys, const std::string &account = NULL) = 0;
 
     // Creates a multi-sig address without adding it to the wallet
     // nRequired: signatures required
     // keys: list of public keys (addresses work too, if the public key is known)
-    virtual BtcMultiSigAddressRef CreateMultiSigAddress(int nRequired, const std::list<std::string> &keys);
+    virtual BtcMultiSigAddressRef CreateMultiSigAddress(int nRequired, const std::list<std::string> &keys) = 0;
 
     // Creates a multi-sig address and returns its redeemScript
     // the address will not be added to your address list, use AddMultiSigAddress for that
-    virtual std::string GetRedeemScript(int nRequired, std::list<std::string> keys);
+    virtual std::string GetRedeemScript(int nRequired, std::list<std::string> keys) = 0;
 
     // Returns list of account names
     // Could also return the balance of each account but I find that confusing
-    virtual std::list<std::string> ListAccounts();
+    virtual std::list<std::string> ListAccounts() = 0;
 
-    virtual std::string SendToAddress(std::string btcAddress, int64_t amount);
+    virtual std::string SendToAddress(const std::string &btcAddress, int64_t amount) = 0;
 
     // Send to multiple addresses at once
     // txTargets maps amounts (int64 satoshis) to addresses (QString)
-    virtual std::string SendMany(std::map<std::string, int64_t> txTargets, std::string fromAccount = NULL);
+    virtual std::string SendMany(std::map<std::string, int64_t> txTargets, std::string fromAccount = NULL) = 0;
 
-    virtual bool SetTxFee(int64_t fee);
+    virtual bool SetTxFee(int64_t fee) = 0;
 
-    virtual BtcTransactionRef GetTransaction(std::string txID);
+    virtual BtcTransactionRef GetTransaction(std::string txID) = 0;
 
-    virtual std::string GetRawTransaction(std::string txID);
+    virtual std::string GetRawTransaction(std::string txID) = 0;
 
-    virtual BtcRawTransactionRef GetDecodedRawTransaction(std::string txID);
+    virtual BtcRawTransactionRef GetDecodedRawTransaction(std::string txID) = 0;
 
-    virtual BtcRawTransactionRef DecodeRawTransaction(std::string rawTransaction);
+    virtual BtcRawTransactionRef DecodeRawTransaction(std::string rawTransaction) = 0;
 
-    virtual std::string CreateRawTransaction(QList<BtcOutput> unspentOutputs, QMap<std::string, int64_t> txTargets);
+    virtual std::string CreateRawTransaction(const std::list<BtcOutput> &unspentOutputs, std::map<std::string, int64_t> txTargets) = 0;
 
-    virtual BtcSignedTransactionRef SignRawTransaction(std::string rawTransaction, QList<BtcSigningPrequisite> previousTransactions = QList<BtcSigningPrequisite>(), QStringList privateKeys = QStringList());
+    virtual BtcSignedTransactionRef SignRawTransaction(const std::string &rawTransaction, std::list<BtcSigningPrequisite> previousTransactions = std::list<BtcSigningPrequisite>(), std::stringList privateKeys = std::stringList()) = 0;
 
-    virtual BtcSignedTransactionRef CombineSignedTransactions(std::string rawTransaction);
+    virtual BtcSignedTransactionRef CombineSignedTransactions(std::string rawTransaction) = 0;
 
-    virtual std::string SendRawTransaction(QString rawTransaction);
+    virtual std::string SendRawTransaction(const std::string &rawTransaction) = 0;
 
-    virtual std::list<std::string> GetRawMemPool();
+    virtual std::list<std::string> GetRawMemPool() = 0;
 
-    virtual int GetBlockCount();
+    virtual int GetBlockCount() = 0;
 
-    virtual std::string GetBlockHash(int blockNumber);
+    virtual std::string GetBlockHash(int blockNumber) = 0;
 
-    virtual BtcBlockRef GetBlock(QString blockHash);
+    virtual BtcBlockRef GetBlock(const std::string &blockHash) = 0;
 
 private:
-     virtual QByteArray CreateJsonQuery(QString command, QJsonArray params = QJsonArray(), QString id = "");
+     virtual BtcRpcPacketRef CreateJsonQuery(const std::string &command, Json::Value params = Json::Value(), const std::string &id = "") = 0;
 
      // Checks the reply object received from bitcoin-qt for errors and returns the reply
-     virtual bool ProcessRpcString(QSharedPointer<QByteArray> jsonString, QJsonValue &result);
+     virtual bool ProcessRpcString(BtcRpcPacketRef jsonString, Json::Value &result) = 0;
      // Splits the reply object received from bitcoin-qt into error and result objects
-     virtual void ProcessRpcString(QSharedPointer<QByteArray> jsonString, std::string &id, QJsonValue& error, QJsonValue& result);
+     virtual void ProcessRpcString(BtcRpcPacketRef jsonString, std::string &id, Json::Value& error, Json::Value& result) = 0;
 };
 
 #endif // IBTCJSON_H

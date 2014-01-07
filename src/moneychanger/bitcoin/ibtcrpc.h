@@ -3,6 +3,7 @@
 
 #include <string>
 #include <tr1/memory>   // in tr1, otherwise mac users might not find it i heard
+#include <btcobjects.h>
 
 
 // This struct can be used in BtcRpc to pass arguments to the ConnectToBitcoin() function
@@ -18,12 +19,6 @@ struct BitcoinServer
     {}
 }; typedef std::shared_ptr<BitcoinServer> BitcoinServerRef;
 
-
-struct BitcoinReply
-{
-    int size = 0;
-    std::shared_ptr<char> data;
-}; typedef std::shared_ptr<BitcoinReply> BitcoinReplyRef;
 
 class IBtcRpc
 {
@@ -43,11 +38,11 @@ public:
     // Sends a string over the network
     // This string should be a json-rpc call if we're talking to bitcoin,
     // but we could send anything and expand this class to also connect to other http(s) interfaces.
-    virtual BitcoinReplyRef SendRpc(const std::string &jsonString) = 0;
+    virtual BtcRpcPacketRef SendRpc(const std::string &jsonString) = 0;
 
     // Sends a byte array over the network
     // Should be json-rpc if talking to bitcoin
-    virtual BitcoinReplyRef SendRpc(const char* jsonString) = 0;
+    virtual BtcRpcPacketRef SendRpc(const char* jsonString) = 0;
 };
 
 

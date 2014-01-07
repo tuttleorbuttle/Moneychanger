@@ -70,16 +70,16 @@ bool BtcInterface::TestBtcJson()
     // receive to bitcoin-testnet-box #2
     Modules::btcRpc->ConnectToBitcoin(server2);
     QString recvAddr = Modules::btcJsonQt->GetNewAddress("testAccount");
-    Modules::btcJsonQt->SetTxFee(utils::CoinsToSatoshis(10.2));
+    Modules::btcJsonQt->SetTxFee(BtcHelper::CoinsToSatoshis(10.2));
 
     // send from bitcoin-testnet-box #1
     Modules::btcRpc->ConnectToBitcoin(server1);
 
     // set transaction fee
-    Modules::btcJsonQt->SetTxFee(utils::CoinsToSatoshis(10.1));
+    Modules::btcJsonQt->SetTxFee(BtcHelper::CoinsToSatoshis(10.1));
 
     // remember how much we send (want) so we can verify the tx later
-    int64_t amountRequested = utils::CoinsToSatoshis(1.23456789);
+    int64_t amountRequested = BtcHelper::CoinsToSatoshis(1.23456789);
 
     // send the funds
     QString txID = Modules::btcJsonQt->SendToAddress(recvAddr, amountRequested);
@@ -129,7 +129,7 @@ bool BtcInterface::TestBtcJson()
     QString addresses[6];   // addresses to which to send those amounts
     for(int i = 0; i < 6; i++)
     {
-        amounts[i] = utils::CoinsToSatoshis(i + 1);     // generate the amounts (0 is invalid)
+        amounts[i] = BtcHelper::CoinsToSatoshis(i + 1);     // generate the amounts (0 is invalid)
     }
 
     // connect to first recipient, who will also be the sender
@@ -259,7 +259,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 	    return false;
 
     // buyer: pay the requested amount into the multi-sig address
-    int64_t amountRequested = utils::CoinsToSatoshis(1.22);  // .22 because two of two escrow...
+    int64_t amountRequested = BtcHelper::CoinsToSatoshis(1.22);  // .22 because two of two escrow...
     QString txToEscrow = Modules::btcJsonQt->SendToAddress(multiSigAddressBuyer->address, amountRequested);
 
 

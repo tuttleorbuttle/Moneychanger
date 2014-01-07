@@ -28,11 +28,11 @@ public:
     // Sends a string over the network
     // This string should be a json-rpc call if we're talking to bitcoin,
     // but we could send anything and expand this class to also connect to other http(s) interfaces.
-    virtual BitcoinReplyRef SendRpc(const std::string &jsonString);
+    virtual BtcRpcPacketRef SendRpc(const std::string &jsonString);
 
     // Sends a byte array over the network
     // Should be json-rpc if talking to bitcoin
-    virtual BitcoinReplyRef SendRpc(const char* jsonString);
+    virtual BtcRpcPacketRef SendRpc(const char* jsonString);
 
 private:
     void InitSession();         // Called in constructor, makes sure we have a network interface or something

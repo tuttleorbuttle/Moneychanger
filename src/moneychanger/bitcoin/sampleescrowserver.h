@@ -4,7 +4,7 @@
 #include <QSharedPointer>
 #include "ibtcrpc.h"
 #include "sampleescrowclient.h"
-#include "btcjsonobjectsqt.h"
+#include "btcobjectsqt.h"
 #include "escrowpool.h"
 #include "sampletypedefs.h"
 

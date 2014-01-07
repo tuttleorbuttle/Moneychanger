@@ -78,7 +78,6 @@ HEADERS += moneychanger.h \
     modules.h \
     utils.h \
     bitcoin/MTBitcoin.h \
-    bitcoin/btcrpc.h \
     bitcoin/btcinterface.h \
     bitcoin/sampleescrowserver.h \
     bitcoin/sampleescrowmanager.h \
@@ -96,7 +95,12 @@ HEADERS += moneychanger.h \
     bitcoin/ibtcrpc.h \
     bitcoin/btcjsonqt.h \
     bitcoin/ibtcjson.h \
-    bitcoin/btcjsonobjectsqt.h
+    bitcoin/btcobjects.h \
+    bitcoin/btchelper.h \
+    bitcoin/btcobjectsqt.h \
+    bitcoin/btcjson.h \
+    bitcoin/btcmodules.h \
+    bitcoin/btcrpcqt.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -107,7 +111,6 @@ SOURCES += main.cpp\
     utils.cpp \
     bitcoin/MTBitcoin.cpp \
     bitcoin/btcinterface.cpp \
-    bitcoin/btcrpc.cpp \
     bitcoin/sampleescrowserver.cpp \
     bitcoin/sampleescrowmanager.cpp \
     bitcoin/sampleescrowclient.cpp \
@@ -173,7 +176,11 @@ SOURCES += main.cpp\
     bitcoin/transactionmanager.cpp \
     Widgets/btcsenddlg.cpp \
     bitcoin/btcrpccurl.cpp \
-    bitcoin/btcjsonqt.cpp
+    bitcoin/btcjsonqt.cpp \
+    bitcoin/btchelper.cpp \
+    bitcoin/btcjson.cpp \
+    bitcoin/btcmodules.cpp \
+    bitcoin/btcrpcqt.cpp
 
 
 RESOURCES += resource.qrc
@@ -272,7 +279,7 @@ linux:{
         LIBS += -ldl
 }
 
-LIBS += -lcurl  # cross-platform communication with bitcoind
+LIBS += -lcurl -ljsoncpp  # cross-platform communication with bitcoind
 
 
 #QMAKE_CXXFLAGS_WARN_ON  = ""

@@ -49,7 +49,7 @@ void SampleEscrowManager::OnInitializeEscrow(BtcGuiTest* btcGuiTest)
     QObject::connect(client.data(), SIGNAL(SetStatusWithdrawal(SampleEscrowTransaction::SUCCESS)), btcGuiTest, SLOT(SetStatusWithdrawal(SampleEscrowTransaction::SUCCESS)));
 
     double amountToSend = btcGuiTest->GetAmountToSend();
-    int64_t amountSatoshis = utils::CoinsToSatoshis(amountToSend);
+    int64_t amountSatoshis = BtcHelper::CoinsToSatoshis(amountToSend);
 
     // instruct client to start sending bitcoin to pool
     client->StartDeposit(amountSatoshis, this->escrowPool);

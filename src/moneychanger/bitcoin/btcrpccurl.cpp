@@ -142,7 +142,7 @@ bool BtcRpcCurl::ConnectToBitcoin(const std::string &user, const std::string &pa
 }
 
 
-BitcoinReplyRef BtcRpcCurl::SendRpc(const std::string &jsonString)
+BtcRpcPacketRef BtcRpcCurl::SendRpc(const std::string &jsonString)
 {
     struct curl_slist *headers=NULL;  headers = curl_slist_append(headers, "Content-Type: text/xml");
 
@@ -156,12 +156,12 @@ BitcoinReplyRef BtcRpcCurl::SendRpc(const std::string &jsonString)
 
     curl_slist_free_all(headers); /* free the header list */
 
-    return BitcoinReplyRef(NULL);
+    return BtcRpcPacketRef(NULL);
 }
 
-BitcoinReplyRef BtcRpcCurl::SendRpc(const char *jsonString)
+BtcRpcPacketRef BtcRpcCurl::SendRpc(const char *jsonString)
 {
-    return BitcoinReplyRef(NULL);
+    return BtcRpcPacketRef(NULL);
 }
 
 bool BtcRpcCurl::IsConnected()

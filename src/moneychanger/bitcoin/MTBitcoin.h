@@ -6,7 +6,7 @@
 #include <string>
 #include <list>
 
-#include "btcjsonobjectsqt.h"
+#include "btcobjectsqt.h"
 
 class MTBitcoin
 {

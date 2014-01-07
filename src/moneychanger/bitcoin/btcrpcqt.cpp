@@ -10,7 +10,7 @@
 #include <QUrl>
 #include <OTLog.h>
 #include <QTimer>
-#include "btcrpc.h"
+#include "btcrpcqt.h"
 #include "utils.h"
 
 BtcRpc::BtcRpc()

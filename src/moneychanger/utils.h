@@ -15,12 +15,6 @@
 // utilities
 namespace utils
 {
-    // converts a double bitcoin (as received through json api) to int64 satoshis
-    int64_t CoinsToSatoshis(double value);
-
-    // converts int64 satoshis to double bitcoin
-    double SatoshisToCoins(int64_t value);
-
     // copy of QTest::qSleep() so we don't have to include all of QtTest module.
     // time: time to wait in ms
     void qSleep(int time);

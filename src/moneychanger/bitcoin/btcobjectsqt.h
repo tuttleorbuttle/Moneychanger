@@ -10,6 +10,7 @@
 #include "../qjsonrpc/src/json/qjsonarray.h"
 #include <QSharedPointer>
 #include "utils.h"
+#include "btchelper.h"
 
 
 // if a query returns a complex object we should convert it to a struct instead of
@@ -41,9 +42,9 @@ struct BtcTransactionQt
             return;
 
         this->Confirmations = (int)(reply["confirmations"].toDouble());
-        this->Amount = utils::CoinsToSatoshis(reply["amount"].toDouble());
+        this->Amount = BtcHelper::CoinsToSatoshis(reply["amount"].toDouble());
 
-        this->Fee = utils::CoinsToSatoshis(reply["fee"].toDouble());
+        this->Fee = BtcHelper::CoinsToSatoshis(reply["fee"].toDouble());
         this->TxID = reply["txid"].toString();
         this->Time = reply["time"].toDouble();
 
@@ -59,7 +60,7 @@ struct BtcTransactionQt
             QJsonObject detail = details[i].toObject();
             QString address = detail["address"].toString();
             QString category = detail["category"].toString();
-            int64_t amount = utils::CoinsToSatoshis(detail["amount"].toDouble());
+            int64_t amount = BtcHelper::CoinsToSatoshis(detail["amount"].toDouble());
             if(category == "send")
             {
                 this->AddressesSent += address;
@@ -152,7 +153,7 @@ struct BtcRawTransactionQt
             QJsonObject outputObj = vouts[i].toObject();
             VOUT output;
 
-            output.value = utils::CoinsToSatoshis(outputObj["value"].toDouble());
+            output.value = BtcHelper::CoinsToSatoshis(outputObj["value"].toDouble());
             output.n = (int)outputObj["n"].toDouble();      // JSON doesn't know integers
 
             QJsonObject scriptPubKey = outputObj["scriptPubKey"].toObject();
