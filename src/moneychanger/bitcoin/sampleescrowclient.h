@@ -1,16 +1,13 @@
 #ifndef SAMPLEESCROWCLIENT_H
 #define SAMPLEESCROWCLIENT_H
 
-#include <QObject>
-#include <QString>
-#include <QSharedPointer>
-#include <QList>
-#include "btcrpcqt.h"
+#include "btcobjects.h"
+#include "btcmodules.h"
 #include "Widgets/btcguitest.h"
-#include "sampletypedefs.h"
-#include "sampleescrowserver.h"
-#include "sampleescrowtransaction.h"
-
+//#include "sampletypedefs.h"
+//#include "sampleescrowserver.h"
+//#include "sampleescrowtransaction.h"
+#include "poolmanager.h"
 
 
 class SampleEscrowClient : public QObject
@@ -56,6 +53,8 @@ private:
     BitcoinServerRef rpcServer;
     EscrowPoolRef targetPool;
 
+    BtcModulesRef modules;
+
     // client sends bitcoin to escrow
     void SendToEscrow();
 
@@ -72,6 +71,7 @@ private:
         void SetStatusWithdrawal(SampleEscrowTransaction::SUCCESS status);
 };
 
+typedef std::shared_ptr<SampleEscrowClient> SampleEscrowClientRef;
 
 
 

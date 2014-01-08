@@ -39,14 +39,14 @@ void SampleEscrowManager::OnInitializeEscrow(BtcGuiTest* btcGuiTest)
     this->client = SampleEscrowClientRef(new SampleEscrowClient());
 
     // connect events to update GUI
-    QObject::connect(client.data(), SIGNAL(SetMultiSigAddress(const std::string&)), btcGuiTest, SLOT(SetMultiSigAddress(const std::string&)));
-    QObject::connect(client.data(), SIGNAL(SetTxIdDeposit(const std::string&)), btcGuiTest, SLOT(SetTxIdDeposit(const std::string&)));
-    QObject::connect(client.data(), SIGNAL(SetConfirmationsDeposit(int)), btcGuiTest, SLOT(OnSetConfirmationsDeposit(int)));
-    QObject::connect(client.data(), SIGNAL(SetStatusDeposit(SampleEscrowTransaction::SUCCESS)), btcGuiTest, SLOT(SetStatusDeposit(SampleEscrowTransaction::SUCCESS)));
-    QObject::connect(client.data(), SIGNAL(SetWithdrawalAddress(const std::string&)), btcGuiTest, SLOT(SetWithdrawalAddress(const std::string&)));
-    QObject::connect(client.data(), SIGNAL(SetTxIdWithdrawal(const std::string&)), btcGuiTest, SLOT(SetTxIdWithdrawal(const std::string&)));
-    QObject::connect(client.data(), SIGNAL(SetConfirmationsWithdrawal(int)), btcGuiTest, SLOT(OnSetConfirmationsWithdrawal(int)));
-    QObject::connect(client.data(), SIGNAL(SetStatusWithdrawal(SampleEscrowTransaction::SUCCESS)), btcGuiTest, SLOT(SetStatusWithdrawal(SampleEscrowTransaction::SUCCESS)));
+    QObject::connect(client.get(), SIGNAL(SetMultiSigAddress(const std::string&)), btcGuiTest, SLOT(SetMultiSigAddress(const std::string&)));
+    QObject::connect(client.get(), SIGNAL(SetTxIdDeposit(const std::string&)), btcGuiTest, SLOT(SetTxIdDeposit(const std::string&)));
+    QObject::connect(client.get(), SIGNAL(SetConfirmationsDeposit(int)), btcGuiTest, SLOT(OnSetConfirmationsDeposit(int)));
+    QObject::connect(client.get(), SIGNAL(SetStatusDeposit(SampleEscrowTransaction::SUCCESS)), btcGuiTest, SLOT(SetStatusDeposit(SampleEscrowTransaction::SUCCESS)));
+    QObject::connect(client.get(), SIGNAL(SetWithdrawalAddress(const std::string&)), btcGuiTest, SLOT(SetWithdrawalAddress(const std::string&)));
+    QObject::connect(client.get(), SIGNAL(SetTxIdWithdrawal(const std::string&)), btcGuiTest, SLOT(SetTxIdWithdrawal(const std::string&)));
+    QObject::connect(client.get(), SIGNAL(SetConfirmationsWithdrawal(int)), btcGuiTest, SLOT(OnSetConfirmationsWithdrawal(int)));
+    QObject::connect(client.get(), SIGNAL(SetStatusWithdrawal(SampleEscrowTransaction::SUCCESS)), btcGuiTest, SLOT(SetStatusWithdrawal(SampleEscrowTransaction::SUCCESS)));
 
     double amountToSend = btcGuiTest->GetAmountToSend();
     int64_t amountSatoshis = BtcHelper::CoinsToSatoshis(amountToSend);

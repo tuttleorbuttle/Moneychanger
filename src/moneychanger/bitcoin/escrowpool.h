@@ -1,9 +1,13 @@
 #ifndef ESCROWPOOL_H
 #define ESCROWPOOL_H
 
-#include <QSharedPointer>
+#include <tr1/memory>
 #include <QList>
-#include "sampleescrowserver.h"
+#include <QString>
+//#include "sampleescrowserver.h"
+
+class SampleEscrowServer;
+typedef std::shared_ptr<SampleEscrowServer> SampleEscrowServerRef;
 
 class EscrowPool
 {
@@ -23,6 +27,6 @@ private:
 
 };
 
-typedef QSharedPointer<EscrowPool> EscrowPoolRef;
+typedef std::shared_ptr<EscrowPool> EscrowPoolRef;
 
 #endif // ESCROWPOOL_H

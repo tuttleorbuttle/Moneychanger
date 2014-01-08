@@ -1,19 +1,19 @@
 #ifndef SAMPLETYPEDEFS_H
 #define SAMPLETYPEDEFS_H
 
-#include <QSharedPointer>
+#include <tr1/memory>
 
 class SampleEscrowServer;
-typedef QSharedPointer<SampleEscrowServer> SampleEscrowServerRef;
+typedef std::shared_ptr<SampleEscrowServer> SampleEscrowServerRef;
 
 class SampleEscrowClient;
-typedef QSharedPointer<SampleEscrowClient> SampleEscrowClientRef;
+typedef std::shared_ptr<SampleEscrowClient> SampleEscrowClientRef;
 
 class SampleEscrowTransaction;
-typedef QSharedPointer<SampleEscrowTransaction> SampleEscrowTransactionRef;
+typedef std::shared_ptr<SampleEscrowTransaction> SampleEscrowTransactionRef;
 
 class EscrowPool;
-typedef QSharedPointer<EscrowPool> EscrowPoolRef;
+typedef std::shared_ptr<EscrowPool> EscrowPoolRef;
 
 
 #endif // SAMPLETYPEDEFS_H

@@ -23,15 +23,15 @@ SampleEscrowClient::SampleEscrowClient(QObject* parent)
 SampleEscrowClient::~SampleEscrowClient()
 {
     this->rpcServer.reset();
-    this->targetPool.clear();
+    this->targetPool.reset();
     this->pubKeyList.clear();
-    this->transactionDeposit.clear();
-    this->transactionWithdrawal.clear();
+    this->transactionDeposit.reset();
+    this->transactionWithdrawal.reset();
 }
 
 void SampleEscrowClient::StartDeposit(int64_t amountToSend, EscrowPoolRef targetPool)
 {
-    Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
+    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     this->targetPool = targetPool;
 
@@ -66,10 +66,10 @@ void SampleEscrowClient::OnReceivePubKey(const std::string &publicKey, int minSi
 
 void SampleEscrowClient::SendToEscrow()
 {
-    Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
+    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     // create the multi-sig address of the server pool
-    this->transactionDeposit->targetAddr = Modules::mtBitcoin->GetMultiSigAddress(this->minSignatures, this->pubKeyList);
+    this->transactionDeposit->targetAddr = this->modules->mtBitcoin->GetMultiSigAddress(this->minSignatures, this->pubKeyList);
 
     // set multi-sig address in GUI
     emit SetMultiSigAddress(this->transactionDeposit->targetAddr);
@@ -99,7 +99,7 @@ bool SampleEscrowClient::CheckDepositFinished()
 
 void SampleEscrowClient::StartWithdrawal()
 {
-    Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
+    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     // create new transaction object
     this->transactionWithdrawal = SampleEscrowTransactionRef(new SampleEscrowTransaction(this->transactionDeposit->amountToSend));
@@ -108,7 +108,7 @@ void SampleEscrowClient::StartWithdrawal()
     this->transactionWithdrawal->sourceTxId = this->transactionDeposit->txId;
 
     // set the address to which the funds should be sent
-    this->transactionWithdrawal->targetAddr = Modules::mtBitcoin->GetNewAddress("ReceivedFromPool");
+    this->transactionWithdrawal->targetAddr = this->modules->mtBitcoin->GetNewAddress("ReceivedFromPool");
 
     // set address in GUI
     emit SetWithdrawalAddress(this->transactionWithdrawal->targetAddr);
@@ -121,7 +121,7 @@ void SampleEscrowClient::StartWithdrawal()
 
 void SampleEscrowClient::OnReceiveSignedTx(const std::string& signedTx)
 {
-    Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
+    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
     
     // add the transaction's signature
     if(this->transactionWithdrawal->AddWithdrawalTransaction(signedTx))
@@ -148,7 +148,7 @@ bool SampleEscrowClient::CheckWithdrawalFinished()
 
 bool SampleEscrowClient::CheckTransactionFinished(SampleEscrowTransactionRef transaction)
 {
-    Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
+    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     transaction->CheckTransaction(this->minConfirms);
 

@@ -1,4 +1,7 @@
 #include "btcmodules.h"
+#include "btcrpccurl.h"
+#include "btcjson.h"
+#include "MTBitcoin.h"
 
 BtcModules::BtcModules()
 {

@@ -1,10 +1,10 @@
 #ifndef SAMPLEESCROWTRANSACTION_H
 #define SAMPLEESCROWTRANSACTION_H
 
-#include <QScopedPointer>
-#include <QSharedPointer>
 #include <string>
-#include "btcobjectsqt.h"
+#include "btcobjects.h"
+#include "btcmodules.h"
+#include <tr1/memory>
 //#include "sampleescrowclient.h"
 //#include "sampleescrowserver.h"
 
@@ -50,9 +50,10 @@ public:
     //SampleEscrowClientRef client;
 
 private:
+    BtcModulesRef modules;
     //QList<SampleEscrowServerRef> servers;
 };
 
-typedef QSharedPointer<SampleEscrowTransaction> SampleEscrowTransactionRef;
+typedef std::shared_ptr<SampleEscrowTransaction> SampleEscrowTransactionRef;
 
 #endif // SAMPLEESCROWTRANSACTION_H

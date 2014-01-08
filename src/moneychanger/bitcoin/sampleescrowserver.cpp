@@ -21,7 +21,7 @@ SampleEscrowServer::SampleEscrowServer(BitcoinServerRef rpcServer)
 
 void SampleEscrowServer::OnRequestEscrowDeposit(SampleEscrowClient* client)
 {
-    Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
+    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     // create a new object containing information about this deposit
     this->transactionDeposit = SampleEscrowTransactionRef(new SampleEscrowTransaction(client->transactionDeposit->amountToSend));
@@ -33,7 +33,7 @@ void SampleEscrowServer::OnRequestEscrowDeposit(SampleEscrowClient* client)
     // also ask the other servers for their public keys
     foreach(SampleEscrowServerRef server, this->serverPool->escrowServers)
     {
-        if(server == this)
+        if(server.get() == this)
             continue;
 
         this->publicKeys.push_back(server->GetMultiSigPubKey());
@@ -43,9 +43,9 @@ void SampleEscrowServer::OnRequestEscrowDeposit(SampleEscrowClient* client)
     this->publicKeys.sort();
 
     // generate the multi sig address
-    this->multiSigAddrInfo = Modules::mtBitcoin->GetMultiSigAddressInfo(this->minSignatures, this->publicKeys);
+    this->multiSigAddrInfo = this->modules->mtBitcoin->GetMultiSigAddressInfo(this->minSignatures, this->publicKeys);
     if(this->multiSigAddrInfo != NULL)
-        this->multiSigAddress = this->multiSigAddrInfo->address.toStdString();
+        this->multiSigAddress = this->multiSigAddrInfo->address;
     this->transactionDeposit->targetAddr = this->multiSigAddress;
 
     // tell client our public key and how many signatures the pool requires, so client can recreate the address himself
@@ -58,12 +58,12 @@ std::string SampleEscrowServer::GetMultiSigPubKey()
     // see if we already created an address to be used for multi-sig
     if(this->addressForMultiSig == "")
     {
-        Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
+        this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
         // if not, create one:
-        this->addressForMultiSig = Modules::mtBitcoin->GetNewAddress();
+        this->addressForMultiSig = this->modules->mtBitcoin->GetNewAddress();
         // and get its public key
-        this->pubKeyForMultiSig = Modules::mtBitcoin->GetPublicKey(this->addressForMultiSig);
+        this->pubKeyForMultiSig = this->modules->mtBitcoin->GetPublicKey(this->addressForMultiSig);
         this->publicKeys.push_back(this->pubKeyForMultiSig);
     }
 
@@ -81,7 +81,7 @@ void SampleEscrowServer::OnIncomingDeposit(std::string txId)
 
 bool SampleEscrowServer::CheckIncomingTransaction()
 {
-    Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
+    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     // check transaction for correct amount and number of confirmations
     this->transactionDeposit->CheckTransaction(this->minConfirms);
@@ -94,7 +94,7 @@ bool SampleEscrowServer::CheckIncomingTransaction()
 
 void SampleEscrowServer::OnRequestEscrowWithdrawal(SampleEscrowClient *client)
 {
-    Modules::btcRpc->ConnectToBitcoin(this->rpcServer);
+    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     // check if deposit is confirmed
     if(this->transactionDeposit->status != SampleEscrowTransaction::Successfull)

@@ -1,13 +1,17 @@
 #ifndef SAMPLEESCROWSERVER_H
 #define SAMPLEESCROWSERVER_H
 
-#include <QSharedPointer>
-#include "ibtcrpc.h"
-#include "sampleescrowclient.h"
-#include "btcobjectsqt.h"
-#include "escrowpool.h"
-#include "sampletypedefs.h"
+#include <tr1/memory>
+#include "btcobjects.h"
+#include "btcmodules.h"
+#include "sampleescrowtransaction.h"
+#include "poolmanager.h"
+//#include "sampleescrowclient.h"
+//#include "escrowpool.h"
+//#include "sampletypedefs.h"
 
+
+class SampleEscrowClient;
 
 class SampleEscrowServer
 {
@@ -37,7 +41,7 @@ public:
 
     std::string multiSigAddress;        // the actual multisig address
 
-    BtcMultiSigAddressQtRef multiSigAddrInfo; // info required to withdraw from the address
+    BtcMultiSigAddressRef multiSigAddrInfo; // info required to withdraw from the address
 
     SampleEscrowTransactionRef transactionDeposit;      // info about deposit
     SampleEscrowTransactionRef transactionWithdrawal;   // info about withdrawal
@@ -46,10 +50,14 @@ public:
 private:
     BitcoinServerRef rpcServer;     // login info for bitcoin-qt rpc
 
+    BtcModulesRef modules;
+
     int minSignatures = 2;          // minimum required signatures
 
     int minConfirms = 2;            // minimum required confirmations
 };
+
+typedef std::shared_ptr<SampleEscrowServer> SampleEscrowServerRef;
 
 
 #endif // SAMPLEESCROWSERVER_H

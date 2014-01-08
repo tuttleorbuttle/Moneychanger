@@ -5,7 +5,9 @@
 #include <QList>
 #include <QSharedPointer>
 #include "btcrpcqt.h"
-#include "sampletypedefs.h"
+//#include "sampletypedefs.h"
+#include "sampleescrowserver.h"
+#include "sampleescrowclient.h"
 #include "Widgets/btcguitest.h"
 
 class SampleEscrowManager : public QObject

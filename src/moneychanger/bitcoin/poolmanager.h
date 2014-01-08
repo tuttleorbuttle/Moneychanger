@@ -19,6 +19,6 @@ public:
 private:
 };
 
-typedef QSharedPointer<PoolManager> PoolManagerRef;
+typedef std::shared_ptr<PoolManager> PoolManagerRef;
 
 #endif // POOLMANAGER_H
