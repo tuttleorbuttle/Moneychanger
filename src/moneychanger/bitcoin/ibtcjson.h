@@ -98,4 +98,6 @@ private:
      virtual void ProcessRpcString(BtcRpcPacketRef jsonString, std::string &id, Json::Value& error, Json::Value& result) = 0;
 };
 
+typedef std::shared_ptr<IBtcJson> IBtcJsonRef;
+
 #endif // IBTCJSON_H

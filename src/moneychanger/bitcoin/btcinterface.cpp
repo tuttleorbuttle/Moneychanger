@@ -16,16 +16,16 @@ bool BtcInterface::TestBtcJson()
     // on my computer I use the two bitcoin-testnet-box servers
     // with a slightly modified config so my regular testnet bitcoin-qt client can connect to them.
     // the GUI and debug console is sometimes easier to read than the terminal output of bitcoind
-    BitcoinServerRef server1, server2, bitcoinqt;
+    BitcoinServerQtRef server1, server2, bitcoinqt;
 
-    server1 = BitcoinServerRef(new BitcoinServer(std::string("admin1"), std::string("123"), std::string("http://127.0.0.1"), 19001));
-    server2 = BitcoinServerRef(new BitcoinServer(std::string("admin2"), std::string("123"), std::string("http://127.0.0.1"), 19011));
-    bitcoinqt = BitcoinServerRef(new BitcoinServer(std::string("admin3"), std::string("123"), std::string("http://127.0.0.1"), 19021));
+    server1 = BitcoinServerQtRef(new BitcoinServerQt("admin1", "123", "http://127.0.0.1", 19001));
+    server2 = BitcoinServerQtRef(new BitcoinServerQt("admin2", "123", "http://127.0.0.1", 19011));
+    bitcoinqt = BitcoinServerQtRef(new BitcoinServerQt("admin3", "123","http://127.0.0.1", 19021));
 
     //-----------------------
     // test various simple rpc calls
     //-----------------------
-    Modules::btcRpc->ConnectToBitcoin(bitcoinqt);
+    Modules::btcRpcQt->ConnectToBitcoin(bitcoinqt);
     Modules::btcJsonQt->GetInfo();
     int64_t balance = Modules::btcJsonQt->GetBalance();
     QStringList accounts = Modules::btcJsonQt->ListAccounts();
@@ -68,12 +68,12 @@ bool BtcInterface::TestBtcJson()
     // sending funds
     //--------------
     // receive to bitcoin-testnet-box #2
-    Modules::btcRpc->ConnectToBitcoin(server2);
+    Modules::btcRpcQt->ConnectToBitcoin(server2);
     QString recvAddr = Modules::btcJsonQt->GetNewAddress("testAccount");
     Modules::btcJsonQt->SetTxFee(BtcHelper::CoinsToSatoshis(10.2));
 
     // send from bitcoin-testnet-box #1
-    Modules::btcRpc->ConnectToBitcoin(server1);
+    Modules::btcRpcQt->ConnectToBitcoin(server1);
 
     // set transaction fee
     Modules::btcJsonQt->SetTxFee(BtcHelper::CoinsToSatoshis(10.1));
@@ -91,7 +91,7 @@ bool BtcInterface::TestBtcJson()
     //-----------------------------
     // validate simple transaction (the one we just sent)
     //-----------------------------
-    Modules::btcRpc->ConnectToBitcoin(server2);
+    Modules::btcRpcQt->ConnectToBitcoin(server2);
 
     // if we call GetTransaction before this client knows about the transaction,
     // it will return error "Invalid or non-wallet transaction id".
@@ -133,17 +133,17 @@ bool BtcInterface::TestBtcJson()
     }
 
     // connect to first recipient, who will also be the sender
-    Modules::btcRpc->ConnectToBitcoin(server1);
+    Modules::btcRpcQt->ConnectToBitcoin(server1);
     addresses[0] = Modules::btcJsonQt->GetNewAddress("testsendmany");
     addresses[1] = Modules::btcJsonQt->GetNewAddress("testsendmany");
 
     // connect to second recipient
-    Modules::btcRpc->ConnectToBitcoin(server2);
+    Modules::btcRpcQt->ConnectToBitcoin(server2);
     addresses[2] = Modules::btcJsonQt->GetNewAddress("testsendmany");
     addresses[3] = Modules::btcJsonQt->GetNewAddress("testsendmany");
 
     // connect to third recipient
-    Modules::btcRpc->ConnectToBitcoin(bitcoinqt);
+    Modules::btcRpcQt->ConnectToBitcoin(bitcoinqt);
     addresses[4] = Modules::btcJsonQt->GetNewAddress("testsendmany");
     addresses[5] = Modules::btcJsonQt->GetNewAddress("testsendmany");
 
@@ -154,7 +154,7 @@ bool BtcInterface::TestBtcJson()
     }
 
     // connect to sender
-    Modules::btcRpc->ConnectToBitcoin(server1);
+    Modules::btcRpcQt->ConnectToBitcoin(server1);
     // send to the targets
     QString txManyID = Modules::btcJsonQt->SendMany(txTargets);
 
@@ -175,13 +175,13 @@ bool BtcInterface::TestBtcJson()
     if(!txSuccess) return false;
 
     // validate transaction for recipient #2
-    Modules::btcRpc->ConnectToBitcoin(server2);
+    Modules::btcRpcQt->ConnectToBitcoin(server2);
     transaction = WaitGetTransaction(txManyID);
     txSuccess = TransactionSuccessfull(amounts[2] + amounts[3], transaction, MinConfirms);
     if(!txSuccess) return false;
 
     // validate transaction for recipient #3
-    Modules::btcRpc->ConnectToBitcoin(bitcoinqt);
+    Modules::btcRpcQt->ConnectToBitcoin(bitcoinqt);
     transaction = WaitGetTransaction(txManyID);
     txSuccess = TransactionSuccessfull(amounts[4] + amounts[5], transaction, MinConfirms);
     if(!txSuccess) return false;
@@ -220,19 +220,19 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     three would be provided.
     */
 
-    BitcoinServerRef buyer, vendor;
-    buyer = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
-    vendor = BitcoinServerRef(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
+    BitcoinServerQtRef buyer, vendor;
+    buyer = BitcoinServerQtRef(new BitcoinServerQt("admin1", "123", "http://127.0.0.1", 19001));
+    vendor = BitcoinServerQtRef(new BitcoinServerQt("admin2", "123", "http://127.0.0.1", 19011));
 
 
     // connect to buyer (carbide81):
-    Modules::btcRpc->ConnectToBitcoin(buyer);
+    Modules::btcRpcQt->ConnectToBitcoin(buyer);
     // buyer: create new address to be used in multi-sig
     QString addressBuyer = Modules::btcJsonQt->GetNewAddress("testescrow");
     QString pubKeyBuyer = GetPublicKey(addressBuyer);
 
     // connect to vendor (carbide80):
-    Modules::btcRpc->ConnectToBitcoin(vendor);
+    Modules::btcRpcQt->ConnectToBitcoin(vendor);
     // vendor: create new address to be used in multi-sig
     QString addressVendor = Modules::btcJsonQt->GetNewAddress("testescrow");
     QString pubKeyVendor = GetPublicKey(addressVendor);
@@ -253,7 +253,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 	    return false;
 
     // buyer: create multi-sig-address
-    Modules::btcRpc->ConnectToBitcoin(buyer);
+    Modules::btcRpcQt->ConnectToBitcoin(buyer);
     BtcMultiSigAddressQtRef multiSigAddressBuyer = Modules::btcJsonQt->AddMultiSigAddress(2, publicKeys, "testescrow");
     if(multiSigAddressBuyer == NULL)
 	    return false;
@@ -269,7 +269,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
 
     // vendor: wait for the transaction to be received and confirmed
-    Modules::btcRpc->ConnectToBitcoin(vendor);
+    Modules::btcRpcQt->ConnectToBitcoin(vendor);
     BtcRawTransactionQtRef transaction = WaitGetRawTransaction(txToEscrow, 500, 3);     // wait for the tx to be received
     if(!WaitTransactionSuccessfull(amountRequested, transaction, multiSigAddressVendor->address, 1))  // see if it has 1 confirmation
         return false;   // wrong btc amount or lack of confirmations after timeout period
@@ -292,7 +292,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
     // buyer: if everything is alright, allow vendor to withdraw funds by creating a
     //      partially signed transaction sending them to the vendor withdrawal address
-    Modules::btcRpc->ConnectToBitcoin(buyer);
+    Modules::btcRpcQt->ConnectToBitcoin(buyer);
     BtcSignedTransactionQtRef withdrawTransactionBuyer =
             WithdrawAllFromAddress(txToEscrow, multiSigAddressBuyer->address, withdrawAddr, multiSigAddressBuyer->redeemScript, addressBuyer);
 
@@ -305,7 +305,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
 
 
     // vendor: receive the signed tx from buyer and combines it with his half
-    Modules::btcRpc->ConnectToBitcoin(vendor);
+    Modules::btcRpcQt->ConnectToBitcoin(vendor);
     // vendor: concatenate partially signed transactions
     QString signedTransactions =
             withdrawTransactionVendor->signedTransaction +
@@ -319,7 +319,7 @@ bool BtcInterface::TestBtcJsonEscrowTwoOfTwo()
     QString txFinalizedId = Modules::btcJsonQt->SendRawTransaction(signedWithdrawalFinal->signedTransaction);
 
     // vendor: see if the transaction was broadcasted
-    Modules::btcRpc->ConnectToBitcoin(vendor);
+    Modules::btcRpcQt->ConnectToBitcoin(vendor);
     BtcTransactionQtRef transactionToWithdrawAddr = WaitGetTransaction(txFinalizedId);
     if(transactionToWithdrawAddr == NULL)
         return false;

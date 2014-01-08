@@ -5,7 +5,7 @@
 #include <QString>
 #include <QSharedPointer>
 #include <QList>
-#include "btcrpc.h"
+#include "btcrpcqt.h"
 #include "Widgets/btcguitest.h"
 #include "sampletypedefs.h"
 #include "sampleescrowserver.h"

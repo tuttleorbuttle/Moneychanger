@@ -2,11 +2,15 @@
 #define BTCJSON_H
 
 #include "ibtcjson.h"
+#include "btcmodules.h"
+
+#include <tr1/memory>
 
 class BtcJson : public IBtcJson
 {
 public:
-    BtcJson();
+    BtcJson(BtcModulesRef modules);
+    ~BtcJson();
 
     virtual void Initialize();       // should make this part of all modules
 
@@ -93,6 +97,10 @@ private:
     virtual bool ProcessRpcString(BtcRpcPacketRef jsonString, Json::Value &result);
     // Splits the reply object received from bitcoin-qt into error and result objects
     virtual void ProcessRpcString(BtcRpcPacketRef jsonString, std::string &id, Json::Value& error, Json::Value& result);
+
+    BtcModulesRef modules;
 };
+
+typedef std::shared_ptr<BtcJson> BtcJsonRef;
 
 #endif // BTCJSON_H

@@ -3,14 +3,17 @@
 
 
 #include "ibtcrpc.h"
-#include "curl/curl.h"
+#include "btcmodules.h"
+
+#include <curl/curl.h>
+#include <tr1/memory>
 
 
 
 class BtcRpcCurl : public IBtcRpc
 {
 public:
-    BtcRpcCurl();
+    BtcRpcCurl(BtcModulesRef modules);
     ~BtcRpcCurl();
 
     // Returns whether we're connected to bitcoin's http interface
@@ -59,6 +62,8 @@ private:
 
     CURL* curl;
 
+    BtcModulesRef modules;
+
     /*
     Q_OBJECT
 public slots:
@@ -71,5 +76,7 @@ public slots:
     void OnAuthReqSlot(QNetworkReply* reply, QAuthenticator* authenticator);
     */
 };
+
+typedef std::shared_ptr<BtcRpcCurl> BtcRpcCurlRef;
 
 #endif // BTCRPCZMQ_H

@@ -4,9 +4,16 @@
 #include <string.h>
 
 
-BtcRpcCurl::BtcRpcCurl()
+BtcRpcCurl::BtcRpcCurl(BtcModulesRef modules)
 {
+    this->modules = modules;
+
     curl_global_init(CURL_GLOBAL_ALL);
+}
+
+BtcRpcCurl::~BtcRpcCurl()
+{
+    this->modules.reset();
 }
 
 bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerRef server)

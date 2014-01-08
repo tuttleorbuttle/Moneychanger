@@ -45,5 +45,7 @@ public:
     virtual BtcRpcPacketRef SendRpc(const char* jsonString) = 0;
 };
 
+typedef std::shared_ptr<IBtcRpc> IBtcRpcRef;
+
 
 #endif // IBTCRPC_H

@@ -2,16 +2,14 @@
 #include <jsoncpp/json/json.h>
 #include <OTLog.h>
 
-BtcJson::BtcJson()
+BtcJson::BtcJson(BtcModulesRef modules)
 {
-    Json::Value root;
-    Json::Reader reader;
-    bool parsingSuccessful = reader.parse(0, 0, root);
+    this->modules = modules;
+}
 
-    if(!root.isObject())
-        return;
-
-    Json::Value error = root.get("error", Json::Value());
+BtcJson::~BtcJson()
+{
+    this->modules.reset();
 }
 
 void BtcJson::Initialize()

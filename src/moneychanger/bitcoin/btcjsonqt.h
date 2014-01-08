@@ -4,7 +4,7 @@
 #include <QByteArray>
 #include <QString>
 #include <QSharedPointer>
-#include "btcrpc.h"
+#include "btcrpcqt.h"
 #include "btcobjectsqt.h"
 
 

@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QSharedPointer>
-#include "btcrpc.h"
+#include "btcrpcqt.h"
 #include "sampletypedefs.h"
 #include "Widgets/btcguitest.h"
 

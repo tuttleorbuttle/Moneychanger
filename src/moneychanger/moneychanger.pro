@@ -100,7 +100,8 @@ HEADERS += moneychanger.h \
     bitcoin/btcobjectsqt.h \
     bitcoin/btcjson.h \
     bitcoin/btcmodules.h \
-    bitcoin/btcrpcqt.h
+    bitcoin/btcrpcqt.h \
+    bitcoin/imtbitcoin.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -180,7 +181,8 @@ SOURCES += main.cpp\
     bitcoin/btchelper.cpp \
     bitcoin/btcjson.cpp \
     bitcoin/btcmodules.cpp \
-    bitcoin/btcrpcqt.cpp
+    bitcoin/btcrpcqt.cpp \
+    bitcoin/btcobjects.cpp
 
 
 RESOURCES += resource.qrc
