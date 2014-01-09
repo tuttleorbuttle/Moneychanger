@@ -11,3 +11,12 @@ BtcModules::BtcModules()
 
     this->mtBitcoin = MTBitcoinRef(new MTBitcoin(this));
 }
+
+BtcModules::~BtcModules()
+{
+    this->btcRpc.reset();
+    this->btcJson.reset();
+    this->btcHelper.reset();
+
+    this->mtBitcoin.reset();
+}

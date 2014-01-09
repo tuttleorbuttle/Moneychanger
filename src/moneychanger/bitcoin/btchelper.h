@@ -6,12 +6,17 @@
 #include <tr1/memory>
 
 #include "btcobjects.h"
+//#include "btcmodules.h"
+
+class BtcModules;
 
 class BtcHelper
 {
 public:
     // default amount of confirmations to wait for
     static int MinConfirms;
+
+    BtcHelper(BtcModules* modules);
 
     // converts a double bitcoin (as received through json api) to int64 satoshis
     static int64_t CoinsToSatoshis(double value);
@@ -73,6 +78,7 @@ public:
 
 
 private:
+    BtcModules* modules;
 };
 
 typedef std::shared_ptr<BtcHelper> BtcHelperRef;

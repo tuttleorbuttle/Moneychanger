@@ -46,7 +46,7 @@ BtcTransaction::BtcTransaction(Json::Value reply)
     }
 }
 
-BtcTransaction::SetDefaults()
+void BtcTransaction::SetDefaults()
 {
     //TotalAmount = 0.0;
     this->Confirmations = 0;
@@ -173,25 +173,25 @@ BtcSigningPrequisite::BtcSigningPrequisite(std::string txId, int vout, std::stri
     (*this)["redeemScript"] = redeemScript;
 }
 
-BtcSigningPrequisite::SetTxId(std::string txId)
+void BtcSigningPrequisite::SetTxId(std::string txId)
 {
     // we can get this value from the transaction used to send funds to the p2sh
     (*this)["txid"] = txId;
 }
 
-BtcSigningPrequisite::SetVout(int vout)
+void BtcSigningPrequisite::SetVout(int vout)
 {
     // we can get this value from the transaction used to send funds to the p2sh
     (*this)["vout"] = vout;
 }
 
-BtcSigningPrequisite::SetScriptPubKey(std::string scriptPubKey)
+void BtcSigningPrequisite::SetScriptPubKey(std::string scriptPubKey)
 {
     // we can get this value from the transaction used to send funds to the p2sh
     (*this)["scriptPubKey"] = scriptPubKey;
 }
 
-BtcSigningPrequisite::SetRedeemScript(std::string redeemScript)
+void BtcSigningPrequisite::SetRedeemScript(std::string redeemScript)
 {
     // we can get this from the createmultisig api function
     (*this)["redeemScript"] = redeemScript;

@@ -9,7 +9,7 @@
 class BtcJson : public IBtcJson
 {
 public:
-    BtcJson(BtcModulesRef modules);
+    BtcJson(BtcModules* modules);
     ~BtcJson();
 
     virtual void Initialize();       // should make this part of all modules
@@ -56,7 +56,7 @@ public:
 
     // Returns list of account names
     // Could also return the balance of each account but I find that confusing
-    virtual std::list<std::string> ListAccounts();
+    virtual std::vector<std::string> ListAccounts();
 
     virtual std::string SendToAddress(const std::string &btcAddress, int64_t amount);
 
@@ -76,7 +76,7 @@ public:
 
     virtual std::string CreateRawTransaction(const std::list<BtcOutput> &unspentOutputs, std::map<std::string, int64_t> txTargets);
 
-    virtual BtcSignedTransactionRef SignRawTransaction(const std::string &rawTransaction, std::list<BtcSigningPrequisite> previousTransactions = std::list<BtcSigningPrequisite>(), std::stringList privateKeys = std::list<std::string>());
+    virtual BtcSignedTransactionRef SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrequisite> &previousTransactions = std::list<BtcSigningPrequisite>(), const std::stringList &privateKeys = std::list<std::string>());
 
     virtual BtcSignedTransactionRef CombineSignedTransactions(std::string rawTransaction);
 
@@ -98,7 +98,7 @@ private:
     // Splits the reply object received from bitcoin-qt into error and result objects
     virtual void ProcessRpcString(BtcRpcPacketRef jsonString, std::string &id, Json::Value& error, Json::Value& result);
 
-    BtcModulesRef modules;
+    BtcModules* modules;
 };
 
 typedef std::shared_ptr<BtcJson> BtcJsonRef;

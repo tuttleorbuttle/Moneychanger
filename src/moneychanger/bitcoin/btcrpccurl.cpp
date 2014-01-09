@@ -4,7 +4,7 @@
 #include <string.h>
 
 
-BtcRpcCurl::BtcRpcCurl(BtcModulesRef modules)
+BtcRpcCurl::BtcRpcCurl(BtcModules *modules)
 {
     this->modules = modules;
 
@@ -13,7 +13,7 @@ BtcRpcCurl::BtcRpcCurl(BtcModulesRef modules)
 
 BtcRpcCurl::~BtcRpcCurl()
 {
-    this->modules.reset();
+    this->modules = NULL;
 }
 
 bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerRef server)
@@ -164,6 +164,11 @@ BtcRpcPacketRef BtcRpcCurl::SendRpc(const std::string &jsonString)
     curl_slist_free_all(headers); /* free the header list */
 
     return BtcRpcPacketRef(NULL);
+}
+
+BtcRpcPacketRef BtcRpcCurl::SendRpc(BtcRpcPacketRef jsonString)
+{
+
 }
 
 BtcRpcPacketRef BtcRpcCurl::SendRpc(const char *jsonString)

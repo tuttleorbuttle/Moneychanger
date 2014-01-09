@@ -38,11 +38,17 @@ public:
     // Sends a string over the network
     // This string should be a json-rpc call if we're talking to bitcoin,
     // but we could send anything and expand this class to also connect to other http(s) interfaces.
+    // returns reply
     virtual BtcRpcPacketRef SendRpc(const std::string &jsonString) = 0;
 
     // Sends a byte array over the network
     // Should be json-rpc if talking to bitcoin
+    // returns reply
     virtual BtcRpcPacketRef SendRpc(const char* jsonString) = 0;
+
+    // sends an array of a certain size over the network
+    // returns reply
+    virtual BtcRpcPacketRef SendRpc(BtcRpcPacketRef jsonString) = 0;
 };
 
 typedef std::shared_ptr<IBtcRpc> IBtcRpcRef;

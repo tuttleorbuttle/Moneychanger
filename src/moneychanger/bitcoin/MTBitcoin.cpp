@@ -4,14 +4,14 @@
 
 
 
-MTBitcoin::MTBitcoin(BtcModulesRef modules)
+MTBitcoin::MTBitcoin(BtcModules *modules)
 {
     this->modules = modules;
 }
 
 MTBitcoin::~MTBitcoin()
 {
-    this->modules.reset();
+    this->modules = NULL;
 }
 
 int64_t MTBitcoin::GetBalance(const char* account)

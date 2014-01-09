@@ -11,6 +11,7 @@ class BtcModules
 {
 public:
     BtcModules();
+    ~BtcModules();
 
     IMTBitcoinRef mtBitcoin; // interface to be used from OT/MC
 

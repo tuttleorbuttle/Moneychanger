@@ -13,7 +13,7 @@
 class BtcRpcCurl : public IBtcRpc
 {
 public:
-    BtcRpcCurl(BtcModulesRef modules);
+    BtcRpcCurl(BtcModules* modules);
     ~BtcRpcCurl();
 
     // Returns whether we're connected to bitcoin's http interface
@@ -36,6 +36,10 @@ public:
     // Sends a byte array over the network
     // Should be json-rpc if talking to bitcoin
     virtual BtcRpcPacketRef SendRpc(const char* jsonString);
+
+    // sends an array of a certain size over the network
+    // returns reply
+    virtual BtcRpcPacketRef SendRpc(BtcRpcPacketRef jsonString);
 
 private:
     void InitSession();         // Called in constructor, makes sure we have a network interface or something
@@ -62,7 +66,7 @@ private:
 
     CURL* curl;
 
-    BtcModulesRef modules;
+    BtcModules* modules;
 
     /*
     Q_OBJECT

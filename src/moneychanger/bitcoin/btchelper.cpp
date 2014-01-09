@@ -1,9 +1,12 @@
 #include "btchelper.h"
+#include "btcmodules.h"
 
 
-BtcHelper::BtcHelper()
+BtcHelper::BtcHelper(BtcModules *modules)
 {
     MinConfirms = 1;
+
+    this->modules = modules;
 }
 
 // converts a double bitcoin (as received through json api) to int64 satoshis

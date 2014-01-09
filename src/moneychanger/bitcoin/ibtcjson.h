@@ -15,7 +15,7 @@ public:
 
     virtual void GetInfo() = 0;
 
-    virtual int64_t GetBalance(std::string account = NULL) = 0;
+    virtual int64_t GetBalance(std::string account = NULL /*TODO: int minConfirmations*/) = 0;
 
     // Gets the default address for the specified account
     virtual std::string GetAccountAddress(std::string account = NULL) = 0;
@@ -55,7 +55,7 @@ public:
 
     // Returns list of account names
     // Could also return the balance of each account but I find that confusing
-    virtual std::list<std::string> ListAccounts() = 0;
+    virtual std::vector<std::string> ListAccounts() = 0;
 
     virtual std::string SendToAddress(const std::string &btcAddress, int64_t amount) = 0;
 
@@ -75,7 +75,7 @@ public:
 
     virtual std::string CreateRawTransaction(const std::list<BtcOutput> &unspentOutputs, std::map<std::string, int64_t> txTargets) = 0;
 
-    virtual BtcSignedTransactionRef SignRawTransaction(const std::string &rawTransaction, std::list<BtcSigningPrequisite> previousTransactions = std::list<BtcSigningPrequisite>(), std::stringList privateKeys = std::stringList()) = 0;
+    virtual BtcSignedTransactionRef SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrequisite> &previousTransactions = std::list<BtcSigningPrequisite>(), const std::stringList &privateKeys = std::list<std::string>()) = 0;
 
     virtual BtcSignedTransactionRef CombineSignedTransactions(std::string rawTransaction) = 0;
 
@@ -90,12 +90,12 @@ public:
     virtual BtcBlockRef GetBlock(const std::string &blockHash) = 0;
 
 private:
-     virtual BtcRpcPacketRef CreateJsonQuery(const std::string &command, Json::Value params = Json::Value(), const std::string &id = "") = 0;
+     virtual BtcRpcPacketRef CreateJsonQuery(const std::string &command, Json::Value params = Json::Value(), std::string id = "") = 0;
 
      // Checks the reply object received from bitcoin-qt for errors and returns the reply
-     virtual bool ProcessRpcString(BtcRpcPacketRef jsonString, Json::Value &result) = 0;
-     // Splits the reply object received from bitcoin-qt into error and result objects
-     virtual void ProcessRpcString(BtcRpcPacketRef jsonString, std::string &id, Json::Value& error, Json::Value& result) = 0;
+    virtual bool ProcessRpcString(BtcRpcPacketRef jsonString, Json::Value &result) = 0;
+    // Splits the reply object received from bitcoin-qt into error and result objects
+    virtual void ProcessRpcString(BtcRpcPacketRef jsonString, std::string &id, Json::Value& error, Json::Value& result) = 0;
 };
 
 typedef std::shared_ptr<IBtcJson> IBtcJsonRef;

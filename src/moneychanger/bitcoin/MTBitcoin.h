@@ -14,7 +14,7 @@
 class MTBitcoin : IMTBitcoin
 {
 public:
-    MTBitcoin(BtcModulesRef modules);
+    MTBitcoin(BtcModules* modules);
     ~MTBitcoin();
 
 
@@ -81,7 +81,7 @@ public:
     */
 
 private:
-    BtcModulesRef modules;
+    BtcModules* modules;
 };
 
 typedef std::shared_ptr<MTBitcoin> MTBitcoinRef;
