@@ -7,6 +7,10 @@
 #include "imtbitcoin.h"
 #include "btchelper.h"
 
+
+class BtcModules;
+typedef std::shared_ptr<BtcModules> BtcModulesRef;
+
 class BtcModules
 {
 public:
@@ -19,8 +23,7 @@ public:
     IBtcRpcRef btcRpc;      // RPC call wrapper
     BtcHelperRef btcHelper;    // helper class to do all the complicated stuff
 
+    static BtcModulesRef staticInstance;
 };
-
-typedef std::shared_ptr<BtcModules> BtcModulesRef;
 
 #endif // BTCMODULES_H

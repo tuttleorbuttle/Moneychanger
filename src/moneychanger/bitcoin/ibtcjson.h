@@ -90,9 +90,9 @@ public:
     virtual BtcBlockRef GetBlock(const std::string &blockHash) = 0;
 
 private:
-     virtual BtcRpcPacketRef CreateJsonQuery(const std::string &command, Json::Value params = Json::Value(), std::string id = "") = 0;
+    virtual BtcRpcPacketRef CreateJsonQuery(const std::string &command, Json::Value params = Json::Value(), std::string id = "") = 0;
 
-     // Checks the reply object received from bitcoin-qt for errors and returns the reply
+    // Checks the reply object received from bitcoin-qt for errors and returns the reply
     virtual bool ProcessRpcString(BtcRpcPacketRef jsonString, Json::Value &result) = 0;
     // Splits the reply object received from bitcoin-qt into error and result objects
     virtual void ProcessRpcString(BtcRpcPacketRef jsonString, std::string &id, Json::Value& error, Json::Value& result) = 0;

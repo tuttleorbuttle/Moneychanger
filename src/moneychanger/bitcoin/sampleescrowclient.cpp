@@ -6,7 +6,7 @@
 
 SampleEscrowClient::SampleEscrowClient(QObject* parent)
     :QObject(parent)
-{
+{   
     this->rpcServer = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
 
     this->minSignatures = 0;    // will be set later by server pool
@@ -18,6 +18,8 @@ SampleEscrowClient::SampleEscrowClient(QObject* parent)
 
     this->transactionDeposit = SampleEscrowTransactionRef(NULL);
     this->transactionWithdrawal = SampleEscrowTransactionRef(NULL);   
+
+    this->modules = BtcModules::staticInstance;
 }
 
 SampleEscrowClient::~SampleEscrowClient()

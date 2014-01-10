@@ -85,7 +85,8 @@ int main(int argc, char *argv[])
     MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)
     theApplication.setQuitOnLastWindowClosed(false);
 
-    { Modules modules; }    // run constructor once, initialize static pointers  
+    { Modules modules; }    // run constructor once, initialize static pointers
+    BtcModulesRef btcModules = BtcModulesRef(new BtcModules());
     
     //Set language
     Translation appTranslation;

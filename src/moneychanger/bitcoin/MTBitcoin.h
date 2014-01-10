@@ -11,7 +11,7 @@
 #include "btcobjects.h"
 #include "btcmodules.h"
 
-class MTBitcoin : IMTBitcoin
+class MTBitcoin : public IMTBitcoin
 {
 public:
     MTBitcoin(BtcModules* modules);

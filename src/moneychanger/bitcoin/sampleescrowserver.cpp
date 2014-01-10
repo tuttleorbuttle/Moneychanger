@@ -17,6 +17,8 @@ SampleEscrowServer::SampleEscrowServer(BitcoinServerRef rpcServer)
 
     this->transactionDeposit = SampleEscrowTransactionRef(NULL);
     this->transactionWithdrawal = SampleEscrowTransactionRef(NULL);
+
+    this->modules = BtcModules::staticInstance;
 }
 
 void SampleEscrowServer::OnRequestEscrowDeposit(SampleEscrowClient* client)
