@@ -3,11 +3,14 @@
 #include <thread>
 #include <vector>
 #include <algorithm>
+#include <OTLog.h>
 
+
+int BtcHelper::MinConfirms;
 
 BtcHelper::BtcHelper(BtcModules *modules)
 {
-    MinConfirms = 1;
+    BtcHelper::MinConfirms = 1;
 
     this->modules = modules;
 }
@@ -25,6 +28,37 @@ double BtcHelper::SatoshisToCoins(int64_t value)
     return (double)value / 1e8;
 }
 
+
+int64_t BtcHelper::GetTotalOutput(BtcRawTransactionRef transaction, const std::string &targetAddress)
+{
+    int64_t amountReceived = 0.0;
+    for(int i = 0; i < transaction->outputs.size(); i++)
+    {
+        // I don't know what outputs to multiple addresses mean so I'm not gonna trust them for now.
+        if(transaction->outputs[i].addresses.size() > 1)
+        {
+            OTLog::vOutput(0, "Multiple output addresses per output detected.");
+            continue;
+        }
+
+        // TODO: vulnerability fix
+        // I don't know much about scriptPubKey but I think a malicious buyer could create a
+        // transaction that isn't spendable by anyone, see
+        // https://en.bitcoin.it/wiki/Script#Provably_Unspendable.2FPrunable_Outputs
+        // I think the easiest solution would be to check
+        // if scriptPubKey.hex != "76a914<pub key hash>88ac" return false
+        // as this seems to be the hex representation of the most basic standard transaction.
+
+
+        if(std::find(transaction->outputs[i].addresses.begin(), transaction->outputs[i].addresses.end(), targetAddress) != transaction->outputs[i].addresses.end())
+        {
+            // if output leads to target address, add value to total received bitcoins
+            amountReceived += transaction->outputs[i].value;
+        }
+    }
+
+    return amountReceived;
+}
 
 int64_t BtcHelper::GetConfirmations(BtcRawTransactionRef transaction)
 {
@@ -58,6 +92,27 @@ int64_t BtcHelper::GetConfirmations(BtcRawTransactionRef transaction)
 
     // if we find it in an old enough block, return number of confirmations
     return confirmations;
+}
+
+int64_t BtcHelper::TransactionConfirmed(BtcRawTransactionRef transaction, int minConfirms)
+{
+    return GetConfirmations(transaction) >= minConfirms;
+}
+
+bool BtcHelper::TransactionSuccessfull(int64_t amountRequested, BtcRawTransactionRef transaction, const std::string &targetAddress, int minConfirms)
+{
+    if(transaction == NULL) // if it hasn't been received yet we will return.
+        return false;       // use WaitForTransaction(txid) to prevent this.
+
+    // check for sufficient confirms...
+    if(!TransactionConfirmed(transaction, minConfirms))
+        return false;
+
+    // check for sufficient amount...
+    if(GetTotalOutput(transaction, targetAddress) >= amountRequested)
+        return true;    // if we were sent at least as much money as requested, return true
+
+    return false;
 }
 
 BtcRawTransactionRef BtcHelper::WaitGetRawTransaction(const std::string &txID, int timerMS, int maxAttempts)

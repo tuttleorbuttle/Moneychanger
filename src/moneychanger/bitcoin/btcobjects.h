@@ -6,6 +6,7 @@
 #include <vector>
 #include <jsoncpp/json/json.h>
 #include <tr1/memory>
+#include <sys/types.h>
 
 
 namespace std
