@@ -531,18 +531,18 @@ std::string BtcJson::SendRawTransaction(const std::string &rawTransaction)
     return result.asString();
 }
 
-std::list<std::string> BtcJson::GetRawMemPool()
+std::vector<std::string> BtcJson::GetRawMemPool()
 {
     Json::Value result = Json::Value();
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_GETRAWMEMPOOL, Json::Value())), result))
-        return std::list<std::string>();
+        return std::vector<std::string>();
 
     if(!result.isArray())
-        return std::list<std::string>();
+        return std::vector<std::string>();
 
-    std::list<std::string> rawMemPool = std::list<std::string>();
+    std::vector<std::string> rawMemPool = std::vector<std::string>();
     for(int i = 0; i < result.size(); i++)
     {
         rawMemPool.push_back(result[i].asString());

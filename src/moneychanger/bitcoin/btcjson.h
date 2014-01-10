@@ -82,7 +82,7 @@ public:
 
     virtual std::string SendRawTransaction(const std::string &rawTransaction);
 
-    virtual std::list<std::string> GetRawMemPool();
+    virtual std::vector<std::string> GetRawMemPool();
 
     virtual int GetBlockCount();
 

@@ -62,8 +62,8 @@ void BtcTransaction::SetDefaults()
 
 BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
 {
-    this->inputs = std::list<VIN>();
-    this->outputs = std::list<VOUT>();
+    this->inputs = std::vector<VIN>();
+    this->outputs = std::vector<VOUT>();
 
     this->txID = rawTx["txid"].asString();
 

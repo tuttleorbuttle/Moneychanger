@@ -81,7 +81,7 @@ public:
 
     virtual std::string SendRawTransaction(const std::string &rawTransaction) = 0;
 
-    virtual std::list<std::string> GetRawMemPool() = 0;
+    virtual std::vector<std::string> GetRawMemPool() = 0;
 
     virtual int GetBlockCount() = 0;
 

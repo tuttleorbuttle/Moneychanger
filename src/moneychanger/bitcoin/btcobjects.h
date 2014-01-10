@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <list>
+#include <vector>
 #include <jsoncpp/json/json.h>
 #include <tr1/memory>
 
@@ -56,14 +57,14 @@ struct BtcRawTransaction
             :txInID(txInID), vout(vout)
         {}
     };
-    std::list<VIN> inputs;
+    std::vector<VIN> inputs;
 
     struct VOUT
     {
         int64_t value;     // amount of btc to be sent
         int n ;              // outputs array index
         int reqSigs;        // signatures required to withdraw from the output addresses
-        std::list<std::string> addresses;    // an array of addresses receiving the value.
+        std::vector<std::string> addresses;    // an array of addresses receiving the value.
         std::string scriptPubKeyHex;
 
         VOUT()
@@ -71,16 +72,16 @@ struct BtcRawTransaction
             this->value = 0;
             this->n = -1;
             this->reqSigs = 0;
-            this->addresses = std::list<std::string>();
+            this->addresses = std::vector<std::string>();
             this->scriptPubKeyHex = "";
         }
 
-        VOUT(int64_t value, int n, int reqSigs, std::list<std::string> addresses, std::string scriptPubKeyHex)
+        VOUT(int64_t value, int n, int reqSigs, std::vector<std::string> addresses, std::string scriptPubKeyHex)
             :value(value), n(n), reqSigs(reqSigs), addresses(addresses), scriptPubKeyHex(scriptPubKeyHex)
         {}
 
     };
-    std::list<VOUT> outputs;
+    std::vector<VOUT> outputs;
 
     BtcRawTransaction(Json::Value rawTx);
 };

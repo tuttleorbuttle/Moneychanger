@@ -3,7 +3,6 @@
 
 
 
-
 MTBitcoin::MTBitcoin(BtcModules *modules)
 {
     this->modules = modules;

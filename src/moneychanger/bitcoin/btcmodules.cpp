@@ -9,7 +9,7 @@ BtcModules::BtcModules()
     this->btcJson = BtcJsonRef(new BtcJson(this));
     this->btcHelper = BtcHelperRef(new BtcHelper(this));
 
-    this->mtBitcoin = MTBitcoinRef(new MTBitcoin(this));
+    //this->mtBitcoin = MTBitcoinRef(new MTBitcoin(this));
 }
 
 BtcModules::~BtcModules()
