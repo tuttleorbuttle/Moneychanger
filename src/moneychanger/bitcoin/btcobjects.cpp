@@ -197,15 +197,28 @@ void BtcSigningPrequisite::SetRedeemScript(std::string redeemScript)
     (*this)["redeemScript"] = redeemScript;
 }
 
-BtcRpcPacket::BtcRpcPacket(char *data, int size)
+BtcRpcPacket::BtcRpcPacket()
 {
-    this->data = data;
+    this->data = NULL;
+    this->size = 0;
+}
+
+BtcRpcPacket::BtcRpcPacket(const char *data, int size)
+{
+    if(data == NULL || size < 0)
+    {
+        this->data = NULL;
+        size = 0;
+        return;
+    }
+    this->data = (char*)realloc(NULL, size);
+    memccpy(this->data, data, NULL, size);
     this->size = size;
 }
 
 BtcRpcPacket::BtcRpcPacket(const std::string &data)
 {
-    this->data = new char[data.size()];
+    this->data = (char*)realloc(NULL, data.size());
     memccpy(this->data, data.c_str(), NULL, data.size());
     this->size = data.size();
 }
@@ -213,7 +226,8 @@ BtcRpcPacket::BtcRpcPacket(const std::string &data)
 BtcRpcPacket::~BtcRpcPacket()
 {
     this->size = 0;
-    delete[] this->data;
+    //if(this->data != NULL)
+    //    delete this->data;
     this->data = NULL;
 }
 

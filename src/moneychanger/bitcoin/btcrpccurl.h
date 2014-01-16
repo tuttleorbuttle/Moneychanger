@@ -46,6 +46,8 @@ private:
     void InitNAM();             // Also called in constr, creates the Network Access Manager.
     void SetHeaderInformation(); // Called by ConnectToBitcoin, sets the HTTP header
 
+    void CleanUpCurl();
+
     // Processes a network reply
     // Probably not needed anymore
     //void ProcessReply(QSharedPointer<QByteArray> replyContType, const QSharedPointer<QByteArray> replyContent);
@@ -64,9 +66,13 @@ private:
     bool connected;
     bool waitingForReply;
 
+    CURLcode res;
     CURL* curl;
 
     BtcModules* modules;
+
+    static BtcRpcPacketRef connectString;
+
 
     /*
     Q_OBJECT

@@ -13,12 +13,12 @@ MTBitcoin::~MTBitcoin()
     this->modules = NULL;
 }
 
-int64_t MTBitcoin::GetBalance(const char* account)
+int64_t MTBitcoin::GetBalance(const char *account)
 {
     return this->modules->btcJson->GetBalance(account);
 }
 
-std::string MTBitcoin::GetNewAddress(const char* account)
+std::string MTBitcoin::GetNewAddress(const std::string &account)
 {
     return this->modules->btcJson->GetNewAddress(account);
 }
@@ -28,13 +28,13 @@ std::string MTBitcoin::GetPublicKey(const std::string& address)
     return this->modules->btcJson->GetPublicKey(address);
 }
 
-std::string MTBitcoin::GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet, const char* account)
+std::string MTBitcoin::GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet, const std::string &account)
 {
     BtcMultiSigAddressRef multiSigAddr;
     return (multiSigAddr = GetMultiSigAddressInfo(minSignatures, publicKeys, addToWallet, account)) == NULL ? "" : multiSigAddr->address;
 }
 
-BtcMultiSigAddressRef MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const std::list<std::string> &publicKeys, bool addToWallet, const char* account)
+BtcMultiSigAddressRef MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const std::list<std::string> &publicKeys, bool addToWallet, const std::string &account)
 {
     BtcMultiSigAddressRef multiSigAddr;
     if(addToWallet)

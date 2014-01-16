@@ -20,22 +20,22 @@ public:
 
     // account [optional] the account whose balance should be checked
     // returns total balance of all addresses.
-    virtual int64_t GetBalance(const char* account = NULL);
+    virtual int64_t GetBalance(const char *account = NULL);
 
     // account [optional]: the account to which the address should be added.
     // returns new address
-    virtual std::string GetNewAddress(const char* account = NULL);
+    virtual std::string GetNewAddress(const std::string &account = NULL);
 
     // returns public key for address (works only if public key is known)
     virtual std::string GetPublicKey(const std::string &address);
 
     // Creates a multi-sig address from public keys
     // returns the address string
-    virtual std::string GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = false, const char* account = NULL);
+    virtual std::string GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = false, const std::string &account = NULL);
 
     // Creates a multi-sig address from public keys
     // returns an object containing info required to withdraw from that address
-    virtual BtcMultiSigAddressRef GetMultiSigAddressInfo(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = true, const char* account = NULL);
+    virtual BtcMultiSigAddressRef GetMultiSigAddressInfo(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = true, const std::string &account = NULL);
 
     // Returns an object containing information about a raw transaction
     virtual BtcRawTransactionRef GetRawTransaction(const std::string &txId);

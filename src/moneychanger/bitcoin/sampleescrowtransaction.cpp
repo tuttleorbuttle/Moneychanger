@@ -1,5 +1,6 @@
 #include "sampleescrowtransaction.h"
 #include "modules.h"
+#include <OTLog.h>
 
 SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend)
 {
@@ -10,6 +11,8 @@ SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend)
     this->targetAddr = "";
     this->confirmations = 0;
     this->withdrawalTransaction = "";
+
+    this->modules = BtcModules::staticInstance;
 }
 
 bool SampleEscrowTransaction::SendToTarget()
@@ -91,6 +94,7 @@ void SampleEscrowTransaction::CheckTransaction(int minConfirms)
     // check if transaction has enough confirmations
     if(this->modules->mtBitcoin->TransactionSuccessfull(this->amountToSend, rawTx, this->targetAddr, minConfirms))
     {
+        this->confirmations = this->modules->mtBitcoin->GetConfirmations(rawTx);
         // yay
         this->status = Successfull;
     }

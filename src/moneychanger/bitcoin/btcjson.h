@@ -16,16 +16,17 @@ public:
 
     virtual void GetInfo();
 
-    virtual int64_t GetBalance(std::string account = NULL /*TODO: int minConfirmations*/);
+    virtual int64_t GetBalance(const char *account = NULL /*TODO: int minConfirmations*/);
 
     // Gets the default address for the specified account
-    virtual std::string GetAccountAddress(std::string account = NULL);
+    virtual std::string GetAccountAddress(const std::string &account = "");
 
     // Returns list of all addresses belonging to account
-    virtual std::list<std::string> GetAddressesByAccount(std::string account = "");    // list addresses for account, "" is the default account.
+    // account "" is default
+    virtual std::list<std::string> GetAddressesByAccount(const std::string &account = "");
 
     // Add new address to account
-    virtual std::string GetNewAddress(std::string account = NULL);
+    virtual std::string GetNewAddress(const std::string &account = "");
 
     // Validate an address
     virtual BtcAddressInfoRef ValidateAddress(const std::string &address);
@@ -36,14 +37,14 @@ public:
     virtual std::string GetPrivateKey(const std::string &address);
 
     // Get private key for address
-    virtual std::string DumpPrivKey(std::string address);
+    virtual std::string DumpPrivKey(const std::string &address);
 
     // Adds an address requiring n keys to sign before it can spend its inputs
     // nRequired: number of signatures required
     // keys: list of public keys (addresses work too, if the public key is known)
     // account [optional]: account to add the address to
     // Returns the multi-sig address
-    virtual BtcMultiSigAddressRef AddMultiSigAddress(int nRequired, const std::list<std::string> &keys, const std::string &account = NULL);
+    virtual BtcMultiSigAddressRef AddMultiSigAddress(int nRequired, const std::list<std::string> &keys, const std::string &account = "");
 
     // Creates a multi-sig address without adding it to the wallet
     // nRequired: signatures required
@@ -55,14 +56,14 @@ public:
     virtual std::string GetRedeemScript(int nRequired, std::list<std::string> keys);
 
     // Returns list of account names
-    // Could also return the balance of each account but I find that confusing
+    // Could also return the balance of each account
     virtual std::vector<std::string> ListAccounts();
 
     virtual std::string SendToAddress(const std::string &btcAddress, int64_t amount);
 
     // Send to multiple addresses at once
     // txTargets maps amounts (int64 satoshis) to addresses (QString)
-    virtual std::string SendMany(std::map<std::string, int64_t> txTargets, std::string fromAccount = NULL);
+    virtual std::string SendMany(std::map<std::string, int64_t> txTargets, const std::string &fromAccount = "");
 
     virtual bool SetTxFee(int64_t fee);
 

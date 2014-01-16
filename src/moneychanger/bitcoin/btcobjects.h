@@ -174,7 +174,9 @@ struct BtcRpcPacket
     int size = 0;                   // size of data
     char* data;     // received data or data to send
 
-    BtcRpcPacket(char* data, int size);
+    BtcRpcPacket();
+
+    BtcRpcPacket(const char *data, int size);
 
     BtcRpcPacket(const std::string &data);
 

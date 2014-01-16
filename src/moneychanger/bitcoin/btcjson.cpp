@@ -112,12 +112,12 @@ void BtcJson::GetInfo()
     int64_t balance = this->modules->btcHelper->CoinsToSatoshis(result["balance"].asDouble());
 }
 
-int64_t BtcJson::GetBalance(std::string account/*=NULL*/)
+int64_t BtcJson::GetBalance(const char *account/*=NULL*/)
 {
     // note: json and bitcoin- make a difference between NULL-strings and empty strings.
 
     Json::Value params = Json::Value();
-    params.append(account);      // account
+    params.append(account != NULL ? account : Json::Value());      // account
     //params.append(1);       // min confirmations, 1 is default, we probably don't need this line.
 
     BtcRpcPacketRef reply = this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
@@ -131,7 +131,7 @@ int64_t BtcJson::GetBalance(std::string account/*=NULL*/)
     return this->modules->btcHelper->CoinsToSatoshis(result.asDouble());
 }
 
-std::string BtcJson::GetAccountAddress(std::string account/*= NULL*/)
+std::string BtcJson::GetAccountAddress(const std::string &account)
 {
     Json::Value params = Json::Value();
     params.append(account);
@@ -139,22 +139,22 @@ std::string BtcJson::GetAccountAddress(std::string account/*= NULL*/)
     Json::Value result = Json::Value();
     if(!ProcessRpcString(this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETACCOUNTADDRESS, params)), result))
     {
-        return NULL;     // error
+        return "";     // error
     }
 
     if(!result.isString())
-        return NULL;     // this should never happen unless the protocol was changed
+        return "";     // this should never happen unless the protocol was changed
 
     return result.asString();
 }
 
-std::stringList BtcJson::GetAddressesByAccount(std::string account)
+std::stringList BtcJson::GetAddressesByAccount(const std::string &account)
 {
     // not yet implemented
     return std::stringList();
 }
 
-std::string BtcJson::GetNewAddress(std::string account/*=NULL*/)
+std::string BtcJson::GetNewAddress(const std::string &account)
 {
     Json::Value params = Json::Value();
     params.append(account);
@@ -162,11 +162,11 @@ std::string BtcJson::GetNewAddress(std::string account/*=NULL*/)
     Json::Value result = Json::Value();
     if(!ProcessRpcString(this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETNEWADDRESS, params)), result))
     {
-        return NULL;
+        return "";
     }
 
     if(!result.isString())
-        return NULL;     // this should never happen unless the protocol was changed
+        return "";     // this should never happen unless the protocol was changed
 
     return result.asString();
 }
@@ -191,7 +191,7 @@ std::string BtcJson::GetPublicKey(const std::string &address)
 {
     BtcAddressInfoRef addrInfo = ValidateAddress(address);
     if(addrInfo == NULL)
-        return NULL;
+        return "";
 
     return addrInfo->pubkey;
 }
@@ -201,7 +201,7 @@ std::string BtcJson::GetPrivateKey(const std::string &address)
     return DumpPrivKey(address);
 }
 
-std::string BtcJson::DumpPrivKey(std::string address)
+std::string BtcJson::DumpPrivKey(const std::string &address)
 {
     Json::Value params;
     params.append(address);
@@ -211,7 +211,7 @@ std::string BtcJson::DumpPrivKey(std::string address)
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_DUMPPRIVKEY, params)),
                 result))
-        return NULL;
+        return "";
 
     return result.asString();
 }
@@ -294,10 +294,10 @@ std::string BtcJson::SendToAddress(const std::string &btcAddress, int64_t amount
     Json::Value result = Json::Value();
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_SENDTOADDRESS, params)),result))
-        return NULL;   // error
+        return "";   // error
 
     if(!result.isString())
-        return NULL;    // shouldn't happen unless protocol was changed
+        return "";    // shouldn't happen unless protocol was changed
 
     return result.asString();
 }
@@ -317,7 +317,7 @@ bool BtcJson::SetTxFee(int64_t fee)
     return true;    // todo: check for more errors
 }
 
-std::string BtcJson::SendMany(std::map<std::string, int64_t> txTargets, std::string fromAccount)
+std::string BtcJson::SendMany(std::map<std::string, int64_t> txTargets, const std::string &fromAccount)
 {
     Json::Value params = Json::Value();
     params.append(fromAccount);     // account to send coins from
@@ -334,10 +334,10 @@ std::string BtcJson::SendMany(std::map<std::string, int64_t> txTargets, std::str
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_SENDMANY, params)),
                 result))
-        return NULL;
+        return "";
 
     if(!result.isString())
-        return NULL;
+        return "";
 
     return result.asString();
 }
@@ -377,10 +377,10 @@ std::string BtcJson::GetRawTransaction(std::string txID)
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_GETRAWTRANSACTION, params)), result))
-        return NULL;    // error
+        return "";    // error
 
     if(!result.isString())
-        return NULL;    // error
+        return "";    // error
 
     return result.asString();
 }
@@ -445,7 +445,7 @@ std::string BtcJson::CreateRawTransaction(const std::list<BtcOutput> &unspentOut
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_CREATERAWTRANSACTION, params)), result))
-        return NULL;  // error
+        return "";  // error
 
     return result.asString();
 }
@@ -526,7 +526,7 @@ std::string BtcJson::SendRawTransaction(const std::string &rawTransaction)
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_SENDRAWTRANSACTION, params)), result))
-        return NULL;  // error
+        return "";  // error
 
     return result.asString();
 }
@@ -570,7 +570,7 @@ std::string BtcJson::GetBlockHash(int blockNumber)
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_GETBLOCKHASH, params)), result))
-        return NULL;
+        return "";
 
     return result.asString();
 }
