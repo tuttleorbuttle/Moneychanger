@@ -35,6 +35,9 @@ public:
     // Returns an object containing information about a raw transaction
     virtual BtcRawTransactionRef GetRawTransaction(const std::string &txId) = 0;
 
+    // Returns an object containing information about a raw transaction
+    virtual BtcRawTransactionRef WaitGetRawTransaction(const std::string &txId) = 0;
+
     // Returns the number of confirmations of a raw transaction
     virtual int GetConfirmations(BtcRawTransactionRef rawTransaction) = 0;
 

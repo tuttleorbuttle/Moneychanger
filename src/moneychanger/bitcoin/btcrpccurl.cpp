@@ -17,16 +17,13 @@ BtcRpcCurl::BtcRpcCurl(BtcModules *modules)
 
     /* In windows, this will init the winsock stuff */
     this->res = curl_global_init(CURL_GLOBAL_DEFAULT);
+
+    this->currentServer = BitcoinServerRef(NULL);
 }
 
 BtcRpcCurl::~BtcRpcCurl()
 {
     this->modules = NULL;
-}
-
-bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerRef server)
-{
-    return ConnectToBitcoin(server->user, server->password, server->url, server->port);
 }
 
 static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *userp)
@@ -73,63 +70,57 @@ static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userp)
     return size * nmemb;
 }
 
+bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerRef server)
+{
+    if(this->currentServer != server || !this->curl || this->res != CURLE_OK)
+    {
+        this->currentServer = server;
+        CleanUpCurl();
+
+        /* In windows, this will init the winsock stuff */
+        this->res = curl_global_init(CURL_GLOBAL_DEFAULT);
+
+        /* Check for errors */
+        if(res != CURLE_OK)
+        {
+          fprintf(stderr, "curl_global_init() failed: %s\n",
+                  curl_easy_strerror(res));
+          return false;
+        }
+
+        /* get a curl handle */
+        curl = curl_easy_init();
+
+        if(!curl)
+            return false;
+    }
+
+    /* First set the URL that is about to receive our POST. */
+    curl_easy_setopt(curl, CURLOPT_URL, server->url.c_str());
+
+    curl_easy_setopt(curl, CURLOPT_PORT, server->port);
+
+    curl_easy_setopt(curl, CURLOPT_PASSWORD, server->password.c_str());
+
+    curl_easy_setopt(curl, CURLOPT_USERNAME, server->user.c_str());
+
+    curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
+    return SendRpc(BtcRpcPacketRef(new BtcRpcPacket(BtcRpcCurl::connectString->data, BtcRpcCurl::connectString->size))) != NULL;
+
+
+    return ConnectToBitcoin(server->user, server->password, server->url, server->port);
+}
+
 bool BtcRpcCurl::ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url, int port)
 {
-    CleanUpCurl();
-
-    /* Check for errors */
-    if(res != CURLE_OK) {
-      fprintf(stderr, "curl_global_init() failed: %s\n",
-              curl_easy_strerror(res));
-      return false;
-    }
-
-    /* get a curl handle */
-    curl = curl_easy_init();
-
-    if(curl)
-    {
-        /* First set the URL that is about to receive our POST. */
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-
-        curl_easy_setopt(curl, CURLOPT_PORT, port);
-
-        curl_easy_setopt(curl, CURLOPT_PASSWORD, password.c_str());
-
-        curl_easy_setopt(curl, CURLOPT_USERNAME, user.c_str());
-
-        curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-
-        return SendRpc(BtcRpcPacketRef(new BtcRpcPacket(BtcRpcCurl::connectString->data, BtcRpcCurl::connectString->size))) != NULL;
-    }
-
-    return false;
+    return ConnectToBitcoin(BitcoinServerRef(new BitcoinServer(user, password, url, port)));
 }
 
 
 BtcRpcPacketRef BtcRpcCurl::SendRpc(const std::string &jsonString)
 {
-
-
-
-    struct curl_slist *headers=NULL;  headers = curl_slist_append(headers, "Content-Type: text/xml");
-
-    ///* post binary data */
-    ///curl_easy_setopt(curl, CURLOPT_POSTFIELDS, binaryptr);
-
-    /* set the size of the postfields data */
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 23L);
-
-    /* pass our list of custom made headers */
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-    curl_easy_perform(curl); /* post away! */
-
-    curl_slist_free_all(headers); /* free the header list */
-
-
-
-    return BtcRpcPacketRef(NULL);
+    return SendRpc(BtcRpcPacketRef(new BtcRpcPacket(jsonString)));
 }
 
 BtcRpcPacketRef BtcRpcCurl::SendRpc(BtcRpcPacketRef jsonString)
@@ -229,4 +220,6 @@ void BtcRpcCurl::CleanUpCurl()
 {
     if(curl)
         curl_easy_cleanup(curl);
+
+    curl_global_cleanup();
 }

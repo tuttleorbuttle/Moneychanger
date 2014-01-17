@@ -51,6 +51,11 @@ BtcMultiSigAddressRef MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const
 
 BtcRawTransactionRef MTBitcoin::GetRawTransaction(const std::string &txId)
 {
+    return this->modules->btcJson->GetDecodedRawTransaction(txId);
+}
+
+BtcRawTransactionRef MTBitcoin::WaitGetRawTransaction(const std::string &txId)
+{
     // wait for transaction and return it
     // times out after 10 seconds by default
     return this->modules->btcHelper->WaitGetRawTransaction(txId);

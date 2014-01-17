@@ -88,7 +88,7 @@ void SampleEscrowTransaction::CheckTransaction(int minConfirms)
 
     if(rawTx == NULL)
     {
-        // error, transaction apparently wasn't broadcasted or we don't have internet.
+        // error, transaction apparently wasn't received yet or we don't have internet.
     }
 
     // check if transaction has enough confirmations
