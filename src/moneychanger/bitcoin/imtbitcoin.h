@@ -36,21 +36,22 @@ public:
     virtual BtcRawTransactionRef GetRawTransaction(const std::string &txId) = 0;
 
     // Returns an object containing information about a raw transaction
+    // times out after 10 seconds
     virtual BtcRawTransactionRef WaitGetRawTransaction(const std::string &txId) = 0;
 
     // Returns the number of confirmations of a raw transaction
-    virtual int GetConfirmations(BtcRawTransactionRef rawTransaction) = 0;
+    virtual int GetConfirmations(const std::string &rawTransaction) = 0;
 
     virtual bool TransactionSuccessfull(int64_t amount, BtcRawTransactionRef rawTransaction, const std::string &targetAddress, int64_t confirmations = 1) = 0;
 
     // sends funds from your wallet to targetAddress
+    // lAmount: integer containing amount in satoshis
     // returns the transaction id string or NULL
     virtual std::string SendToAddress(int64_t lAmount, const std::string &to_address) = 0;
 
-    // Creates a multi-sig address using the public keys (not addresses, unless their public keys are known to bitcoin-qt!)
+    // Creates a multi-sig address using the public keys (not addresses, unless their public keys are known to bitcoind!)
     // and sends bitcoin to that address.
-    // If the multisig address is already known, we can instead just call SendToAddress(multiSigAddress)
-    // as bitcoin makes no difference between those and regular addresses.
+    // lAmount: integer containing amount in satoshis
     // returns the transaction id string or NULL
     virtual std::string SendToMultisig(int64_t lAmount, int nRequired, const std::list<std::string> &to_publicKeys) = 0;
 

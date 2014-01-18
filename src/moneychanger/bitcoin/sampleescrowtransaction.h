@@ -50,7 +50,7 @@ public:
     //SampleEscrowClientRef client;
 
 private:
-    BtcModulesRef modules;
+    BtcModules* modules;
     //QList<SampleEscrowServerRef> servers;
 };
 

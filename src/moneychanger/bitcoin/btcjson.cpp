@@ -543,7 +543,7 @@ std::vector<std::string> BtcJson::GetRawMemPool()
         return std::vector<std::string>();
 
     std::vector<std::string> rawMemPool = std::vector<std::string>();
-    for(int i = 0; i < result.size(); i++)
+    for(uint i = 0; i < result.size(); i++)
     {
         rawMemPool.push_back(result[i].asString());
     }

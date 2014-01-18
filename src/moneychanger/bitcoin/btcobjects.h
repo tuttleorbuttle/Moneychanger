@@ -180,7 +180,12 @@ struct BtcRpcPacket
 
     BtcRpcPacket(const std::string &data);
 
+    typedef std::shared_ptr<BtcRpcPacket> BtcRpcPacketRef;
+    BtcRpcPacket(const BtcRpcPacketRef packet);
+
     ~BtcRpcPacket();
+
+    void SetDefaults();
 };
 
 typedef std::shared_ptr<BtcTransaction> BtcTransactionRef;

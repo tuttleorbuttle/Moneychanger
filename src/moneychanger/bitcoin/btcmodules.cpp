@@ -3,7 +3,7 @@
 #include "btcjson.h"
 #include "MTBitcoin.h"
 
-BtcModulesRef BtcModules::staticInstance;
+BtcModules* BtcModules::staticInstance;
 
 BtcModules::BtcModules()
 {
@@ -13,7 +13,8 @@ BtcModules::BtcModules()
 
     this->mtBitcoin = MTBitcoinRef(new MTBitcoin(this));
 
-    this->staticInstance = BtcModulesRef(this);
+    if(this->staticInstance == NULL)
+        this->staticInstance = this;
 }
 
 BtcModules::~BtcModules()
@@ -24,5 +25,6 @@ BtcModules::~BtcModules()
     this->btcJson.reset();
     this->btcRpc.reset();
 
-    this->staticInstance.reset();
+    if(this->staticInstance == this)
+        this->staticInstance = NULL;
 }

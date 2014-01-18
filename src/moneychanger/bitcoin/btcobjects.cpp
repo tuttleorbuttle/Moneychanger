@@ -23,7 +23,7 @@ BtcTransaction::BtcTransaction(Json::Value reply)
     if(details.size() == 0)
         return;
 
-    for(int i = 0; i < details.size(); i++)
+    for(uint i = 0; i < details.size(); i++)
     {
         Json::Value detail = details[i];
         std::string address = detail["address"].asString();
@@ -68,14 +68,14 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
     this->txID = rawTx["txid"].asString();
 
     Json::Value vin = rawTx["vin"];
-    for(int i = 0; i < vin.size(); i++)
+    for(uint i = 0; i < vin.size(); i++)
     {
         Json::Value inputObj = vin[i];
         this->inputs.push_back(VIN(inputObj["txid"].asString(), (int)inputObj["vout"].asDouble()));
     }
 
     Json::Value vouts  = rawTx["vout"];
-    for(int i = 0; i < vouts.size(); i++)
+    for(uint i = 0; i < vouts.size(); i++)
     {
         Json::Value outputObj = vouts[i];
         VOUT output;
@@ -86,7 +86,7 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
         Json::Value scriptPubKey = outputObj["scriptPubKey"];
         output.reqSigs = (int)scriptPubKey["reqSigs"].asDouble();
         Json::Value addresses = scriptPubKey["addresses"];
-        for(int i= 0; i < addresses.size(); i++)
+        for(uint i= 0; i < addresses.size(); i++)
         {
             output.addresses.push_back(addresses[i].asString());
         }
@@ -141,7 +141,7 @@ BtcBlock::BtcBlock(Json::Value block)
 
     // get list of transactions in the block
     Json::Value transacts = block["tx"];
-    for(int i = 0; i < transacts.size(); i++)
+    for(uint i = 0; i < transacts.size(); i++)
     {
         this->transactions.push_back(transacts[i].asString());
     }
@@ -207,28 +207,63 @@ BtcRpcPacket::BtcRpcPacket(const char *data, int size)
 {
     if(data == NULL || size < 0)
     {
-        this->data = NULL;
-        size = 0;
+        SetDefaults();
         return;
     }
+
     this->data = (char*)realloc(NULL, size);
-    memccpy(this->data, data, NULL, size);
+    if(this->data == NULL)
+    {
+        SetDefaults();
+        return;
+    }
+
+    memccpy(this->data, data, 0, size);
     this->size = size;
 }
 
 BtcRpcPacket::BtcRpcPacket(const std::string &data)
 {
     this->data = (char*)realloc(NULL, data.size());
-    memccpy(this->data, data.c_str(), NULL, data.size());
+    if(this->data == NULL)
+    {
+        SetDefaults();
+        return;
+    }
+
+    memccpy(this->data, data.c_str(), 0, data.size());
     this->size = data.size();
+}
+
+BtcRpcPacket::BtcRpcPacket(const BtcRpcPacketRef packet)
+{
+    if(packet == NULL || packet->data == NULL || packet->size == 0)
+    {
+        SetDefaults();
+        return;
+    }
+
+    this->data = (char*)realloc(NULL, packet->size);
+    if(this->data == NULL)
+    {
+        SetDefaults();
+        return;
+    }
+
+    memccpy(this->data, packet->data, 0, packet->size);
+    this->size = packet->size;
 }
 
 BtcRpcPacket::~BtcRpcPacket()
 {
     this->size = 0;
-    //if(this->data != NULL)
-    //    delete this->data;
     this->data = NULL;
+}
+
+void BtcRpcPacket::SetDefaults()
+{
+    this->data = NULL;
+    this->size = 0;
 }
 
 

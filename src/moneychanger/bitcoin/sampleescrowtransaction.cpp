@@ -89,15 +89,16 @@ void SampleEscrowTransaction::CheckTransaction(int minConfirms)
     if(rawTx == NULL)
     {
         // error, transaction apparently wasn't received yet or we don't have internet.
+        this->confirmations = 0;
+        return;
     }
 
     // check if transaction has enough confirmations
     if(this->modules->mtBitcoin->TransactionSuccessfull(this->amountToSend, rawTx, this->targetAddr, minConfirms))
     {
-        this->confirmations = this->modules->mtBitcoin->GetConfirmations(rawTx);
         // yay
         this->status = Successfull;
     }
 
-    this->confirmations = this->modules->mtBitcoin->GetConfirmations(rawTx);
+    this->confirmations = this->modules->mtBitcoin->GetConfirmations(rawTx->txID);
 }

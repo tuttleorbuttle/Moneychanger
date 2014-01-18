@@ -18,6 +18,8 @@ public:
 
     BtcHelper(BtcModules* modules);
 
+    ~BtcHelper();
+
     // converts a double bitcoin (as received through json api) to int64 satoshis
     static int64_t CoinsToSatoshis(double value);
 
@@ -34,13 +36,13 @@ public:
     // Counts how many coins are sent to targetAddress through this transaction
     int64_t GetTotalOutput(BtcRawTransactionRef transaction, const std::string &targetAddress);
 
-    int64_t GetConfirmations(BtcRawTransactionRef transaction);
+    int64_t GetConfirmations(const std::string &txId);
 
     // Checks whether a transaction has been confirmed often enough
     bool TransactionConfirmed(BtcTransactionRef transaction, int minconfirms = MinConfirms);
 
     // Checks whether a transaction (can be non-wallet) has been confirmed often enough
-    int64_t TransactionConfirmed(BtcRawTransactionRef transaction, int minConfirms = MinConfirms);
+    int64_t TransactionConfirmed(const std::string &txId, int minConfirms = MinConfirms);
 
     // Checks a transaction for correct amount and confirmations.
     bool TransactionSuccessfull(int64_t amount, BtcTransactionRef transaction, int minConfirms = MinConfirms);

@@ -18,11 +18,11 @@ public:
     ~MTBitcoin();
 
 
-    // account [optional] the account whose balance should be checked
+    // account (optional): the account whose balance should be checked
     // returns total balance of all addresses.
     virtual int64_t GetBalance(const char *account = NULL);
 
-    // account [optional]: the account to which the address should be added.
+    // account (optional): the account to which the address should be added.
     // returns new address
     virtual std::string GetNewAddress(const std::string &account = NULL);
 
@@ -31,7 +31,7 @@ public:
 
     // Creates a multi-sig address from public keys
     // returns the address string
-    virtual std::string GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = false, const std::string &account = NULL);
+    virtual std::string GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = true, const std::string &account = NULL);
 
     // Creates a multi-sig address from public keys
     // returns an object containing info required to withdraw from that address
@@ -41,10 +41,11 @@ public:
     virtual BtcRawTransactionRef GetRawTransaction(const std::string &txId);
 
     // Returns an object containing information about a raw transaction
+    // times out after 10 seconds
     virtual BtcRawTransactionRef WaitGetRawTransaction(const std::string &txId);
 
     // Returns the number of confirmations of a raw transaction
-    virtual int GetConfirmations(BtcRawTransactionRef rawTransaction);
+    virtual int GetConfirmations(const std::string &txId);
 
     virtual bool TransactionSuccessfull(int64_t amount, BtcRawTransactionRef rawTransaction, const std::string &targetAddress, int64_t confirmations = 1);
 

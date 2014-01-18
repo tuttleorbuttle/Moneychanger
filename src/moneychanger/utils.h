@@ -9,6 +9,7 @@
 
 #include <QMutex>
 #include <QWaitCondition>
+#include <QCoreApplication>
 
 // code from http://stackoverflow.com/questions/3752742/how-do-i-create-a-pause-wait-function-using-qt
 
@@ -31,7 +32,18 @@ namespace utils
         }
         void sleep(unsigned long sleepMS)
         {
-            sleepSimulator.wait(&localMutex, sleepMS);
+            while(sleepMS > 10)
+            {
+                sleepSimulator.wait(&localMutex, 10);
+                QCoreApplication::processEvents();
+                sleepMS -= 10;
+            }
+            if(sleepMS > 0)
+            {
+                sleepSimulator.wait(&localMutex, sleepMS);
+                QCoreApplication::processEvents();
+            }
+
         }
         void CancelSleep()
         {

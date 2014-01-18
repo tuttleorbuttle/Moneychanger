@@ -50,11 +50,11 @@ public:
 private:
     BitcoinServerRef rpcServer;     // login info for bitcoin-qt rpc
 
-    BtcModulesRef modules;
+    BtcModules* modules;
 
     int minSignatures = 2;          // minimum required signatures
 
-    int minConfirms = 2;            // minimum required confirmations
+    int minConfirms = 1;            // minimum required confirmations
 };
 
 typedef std::shared_ptr<SampleEscrowServer> SampleEscrowServerRef;

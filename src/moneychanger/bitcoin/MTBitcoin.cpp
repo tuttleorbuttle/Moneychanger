@@ -58,12 +58,12 @@ BtcRawTransactionRef MTBitcoin::WaitGetRawTransaction(const std::string &txId)
 {
     // wait for transaction and return it
     // times out after 10 seconds by default
-    return this->modules->btcHelper->WaitGetRawTransaction(txId);
+    return this->modules->btcHelper->WaitGetRawTransaction(txId, 500, 20);
 }
 
-int MTBitcoin::GetConfirmations(BtcRawTransactionRef rawTransaction)
+int MTBitcoin::GetConfirmations(const std::string &txId)
 {
-    return this->modules->btcHelper->GetConfirmations(rawTransaction);
+    return this->modules->btcHelper->GetConfirmations(txId);
 }
 
 bool MTBitcoin::TransactionSuccessfull(int64_t amount, BtcRawTransactionRef rawTransaction, const std::string &targetAddress, int64_t confirmations)

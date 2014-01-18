@@ -63,9 +63,6 @@ private:
     //QSharedPointer<QByteArray> rpcReplyContent;
 
     BitcoinServerRef currentServer;
-    bool connected;
-    bool waitingForReply;
-
     CURLcode res;
     CURL* curl;
 

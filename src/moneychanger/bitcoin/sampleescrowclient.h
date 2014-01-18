@@ -53,7 +53,7 @@ private:
     BitcoinServerRef rpcServer;
     EscrowPoolRef targetPool;
 
-    BtcModulesRef modules;
+    BtcModules* modules;
 
     // client sends bitcoin to escrow
     void SendToEscrow();

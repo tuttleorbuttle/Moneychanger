@@ -1,7 +1,8 @@
 #include "Widgets/btcguitest.h"
 #include "ui_btcguitest.h"
 #include "modules.h"
-#include "OTLog.h"
+#include "btctest.h"
+#include <OTLog.h>
 
 BtcGuiTest::BtcGuiTest(QWidget *parent) :
     QWidget(parent, Qt::Window),
@@ -20,6 +21,16 @@ BtcGuiTest::~BtcGuiTest()
 
 void BtcGuiTest::on_testButton_clicked()
 {
+    if(BtcTest::TestBitcoinFunctions())
+    {
+        OTLog::Output(0, "Successfully tested bitcoin functionality.");
+    }
+    else
+    {
+        OTLog::Output(0, "Error testing bitcoin functionality.\nMaybe test environment is not set up properly?");
+    }
+
+    /*  deprecated:
     if(!Modules::btcInterface->TestBtcJson())
         OTLog::vOutput(0, "Error testing bitcoin integration. Maybe test environment is not set up.\n");
     else
@@ -29,6 +40,7 @@ void BtcGuiTest::on_testButton_clicked()
         OTLog::vOutput(0, "Error testing bitcoin escrow functions. Maybe test environment is not set up.\n");
     else
         OTLog::vOutput(0, "Bitcoin escrow integration sucessfully tested.\n");
+    */
 }
 
 void BtcGuiTest::on_simulateEscrSrvrsButton_clicked()

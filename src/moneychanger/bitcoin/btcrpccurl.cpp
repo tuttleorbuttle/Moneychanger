@@ -24,6 +24,10 @@ BtcRpcCurl::BtcRpcCurl(BtcModules *modules)
 BtcRpcCurl::~BtcRpcCurl()
 {
     this->modules = NULL;
+
+    this->currentServer = NULL;
+
+    this->CleanUpCurl();
 }
 
 static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *userp)
@@ -72,6 +76,9 @@ static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userp)
 
 bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerRef server)
 {
+    if(server == NULL)
+        return false;
+
     if(this->currentServer != server || !this->curl || this->res != CURLE_OK)
     {
         this->currentServer = server;
@@ -107,9 +114,6 @@ bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerRef server)
     curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 
     return SendRpc(BtcRpcPacketRef(new BtcRpcPacket(BtcRpcCurl::connectString->data, BtcRpcCurl::connectString->size))) != NULL;
-
-
-    return ConnectToBitcoin(server->user, server->password, server->url, server->port);
 }
 
 bool BtcRpcCurl::ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url, int port)
@@ -203,7 +207,18 @@ BtcRpcPacketRef BtcRpcCurl::SendRpc(BtcRpcPacketRef jsonString)
     if(receivedData->data != NULL)
         OTLog::Output(0, receivedData->data);
 
-    return receivedData;
+    // we have to copy the response because for some reason the next few lines set the smart pointer to NULL (?!?!??)
+    BtcRpcPacketRef packetCopy = BtcRpcPacketRef(new BtcRpcPacket(receivedData));
+    int httpcode = 0;
+    curl_easy_getinfo(this->curl, CURLINFO_RESPONSE_CODE, &httpcode);
+    if(httpcode == 401)
+    {
+        OTLog::Output(0, "Error connecting to bitcoind: Wrong username or password\n");
+        return BtcRpcPacketRef(NULL);
+    }
+    OTLog::vOutput(0, "HTTP response code: %d\n", httpcode);
+
+    return packetCopy;
 }
 
 BtcRpcPacketRef BtcRpcCurl::SendRpc(const char *jsonString)
@@ -219,7 +234,10 @@ bool BtcRpcCurl::IsConnected()
 void BtcRpcCurl::CleanUpCurl()
 {
     if(curl)
+    {
         curl_easy_cleanup(curl);
+        curl = NULL;
+    }
 
     curl_global_cleanup();
 }

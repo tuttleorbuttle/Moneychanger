@@ -23,7 +23,7 @@ public:
     IBtcRpcRef btcRpc;      // RPC call wrapper
     BtcHelperRef btcHelper;    // helper class to do all the complicated stuff
 
-    static BtcModulesRef staticInstance;
+    static BtcModules* staticInstance;
 };
 
 #endif // BTCMODULES_H
