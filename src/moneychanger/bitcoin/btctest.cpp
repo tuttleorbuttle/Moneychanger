@@ -40,6 +40,67 @@ bool BtcTest::TestBitcoinFunctions()
     return true;
 }
 
+bool BtcTest::TestBtcJson()
+{
+    BitcoinServerRef bitcoind1 = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
+
+    // connect to server
+    if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
+        return false;
+
+    // see if we can get some response:
+    std::string address = modules->btcJson->GetNewAddress();
+    if(address.empty())
+        return false;
+
+    // disconnect
+    modules->btcRpc->ConnectToBitcoin(BitcoinServerRef(new BitcoinServer("bla", "bla", "url", 123)));
+
+    // try again
+    address = modules->btcJson->GetNewAddress();
+    if(!address.empty())
+        return false;
+
+    // TODO: Test all the other functions. Nah, they should be safe to use.
+
+    return true;
+}
+
+bool BtcTest::TestBtcRpc()
+{
+    // first testnet server:
+    BitcoinServerRef bitcoind1 = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
+
+    // connect to server (if this function succeeds, SendRpc() works too)
+    if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
+        return false;
+
+    if(modules->btcRpc->ConnectToBitcoin(NULL))
+        return false;
+
+    if(modules->btcRpc->ConnectToBitcoin("wronguser", "wrongpw","127.0.0.1",19001))
+        return false;
+
+    if(modules->btcRpc->ConnectToBitcoin("","", "127.0.0.1", 123))
+        return false;
+
+    if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
+        return false;
+
+    // try sending some garbage and see if anything crashes
+    modules->btcRpc->SendRpc(NULL);
+
+    modules->btcRpc->SendRpc("garbage");
+
+    modules->btcRpc->SendRpc('\0');
+
+    modules->btcRpc->SendRpc(BtcRpcPacketRef(new BtcRpcPacket('\0',1)));
+
+    modules->btcRpc->SendRpc(BtcRpcPacketRef(new BtcRpcPacket('\0',0)));
+
+    return true;    // not crashing is enough to pass this test
+}
+
 bool BtcTest::TestMultiSig()
 {
     if(!TestMultiSigDeposit())
@@ -165,68 +226,5 @@ bool BtcTest::TestMultiSigWithdrawal()
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-}
-
-
-
-bool BtcTest::TestBtcRpc()
-{
-    // first testnet server:
-    BitcoinServerRef bitcoind1 = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
-
-    // connect to server (if this function succeeds, SendRpc() works too)
-    if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
-        return false;
-
-    if(modules->btcRpc->ConnectToBitcoin(NULL))
-        return false;
-
-    if(modules->btcRpc->ConnectToBitcoin("wronguser", "wrongpw","127.0.0.1",19001))
-        return false;
-
-    if(modules->btcRpc->ConnectToBitcoin("","", "127.0.0.1", 123))
-        return false;
-
-    if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
-        return false;
-
-    // try sending some garbage and see if anything crashes
-    modules->btcRpc->SendRpc(NULL);
-
-    modules->btcRpc->SendRpc("garbage");
-
-    modules->btcRpc->SendRpc('\0');
-
-    modules->btcRpc->SendRpc(BtcRpcPacketRef(new BtcRpcPacket('\0',1)));
-
-    modules->btcRpc->SendRpc(BtcRpcPacketRef(new BtcRpcPacket('\0',0)));
-
-    return true;    // not crashing is enough to pass this test
-}
-
-bool BtcTest::TestBtcJson()
-{
-    BitcoinServerRef bitcoind1 = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
-
-    // connect to server
-    if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
-        return false;
-
-    // see if we can get some response:
-    std::string address = modules->btcJson->GetNewAddress();
-    if(address.empty())
-        return false;
-
-    // disconnect
-    modules->btcRpc->ConnectToBitcoin(BitcoinServerRef(new BitcoinServer("bla", "bla", "url", 123)));
-
-    // try again
-    address = modules->btcJson->GetNewAddress();
-    if(!address.empty())
-        return false;
-
-    // TODO: Test all the other functions. Nah, they should be safe to use.
-
-    return true;
 }
 

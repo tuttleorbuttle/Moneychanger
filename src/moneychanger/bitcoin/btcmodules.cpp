@@ -13,6 +13,8 @@ BtcModules::BtcModules()
 
     this->mtBitcoin = MTBitcoinRef(new MTBitcoin(this));
 
+    // added this so the Sample classes in Moneychanger can access it
+    // they could instead create their own instance though.
     if(this->staticInstance == NULL)
         this->staticInstance = this;
 }
