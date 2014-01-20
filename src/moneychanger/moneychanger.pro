@@ -77,8 +77,10 @@ HEADERS += moneychanger.h \
     FastDelegateBind.h \
     modules.h \
     utils.h \
-    bitcoin/MTBitcoin.h \
+    bitcoin/btcobjectsqt.h \
     bitcoin/btcinterface.h \
+    bitcoin/btcjsonqt.h \
+    bitcoin/btcrpcqt.h \
     bitcoin/sampleescrowserver.h \
     bitcoin/sampleescrowmanager.h \
     bitcoin/sampleescrowclient.h \
@@ -90,19 +92,7 @@ HEADERS += moneychanger.h \
     Widgets/corporationdetails.h \
     Widgets/btcguitestp2p.h \
     bitcoin/transactionmanager.h \
-    Widgets/btcsenddlg.h \
-    bitcoin/btcrpccurl.h \
-    bitcoin/ibtcrpc.h \
-    bitcoin/btcjsonqt.h \
-    bitcoin/ibtcjson.h \
-    bitcoin/btcobjects.h \
-    bitcoin/btchelper.h \
-    bitcoin/btcobjectsqt.h \
-    bitcoin/btcjson.h \
-    bitcoin/btcmodules.h \
-    bitcoin/btcrpcqt.h \
-    bitcoin/imtbitcoin.h \
-    bitcoin/btctest.h
+    Widgets/btcsenddlg.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -111,14 +101,15 @@ SOURCES += main.cpp\
            MTRecord.cpp \
     modules.cpp \
     utils.cpp \
-    bitcoin/MTBitcoin.cpp \
-    bitcoin/btcinterface.cpp \
     bitcoin/sampleescrowserver.cpp \
     bitcoin/sampleescrowmanager.cpp \
     bitcoin/sampleescrowclient.cpp \
     bitcoin/sampleescrowtransaction.cpp \
     bitcoin/escrowpool.cpp \
     bitcoin/poolmanager.cpp \
+    bitcoin/btcinterface.cpp \
+    bitcoin/btcjsonqt.cpp \
+    bitcoin/btcrpcqt.cpp \
     Handlers/FileHandler.cpp \
     Handlers/DBHandler.cpp \
     Handlers/contacthandler.cpp \
@@ -175,16 +166,8 @@ SOURCES += main.cpp\
     Widgets/corporationdetails.cpp \
     Widgets/btcguitest.cpp \
     Widgets/btcguitestp2p.cpp \
-    bitcoin/transactionmanager.cpp \
     Widgets/btcsenddlg.cpp \
-    bitcoin/btcrpccurl.cpp \
-    bitcoin/btcjsonqt.cpp \
-    bitcoin/btchelper.cpp \
-    bitcoin/btcjson.cpp \
-    bitcoin/btcmodules.cpp \
-    bitcoin/btcrpcqt.cpp \
-    bitcoin/btcobjects.cpp \
-    bitcoin/btctest.cpp
+    bitcoin/transactionmanager.cpp
 
 
 RESOURCES += resource.qrc

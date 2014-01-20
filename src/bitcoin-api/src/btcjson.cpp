@@ -44,6 +44,23 @@ void BtcJson::Initialize()
 
 }
 
+BtcRpcPacketRef BtcJson::CreateJsonQuery(const std::string &command, Json::Value params, std::string id)
+{
+    if(id.empty())
+        id = command;
+    Json::Value jsonObj = Json::Value();
+    jsonObj["jsonrpc"] = 1.0;
+    jsonObj["id"] = id;
+    jsonObj["method"] = command;
+    jsonObj["params"] = params;
+    //"{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }";
+
+    Json::FastWriter writer;
+    Json::StyledWriter debugWriter;
+    OTLog::Output(0, debugWriter.write(jsonObj).c_str());
+    return BtcRpcPacketRef(new BtcRpcPacket(writer.write(jsonObj)));
+}
+
 bool BtcJson::ProcessRpcString(BtcRpcPacketRef jsonString, Json::Value &result)
 {
     std::string id;
@@ -81,21 +98,6 @@ void BtcJson::ProcessRpcString(BtcRpcPacketRef jsonString, std::string &id, Json
 
         result = replyObj["result"];
     }
-}
-
-BtcRpcPacketRef BtcJson::CreateJsonQuery(const std::string &command, Json::Value params, std::string id)
-{
-    if(id.empty())
-        id = command;
-    Json::Value jsonObj = Json::Value();
-    jsonObj["jsonrpc"] = 1.0;
-    jsonObj["id"] = id;
-    jsonObj["method"] = command;
-    jsonObj["params"] = params;
-    //"{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }";
-
-    Json::FastWriter writer;
-    return BtcRpcPacketRef(new BtcRpcPacket(writer.write(jsonObj)));
 }
 
 void BtcJson::GetInfo()
@@ -467,7 +469,7 @@ BtcSignedTransactionRef BtcJson::SignRawTransaction(const std::string &rawTransa
     }
     else
     {
-        params.append(Json::Value());            // append null or else it won't work
+        params.append(Json::Value(Json::nullValue));            // append null or else it won't work
     }
 
     // add array of private keys used to sign the transaction
@@ -481,7 +483,7 @@ BtcSignedTransactionRef BtcJson::SignRawTransaction(const std::string &rawTransa
         params.append(privKeysArray);
     }
     else
-        params.append(Json::Value());            // if no private keys were given, append null
+        params.append(Json::Value(Json::nullValue));            // if no private keys were given, append null
 
 
     // params.append(ALL|ANYONECANPAY, NONE|ANYONECANPAY, SINGLE|ANYONECANPAY)
@@ -503,8 +505,8 @@ BtcSignedTransactionRef BtcJson::CombineSignedTransactions(std::string rawTransa
 {
     Json::Value params = Json::Value();
     params.append(rawTransaction);  // a concatenation of partially signed tx's
-    params.append(Json::Value());    // dummy inputs and redeemscripts (must not be 'null')
-    params.append(Json::Value());    // dummy private keys (must not be 'null')
+    params.append(Json::Value(Json::arrayValue));    // dummy inputs and redeemscripts (must not be 'null')
+    params.append(Json::Value(Json::arrayValue));    // dummy private keys (must not be 'null')
     // if dummy inputs are 'null', bitcoin will not just combine the raw transaction but do additional signing(!!!)
 
     Json::Value result = Json::Value();

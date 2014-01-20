@@ -204,8 +204,8 @@ BtcRpcPacketRef BtcRpcCurl::SendRpc(BtcRpcPacketRef jsonString)
         return BtcRpcPacketRef(NULL);
     }
 
-    if(receivedData->data != NULL)
-        OTLog::Output(0, receivedData->data);
+    //if(receivedData->data != NULL)
+    //    OTLog::Output(0, receivedData->data);
 
     // we have to copy the response because for some reason the next few lines set the smart pointer to NULL (?!?!??)
     BtcRpcPacketRef packetCopy = BtcRpcPacketRef(new BtcRpcPacket(receivedData));
@@ -216,12 +216,12 @@ BtcRpcPacketRef BtcRpcCurl::SendRpc(BtcRpcPacketRef jsonString)
         OTLog::Output(0, "Error connecting to bitcoind: Wrong username or password\n");
         return BtcRpcPacketRef(NULL);
     }
-    OTLog::vOutput(0, "HTTP response code: %d\n", httpcode);
+    //OTLog::vOutput(0, "HTTP response code: %d\n", httpcode);
 
     return packetCopy;
 }
 
-BtcRpcPacketRef BtcRpcCurl::SendRpc(const char *jsonString)
+BtcRpcPacketRef BtcRpcCurl::SendRpc(const char *jsonString) // TODO: also receive int size then call overloaded
 {
     return BtcRpcPacketRef(NULL);
 }

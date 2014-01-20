@@ -18,7 +18,7 @@ SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend)
 bool SampleEscrowTransaction::SendToTarget()
 {
     // send to this address, get transaction id
-    this->txId = this->modules->mtBitcoin->SendToAddress(this->amountToSend, this->targetAddr);
+    this->txId = this->modules->mtBitcoin->SendToAddress(this->targetAddr, this->amountToSend);
 
     // check if we got a tx id
     if(this->txId == "")

@@ -16,6 +16,8 @@ private:
 
     static bool TestBtcJson();
 
+    static bool TestRawTransactions();
+
     static bool TestMultiSig();
 
     static bool TestMultiSigDeposit();

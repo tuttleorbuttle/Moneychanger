@@ -62,7 +62,7 @@ void SampleEscrowClient::OnReceivePubKey(const std::string &publicKey, int minSi
         return;     // OMG HACKS!!!11
 
     // if we received all public keys we can start sending the bitcoins
-    if(this->pubKeyList.size() == this->targetPool->escrowServers.size())
+    if(this->pubKeyList.size() == this->targetPool->escrowServers.size())   // [ignore warning]
         SendToEscrow();
 }
 

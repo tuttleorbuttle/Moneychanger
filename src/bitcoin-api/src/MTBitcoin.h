@@ -51,7 +51,7 @@ public:
 
     // sends funds from your wallet to targetAddress
     // returns the transaction id string or NULL
-    virtual std::string SendToAddress(int64_t lAmount, const std::string &to_address);
+    virtual std::string SendToAddress(const std::string &to_address, int64_t lAmount);
 
     // Creates a multi-sig address using the public keys (not addresses, unless their public keys are known to bitcoin-qt!)
     // and sends bitcoin to that address.

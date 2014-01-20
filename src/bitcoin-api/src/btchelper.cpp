@@ -144,7 +144,7 @@ BtcRawTransactionRef BtcHelper::WaitGetRawTransaction(const std::string &txID, i
     return transaction;
 }
 
-BtcSignedTransactionRef BtcHelper::WithdrawAllFromAddress(const std::string &txToSourceId, const std::string &sourceAddress, const std::string &destinationAddress, const std::string &redeemScript, const std::string &signingAddress)
+BtcSignedTransactionRef BtcHelper::WithdrawAllFromAddress(const std::string &txToSourceId, const std::string &sourceAddress, const std::string &destinationAddress, const std::string &redeemScript /* = "" */, const std::string &signingAddress /* = "" */)
 {
     // retrieve decoded raw transaction sending funds to our sourceAddress
     BtcRawTransactionRef rawTransaction = this->modules->btcJson->GetDecodedRawTransaction(txToSourceId);
@@ -159,6 +159,7 @@ BtcSignedTransactionRef BtcHelper::WithdrawAllFromAddress(const std::string &txT
     for(uint i = 0; i < rawTransaction->outputs.size(); i++)
     {
         BtcRawTransaction::VOUT output = rawTransaction->outputs[i];
+
         // check if output leads to sourceAddess
         // idk what multiple addresses per output means so we'll skip those cases
         if(output.addresses.size() == 1 && output.addresses[0] == sourceAddress)

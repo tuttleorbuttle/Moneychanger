@@ -1,6 +1,7 @@
 #include "btctest.h"
 #include "btcmodules.h"
 #include <thread>
+#include <OTLog.h>
 
 
 BtcModulesRef BtcTest::modules;
@@ -32,6 +33,9 @@ bool BtcTest::TestBitcoinFunctions()
         return false;
 
     if(!TestBtcJson())
+        return false;
+
+    if(!TestRawTransactions())
         return false;
 
     if(!TestMultiSig())
@@ -101,6 +105,59 @@ bool BtcTest::TestBtcRpc()
     return true;    // not crashing is enough to pass this test
 }
 
+bool BtcTest::TestRawTransactions()
+{
+    BitcoinServerRef bitcoind1 = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
+
+    // connect to server (if this function succeeds, SendRpc() works too)
+    if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
+        return false;
+
+    // receive to address
+    std::string myAddress1 = modules->mtBitcoin->GetNewAddress("test");
+    if(myAddress1.empty())
+        return false;
+
+    // send to receiving address
+    std::string txId = modules->mtBitcoin->SendToAddress(myAddress1, BtcHelper::CoinsToSatoshis(1));
+    if(txId.empty())
+        return false;
+
+    // further send funds to other address:
+    std::string myAddress2 = modules->mtBitcoin->GetNewAddress("test");
+    if(myAddress2.empty())
+        return false;
+
+    std::list<BtcOutput> unspendOutputList;
+    BtcRawTransactionRef decodedTx = modules->btcJson->GetDecodedRawTransaction(txId);
+    if(decodedTx == NULL)
+        return false;
+
+    for(uint i = 0; i < decodedTx->outputs.size(); i++)
+    {
+        if(decodedTx->outputs[i].addresses[0] == myAddress1)
+            unspendOutputList.push_back(BtcOutput(txId, i));
+    }
+
+    std::map<std::string, int64_t> targetList;
+    targetList[myAddress2] = 1;
+    // spend the received funds
+    std::string rawTx = modules->btcJson->CreateRawTransaction(unspendOutputList, targetList);
+    if(rawTx.empty())
+        return false;
+    BtcSignedTransactionRef signedTx = modules->btcJson->SignRawTransaction(rawTx);
+    if(signedTx == NULL)
+        return false;
+    if(!signedTx->complete)
+        return false;
+
+    std::string rawTxId = modules->btcJson->SendRawTransaction(signedTx->signedTransaction);
+    if(rawTxId.empty())
+        return false;
+
+    return true;
+}
+
 bool BtcTest::TestMultiSig()
 {
     if(!TestMultiSigDeposit())
@@ -143,13 +200,13 @@ bool BtcTest::TestMultiSigDeposit()
     if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
         return false;
 
-    std::string multiSigAddr = modules->mtBitcoin->GetMultiSigAddress(2, keys, true, "test");
-    if(multiSigAddr.empty())
+    multiSigAddress = modules->mtBitcoin->GetMultiSigAddress(2, keys, true, "test");
+    if(multiSigAddress.empty())
         return false;
 
     // send from server #1 to multisig
     int64_t amountToSend = BtcHelper::CoinsToSatoshis(1.22);
-    std::string txId = modules->mtBitcoin->SendToAddress(amountToSend, multiSigAddr);
+    std::string txId = modules->mtBitcoin->SendToAddress(multiSigAddress, amountToSend);
     if(txId.empty())
         return false;
     depositTxId = txId;    // need to remember this for later;
@@ -160,7 +217,7 @@ bool BtcTest::TestMultiSigDeposit()
         return false;
 
     // wait for confirmations and correct amount
-    while(!modules->mtBitcoin->TransactionSuccessfull(amountToSend, txToMultiSig, multiSigAddr, 1))
+    while(!modules->mtBitcoin->TransactionSuccessfull(amountToSend, txToMultiSig, multiSigAddress, 1))
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
@@ -173,11 +230,8 @@ bool BtcTest::TestMultiSigWithdrawal()
     BitcoinServerRef bitcoind1 = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
     BitcoinServerRef bitcoind2 = BitcoinServerRef(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
 
-    std::string txId = depositTxId;
-    std::string multiSigAddr = multiSigAddress;
-
     // count how much btc we received in that txId
-    int64_t amountToRelease = modules->btcHelper->GetTotalOutput(txId, multiSigAddr);
+    int64_t amountToRelease = modules->btcHelper->GetTotalOutput(depositTxId, multiSigAddress);
 
 
     // now get ready to withdraw to server #2.
@@ -191,24 +245,26 @@ bool BtcTest::TestMultiSigWithdrawal()
     if(targetAddress.empty())
         return false;
 
+    OTLog::vOutput(0, "releasing escrow from Tx #%s, address %s\n to address %s\n", depositTxId.c_str(), multiSigAddress.c_str(), targetAddress.c_str());
+
     // server #2 votes to release coins to his own address
     // the optional arguments redeemScript and signingAddress are only needed for offline signing
     // or if txId has no confirmations yet
-    BtcSignedTransactionRef partialTx2 = modules->mtBitcoin->VoteMultiSigRelease(txId, multiSigAddr, targetAddress);
+    BtcSignedTransactionRef partialTx2 = modules->mtBitcoin->VoteMultiSigRelease(depositTxId, multiSigAddress, targetAddress);
     if(partialTx2 == NULL)
         return false;
 
-    // connect to server #2
-    if(!modules->btcRpc->ConnectToBitcoin(bitcoind2))
+    // connect to server #1
+    if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
         return false;
 
     // server #1 votes to release coins to #2's address
-    BtcSignedTransactionRef partialTx1 = modules->mtBitcoin->VoteMultiSigRelease(txId, multiSigAddr, targetAddress);
+    BtcSignedTransactionRef partialTx1 = modules->mtBitcoin->VoteMultiSigRelease(depositTxId, multiSigAddress, targetAddress);
     if(partialTx1 == NULL)
         return false;
 
     // combine both partially signed transactions into one
-    std::string rawTxString = partialTx1->signedTransaction.append(partialTx2->signedTransaction);
+    std::string rawTxString = partialTx1->signedTransaction + partialTx2->signedTransaction;
     BtcSignedTransactionRef completeTx = modules->mtBitcoin->CombineTransactions(rawTxString);
     if(completeTx == NULL || !completeTx->complete)
         return false;
@@ -219,12 +275,14 @@ bool BtcTest::TestMultiSigWithdrawal()
 
     BtcRawTransactionRef releaseTx = modules->mtBitcoin->WaitGetRawTransaction(releaseTxId);
     if(releaseTx == NULL)
-        return false;
+        return false;   
 
     // wait for confirmations and correct amount
-    while(!modules->mtBitcoin->TransactionSuccessfull(amountToRelease, releaseTx, multiSigAddr, 1))
+    while(!modules->mtBitcoin->TransactionSuccessfull(amountToRelease, releaseTx, multiSigAddress, 1))
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
+
+    return true;
 }
 

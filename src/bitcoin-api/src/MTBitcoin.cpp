@@ -1,5 +1,5 @@
 #include "MTBitcoin.h"
-#include "modules.h"
+#include "btcmodules.h"
 
 
 
@@ -71,7 +71,7 @@ bool MTBitcoin::TransactionSuccessfull(int64_t amount, BtcRawTransactionRef rawT
     return this->modules->btcHelper->TransactionSuccessfull(amount, rawTransaction, targetAddress, confirmations);
 }
 
-std::string MTBitcoin::SendToAddress(int64_t lAmount, const std::string &to_address)
+std::string MTBitcoin::SendToAddress(const std::string &to_address, int64_t lAmount)
 {
     return this->modules->btcJson->SendToAddress(to_address, lAmount);
 }
