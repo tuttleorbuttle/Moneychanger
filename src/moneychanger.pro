@@ -6,4 +6,5 @@
 
 SUBDIRS += \
     qjsonrpc\
-    moneychanger
+    moneychanger\
+    bitcoin-api

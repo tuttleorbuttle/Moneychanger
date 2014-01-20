@@ -248,6 +248,14 @@ else:unix: LIBS += -L$$OUT_PWD/../qjsonrpc/src/ -lqjsonrpc
 
 INCLUDEPATH += $$PWD/../qjsonrpc/src $$PWD/../qjsonrpc/src/json
 DEPENDPATH += $$PWD/../qjsonrpc/src $$PWD/../qjsonrpc/src/json
+
+# Bitcoin-Api Library:
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../bitcoin-api/release/ -lbitcoin-api     # not sure
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../bitcoin-api/debug/ -lbitcoin-api    # if these lines are correct
+else:unix: LIBS += -L$$OUT_PWD/../bitcoin-api/ -lbitcoin-api
+
+INCLUDEPATH += $$PWD/../bitcoin-api/src
+DEPENDPATH += $$PWD/../bitcoin-api/src
     
 mac:{
 

@@ -2,6 +2,7 @@
 #include "btcrpccurl.h"
 #include "btcjson.h"
 #include "MTBitcoin.h"
+#include "bitcoinapi.h"
 
 BtcModules* BtcModules::staticInstance;
 
