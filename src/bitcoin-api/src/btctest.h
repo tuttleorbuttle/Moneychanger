@@ -4,6 +4,7 @@
 #include "btcmodules.h"
 
 // will be used as a sort of unit test
+// currently only checks the most important things.
 class BtcTest
 {
 public:

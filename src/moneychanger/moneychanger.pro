@@ -274,7 +274,7 @@ linux:{
         LIBS += -ldl
 }
 
-LIBS += -lcurl -ljsoncpp  # cross-platform communication with bitcoind
+#LIBS += -lcurl -ljsoncpp  # cross-platform communication with bitcoind
 
 
 #QMAKE_CXXFLAGS_WARN_ON  = ""

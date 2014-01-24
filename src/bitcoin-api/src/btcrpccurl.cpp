@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <OTLog.h>
+//#include <OTLog.h>
 
 
 BtcRpcPacketRef BtcRpcCurl::connectString = BtcRpcPacketRef(new BtcRpcPacket("{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }"));
@@ -63,7 +63,8 @@ static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userp)
 
     if(pooh->data == NULL)
     {
-        OTLog::vOutput(0, "realloc failed when reading data from bitcoin-qt");
+        std::printf("realloc failed when reading data from bitcoin-qt\n");
+        std::cout.flush();
         return 0;
     }
 
@@ -213,7 +214,8 @@ BtcRpcPacketRef BtcRpcCurl::SendRpc(BtcRpcPacketRef jsonString)
     curl_easy_getinfo(this->curl, CURLINFO_RESPONSE_CODE, &httpcode);
     if(httpcode == 401)
     {
-        OTLog::Output(0, "Error connecting to bitcoind: Wrong username or password\n");
+        std::printf("Error connecting to bitcoind: Wrong username or password\n");
+        std::cout.flush();
         return BtcRpcPacketRef(NULL);
     }
     //OTLog::vOutput(0, "HTTP response code: %d\n", httpcode);

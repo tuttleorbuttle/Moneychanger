@@ -39,8 +39,8 @@ HEADERS +=  src/bitcoinapi.h\
 
 QMAKE_CXXFLAGS += -std=c++11
 
-unix: CONFIG += link_pkgconfig
-unix: PKGCONFIG += opentxs
+#unix: CONFIG += link_pkgconfig
+#unix: PKGCONFIG += opentxs
 
 CONFIG += debug #_and_release
 

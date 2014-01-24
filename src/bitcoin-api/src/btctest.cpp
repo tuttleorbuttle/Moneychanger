@@ -1,7 +1,7 @@
 #include "btctest.h"
 #include "btcmodules.h"
 #include <thread>
-#include <OTLog.h>
+//#include <OTLog.h>
 
 
 BtcModulesRef BtcTest::modules;
@@ -140,7 +140,7 @@ bool BtcTest::TestRawTransactions()
     }
 
     std::map<std::string, int64_t> targetList;
-    targetList[myAddress2] = 1;
+    targetList[myAddress2] = BtcHelper::CoinsToSatoshis(1);
     // spend the received funds
     std::string rawTx = modules->btcJson->CreateRawTransaction(unspendOutputList, targetList);
     if(rawTx.empty())
@@ -171,53 +171,52 @@ bool BtcTest::TestMultiSig()
 
 bool BtcTest::TestMultiSigDeposit()
 {
-    BitcoinServerRef bitcoind1 = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
-    BitcoinServerRef bitcoind2 = BitcoinServerRef(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
+    // create two modules so we don't have to change connections all the time
+    BtcModules module1;
+    BtcModules module2;
+    module1.btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
+    module2.btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
 
     // public keys of the addresses used for multisig
     std::list<std::string> keys;
 
-    // connect to server #1
-    if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
-        return false;
-
-    // GetNewAddress
-    std::string address1 = modules->mtBitcoin->GetNewAddress();
+    // GetNewAddress on bitcoind #1
+    std::string address1 = module1.mtBitcoin->GetNewAddress();
     if(address1.empty())
         return false;
-    keys.push_back(modules->mtBitcoin->GetPublicKey(address1));
+    keys.push_back(module1.mtBitcoin->GetPublicKey(address1));
 
-    // connect to server #2
-    if(!modules->btcRpc->ConnectToBitcoin(bitcoind2))
-        return false;
-
-    std::string address2 = modules->mtBitcoin->GetNewAddress();
+    // GetNewAddress on bitcoind #2
+    std::string address2 = module2.mtBitcoin->GetNewAddress();
     if(address2.empty())
         return false;
-    keys.push_back(modules->mtBitcoin->GetPublicKey(address2));
+    keys.push_back(module2.mtBitcoin->GetPublicKey(address2));
 
-    // connect to server #1
-    if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
-        return false;
-
-    multiSigAddress = modules->mtBitcoin->GetMultiSigAddress(2, keys, true, "test");
+    // add address to bitcoind #1 wallet
+    multiSigAddress = module1.mtBitcoin->GetMultiSigAddress(2, keys, true, "test");
     if(multiSigAddress.empty())
         return false;
 
-    // send from server #1 to multisig
+    // add address to bitcoind #2 wallet
+    // if we don't add it to the wallet, we'd have to pass additional arguments to CreateRawTransaction later
+    module2.mtBitcoin->GetMultiSigAddress(2, keys, true, "test");
+
+
+
+    // send from bitcoind #1 to multisig
     int64_t amountToSend = BtcHelper::CoinsToSatoshis(1.22);
-    std::string txId = modules->mtBitcoin->SendToAddress(multiSigAddress, amountToSend);
+    std::string txId = module1.mtBitcoin->SendToAddress(multiSigAddress, amountToSend);
     if(txId.empty())
         return false;
     depositTxId = txId;    // need to remember this for later;
 
     // get an object containing the decoded raw transaction data
-    BtcRawTransactionRef txToMultiSig = modules->mtBitcoin->WaitGetRawTransaction(txId);
+    BtcRawTransactionRef txToMultiSig = module1.mtBitcoin->WaitGetRawTransaction(txId);
     if(txToMultiSig == NULL)
         return false;
 
-    // wait for confirmations and correct amount
-    while(!modules->mtBitcoin->TransactionSuccessfull(amountToSend, txToMultiSig, multiSigAddress, 1))
+    // wait for confirmations and check for correct amount
+    while(!module1.mtBitcoin->TransactionSuccessfull(amountToSend, txToMultiSig, multiSigAddress, 1))
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
@@ -227,58 +226,52 @@ bool BtcTest::TestMultiSigDeposit()
 
 bool BtcTest::TestMultiSigWithdrawal()
 {
-    BitcoinServerRef bitcoind1 = BitcoinServerRef(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
-    BitcoinServerRef bitcoind2 = BitcoinServerRef(new BitcoinServer("admin2", "123", "http://127.0.0.1", 19011));
+    BtcModules module1;
+    BtcModules module2;
+    module1.btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001);
+    module2.btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011);
 
-    // count how much btc we received in that txId
-    int64_t amountToRelease = modules->btcHelper->GetTotalOutput(depositTxId, multiSigAddress);
+    // count how much btc we received in the deposit transaction
+    int64_t amountToRelease = module1.btcHelper->GetTotalOutput(depositTxId, multiSigAddress);
 
-
-    // now get ready to withdraw to server #2.
-
-    // connect to server #2
-    if(!modules->btcRpc->ConnectToBitcoin(bitcoind2))
-        return false;
+    // now get ready to release to bitcoind #2.
 
     // create address to receive btc
-    std::string targetAddress = modules->mtBitcoin->GetNewAddress();
+    std::string targetAddress = module2.mtBitcoin->GetNewAddress();
     if(targetAddress.empty())
         return false;
 
-    OTLog::vOutput(0, "releasing escrow from Tx #%s, address %s\n to address %s\n", depositTxId.c_str(), multiSigAddress.c_str(), targetAddress.c_str());
+    std::printf("releasing escrow from Tx #%s,\n address %s\nto address %s\n", depositTxId.c_str(), multiSigAddress.c_str(), targetAddress.c_str());
+    std::cout.flush();
 
-    // server #2 votes to release coins to his own address
-    // the optional arguments redeemScript and signingAddress are only needed for offline signing
-    // or if txId has no confirmations yet
-    BtcSignedTransactionRef partialTx2 = modules->mtBitcoin->VoteMultiSigRelease(depositTxId, multiSigAddress, targetAddress);
+    // bitcoind #2 votes to release coins to his own address
+    // the optional arguments redeemScript and signingAddress are only needed to
+    // sign offline transactions or if depositTxId has no confirmations yet
+    BtcSignedTransactionRef partialTx2 = module2.mtBitcoin->VoteMultiSigRelease(depositTxId, multiSigAddress, targetAddress);
     if(partialTx2 == NULL)
         return false;
 
-    // connect to server #1
-    if(!modules->btcRpc->ConnectToBitcoin(bitcoind1))
-        return false;
-
-    // server #1 votes to release coins to #2's address
-    BtcSignedTransactionRef partialTx1 = modules->mtBitcoin->VoteMultiSigRelease(depositTxId, multiSigAddress, targetAddress);
+    // bitcoind #1 votes to release coins to #2's address
+    BtcSignedTransactionRef partialTx1 = module1.mtBitcoin->VoteMultiSigRelease(depositTxId, multiSigAddress, targetAddress);
     if(partialTx1 == NULL)
         return false;
 
     // combine both partially signed transactions into one
     std::string rawTxString = partialTx1->signedTransaction + partialTx2->signedTransaction;
-    BtcSignedTransactionRef completeTx = modules->mtBitcoin->CombineTransactions(rawTxString);
+    BtcSignedTransactionRef completeTx = module1.mtBitcoin->CombineTransactions(rawTxString);
     if(completeTx == NULL || !completeTx->complete)
         return false;
 
-    std::string releaseTxId = modules->mtBitcoin->SendRawTransaction(completeTx->signedTransaction);
+    std::string releaseTxId = module1.mtBitcoin->SendRawTransaction(completeTx->signedTransaction);
     if(releaseTxId.empty())
         return false;
 
-    BtcRawTransactionRef releaseTx = modules->mtBitcoin->WaitGetRawTransaction(releaseTxId);
+    BtcRawTransactionRef releaseTx = module2.mtBitcoin->WaitGetRawTransaction(releaseTxId);
     if(releaseTx == NULL)
         return false;   
 
     // wait for confirmations and correct amount
-    while(!modules->mtBitcoin->TransactionSuccessfull(amountToRelease, releaseTx, multiSigAddress, 1))
+    while(!module2.mtBitcoin->TransactionSuccessfull(amountToRelease, releaseTx, multiSigAddress, 1))
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
@@ -286,3 +279,7 @@ bool BtcTest::TestMultiSigWithdrawal()
     return true;
 }
 
+
+// TODO:
+
+// for the lulz of it, see what would happen if

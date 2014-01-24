@@ -1,6 +1,6 @@
 #include "btcjson.h"
 #include <jsoncpp/json/json.h>
-#include <OTLog.h>
+//#include <OTLog.h>
 #include <map>
 
 // https://en.bitcoin.it/wiki/Proper_Money_Handling_%28JSON-RPC%29 on how to avoid rounding errors and such. might be worth a read someday.
@@ -56,8 +56,8 @@ BtcRpcPacketRef BtcJson::CreateJsonQuery(const std::string &command, Json::Value
     //"{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }";
 
     Json::FastWriter writer;
-    Json::StyledWriter debugWriter;
-    OTLog::Output(0, debugWriter.write(jsonObj).c_str());
+    //Json::StyledWriter debugWriter;
+    //OTLog::Output(0, debugWriter.write(jsonObj).c_str());
     return BtcRpcPacketRef(new BtcRpcPacket(writer.write(jsonObj)));
 }
 
@@ -83,7 +83,8 @@ void BtcJson::ProcessRpcString(BtcRpcPacketRef jsonString, std::string &id, Json
         return;
 
     Json::StyledWriter writer;
-    OTLog::vOutput(0, "Received JSON:\n%s\n", writer.write(replyObj).c_str());
+    std::printf("Received JSON:\n%s\n", writer.write(replyObj).c_str());
+    std::cout.flush();
 
     if(replyObj.isObject())
     {
@@ -93,7 +94,8 @@ void BtcJson::ProcessRpcString(BtcRpcPacketRef jsonString, std::string &id, Json
         error = replyObj["error"];
         if(!error.isNull())
         {
-            OTLog::vOutput(0, "Error in reply to \"%s\": %s\n\n", id.c_str(), error.isObject() ? (error["message"]).asString().c_str() : "");
+            std::printf("Error in reply to \"%s\": %s\n\n", id.c_str(), error.isObject() ? (error["message"]).asString().c_str() : "");
+            std::cout.flush();
         }
 
         result = replyObj["result"];

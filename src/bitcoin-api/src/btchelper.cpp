@@ -3,7 +3,7 @@
 #include <thread>
 #include <vector>
 #include <algorithm>
-#include <OTLog.h>
+//#include <OTLog.h>
 
 
 int BtcHelper::MinConfirms;
@@ -49,7 +49,8 @@ int64_t BtcHelper::GetTotalOutput(BtcRawTransactionRef transaction, const std::s
         // I don't know what outputs to multiple addresses mean so I'm not gonna trust them for now.
         if(transaction->outputs[i].addresses.size() > 1)
         {
-            OTLog::vOutput(0, "Multiple output addresses per output detected.");
+            std::printf("Multiple output addresses per output detected.");
+            std::cout.flush();
             continue;
         }
 
