@@ -104,6 +104,8 @@ unix: {
             LIBS += -lboost_thread-mt
         }
     }
+
+    LIBS += -lzmq   # needed for sampleescrowserverzmq
 }
 
 win32: {
